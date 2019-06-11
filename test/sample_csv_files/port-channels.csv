@@ -1,0 +1,2 @@
+"interfaceSpeed","name","duplex","administrativeStatus","operationalSpeed","switchPortMode","mtu","operationalStatus","connected","hardwareAddress","vlans","activePorts"
+"20000000","port-channel100","FULL","UP","20000000","OTHER","1500","UP","true","002a.6a70.ade6","","Ethernet1/31,Ethernet1/32"

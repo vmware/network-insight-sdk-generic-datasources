@@ -1,0 +1,22 @@
+# device_type: CISCO_IOS
+
+package_handler:
+  <<: *PACKAGE_HANDLER
+
+command_list:
+  - <<: *SHOW_VERSION
+  - <<: *MAC_ADDRESS_TABLE
+  - <<: *SHOW_CDP_NEIGHBORS
+  - <<: *SHOW_IP_ROUTE_VRF_ALL
+  - <<: *SHOW_INTERFACE
+  - <<: *SHOW_ROUTER_INTERFACES
+  - <<: *SHOW_PORT_CHANNELS
+  - <<: *SHOW_VRF_ALL
+  - <<: *SHOW_RI_VRF
+  - <<: *SHOW_VLAN_BRIEF
+
+table_joiners:
+  <<: *TABLE_JOINERS
+
+result_writer:
+  <<: *RESULT_WRITER

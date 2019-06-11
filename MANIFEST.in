@@ -1,0 +1,2 @@
+include README.md
+include network_insight_sdk_generic_datasources/cisco/*.yml

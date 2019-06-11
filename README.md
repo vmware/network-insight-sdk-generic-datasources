@@ -2,7 +2,7 @@
 network-insight-sdk-generic-datasources
 =======================================
 
-UANI SDK is written to support as many physical devices so that vRNI can consume
+SDK is written to support as many physical devices so that vRNI can consume
 network information in defined format. Network information includes Router Interfaces, VRFs, Switch Ports, 
 Routes, etc. SDK can connect to physical device and execute commands. Output of command is then used to create
 files in specific format (eg. CSV). Files generated are then bundled in ZIP format which can then be 
@@ -34,23 +34,23 @@ pip install -r requirements.txt
 
 After cloning this project and project folder in PYTHONPATH. Then run following command to run SDK.
 ```shell
-$ python ./network_insight_sdk_uani/main.py -d <device> -m <model> -s <device_type> -i <ip-address> -u <username> -p <password>
+$ python ./network-insight-sdk-generic-datasources/main.py -d <device> -m <model> -s <device_type> -i <ip-address> -u <username> -p <password>
 ```
 
 > Command parameter explanation
 - -d = the device which you want to run
 - -m = model of device
-- -s = List of device type as defined in network_insight_sdk_uani/connection/device_type.py
+- -s = List of device type as defined in network-insight-sdk-generic-datasources/connection/device_type.py
 - -i = ip address or fqdn
 - -u = username 
 - -p = password
 
 Example
 ```
-$ git clone https://github.com/vmware/network_insight_sdk_uani.git
-$ cd network_insight_sdk_uani
-$ export PYTHONPATH="$PYTHONPATH:../network_insight_sdk_uani"
-$ python ./network_insight_sdk_uani/main.py -d cisco -m n5k -s CISCO_IOS -i 10.1.1.1 -u test -p test
+$ git clone https://github.com/vmware/network-insight-sdk-generic-datasources.git
+$ cd network-insight-sdk-generic-datasources
+$ export PYTHONPATH="$PYTHONPATH:../network-insight-sdk-generic-datasources"
+$ python ./network-insight-sdk-generic-datasources/main.py -d cisco -m n5k -s CISCO_IOS -i 10.1.1.1 -u test -p test
 
 ```
 

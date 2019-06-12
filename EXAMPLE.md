@@ -8,8 +8,15 @@ To support any device we need to first know what network information we need to 
 are Router Interfaces, Routes, VRFs, Switch Ports, etc. Therefore we would first find out commands in Cisco Device 
 which we can use to fetch these information. 
 
-Let's take a small example on fetching routes and filling up details required by routes.csv file.
-Upon investigation we would find that following command give all necessary information/fields required by routes.csv file.
+Let's cover integration process by considering few examples.
+
+1. [ Routes ](#routes)
+2. [ Switch Ports ](#switch-ports)
+
+<a name="routes"></a>
+## 1. Routes
+We need to fill up details required by routes.csv file. Upon investigation we would find that following command give all
+ necessary information/fields required by routes.csv file.
 
 `show ip route vrf all`
 
@@ -43,7 +50,135 @@ output to single line and create output data in tabular format.
 
 <br/>
 
-Since `HorizontalTableParser` suites well for tabular data we used same for parsing data and create dictionary 
+Since `HorizontalTableParser` suites well for tabular data we used same for parsing and created dictionary 
 (key-value pair). Here, we only choose data which are relevant for routes.csv file and ignore rest.
- 
 
+
+<a name="switch-ports"></a>
+## 2. Switch Ports
+Now let's look filling up details required by switch ports csv file. Here, we need to execute two commands because not 
+all the columns can be filled up using single command. 
+
+```
+# show vlan brief
+
+VLAN Name                             Status    Ports
+---- -------------------------------- --------- -------------------------------
+1    default                          active    Eth1/3, Eth1/4, Eth1/5, Eth1/6
+                                                Eth1/7, Eth1/8, Eth1/9, Eth1/10
+                                                Eth1/11, Eth1/12, Eth1/13
+                                                Eth1/14, Eth1/15, Eth1/16
+                                                Eth1/17, Eth1/18, Eth1/19
+                                                Eth1/20, Eth1/28, Eth1/29
+                                                Eth1/30, Eth100/1/1, Eth100/1/3
+                                                Eth100/1/7, Eth100/1/9
+                                                Eth100/1/11, Eth100/1/13
+                                                Eth100/1/14, Eth100/1/17
+                                                Eth100/1/19, Eth100/1/21
+                                                Eth100/1/22, Eth100/1/23
+                                                Eth100/1/24, Eth100/1/25
+                                                Eth100/1/26, Eth100/1/27
+                                                Eth100/1/29, Eth100/1/30
+                                                Eth100/1/31, Eth100/1/32
+13   VLAN0013                         active    Eth1/2, Eth1/11, Eth1/21
+                                                Eth1/22, Eth1/23, Eth1/24
+                                                Eth1/25, Eth1/26, Eth1/27
+                                                Eth100/1/1, Eth100/1/9
+                                                Eth100/1/13, Eth100/1/19
+                                                Eth100/1/21, Eth100/1/22
+                                                Eth100/1/25, Eth100/1/26
+                                                Eth100/1/28, Eth100/1/29
+``` 
+Since above output a tabular with some deviations like column data spilling over next row, we will
+format so that data is tabular without spill over. We used `CiscoInterfaceVlanPrePostProcessor.pre_process()` to do this 
+job. Furthermore, we wanted to create dat in such a way that ports to vlans map can be queries. This is done in
+`CiscoInterfaceVlanPrePostProcessor.post_process()`
+
+
+To get other attributes of switch ports. We hit following command.
+```
+# show interface 
+Ethernet1/1 is down (Link not connected)
+  Hardware: 1000/10000 Ethernet, address: 002a.6a70.ae01 (bia 002a.6a70.adc8)
+  MTU 1500 bytes, BW 10000000 Kbit, DLY 10 usec
+  reliability 255/255, txload 1/255, rxload 1/255
+  Encapsulation ARPA
+  auto-duplex, 10 Gb/s, media type is 10G
+  Beacon is turned off
+  Input flow-control is off, output flow-control is off
+  Rate mode is dedicated
+  Switchport monitor is off 
+  EtherType is 0x8100 
+  Last link flapped never
+  Last clearing of "show interface" counters never
+  30 seconds input rate 0 bits/sec, 0 packets/sec
+  30 seconds output rate 0 bits/sec, 0 packets/sec
+  Load-Interval #2: 5 minute (300 seconds)
+    input rate 0 bps, 0 pps; output rate 0 bps, 0 pps
+  RX
+    0 unicast packets  0 multicast packets  0 broadcast packets
+    0 input packets  0 bytes
+    0 jumbo packets  0 storm suppression bytes
+    0 runts  0 giants  0 CRC  0 no buffer
+    0 input error  0 short frame  0 overrun   0 underrun  0 ignored
+    0 watchdog  0 bad etype drop  0 bad proto drop  0 if down drop
+    0 input with dribble  0 input discard
+    0 Rx pause
+  TX
+    0 unicast packets  0 multicast packets  0 broadcast packets
+    0 output packets  0 bytes
+    0 jumbo packets
+    0 output errors  0 collision  0 deferred  0 late collision
+    0 lost carrier  0 no carrier  0 babble 0 output discard
+    0 Tx pause
+  0 interface resets
+
+Ethernet1/2 is up
+  Hardware: 1000/10000 Ethernet, address: 002a.6a70.adc9 (bia 002a.6a70.adc9)
+  Description: 4500 Active Port 11
+  MTU 1500 bytes, BW 1000000 Kbit, DLY 10 usec
+  reliability 255/255, txload 2/255, rxload 1/255
+  Encapsulation ARPA
+  Port mode is trunk
+  full-duplex, 1000 Mb/s, media type is 10G
+  Beacon is turned off
+  Input flow-control is off, output flow-control is off
+  Rate mode is dedicated
+  Switchport monitor is off 
+  EtherType is 0x8100 
+  Last link flapped 36week(s) 2day(s)
+  Last clearing of "show interface" counters 36w2d
+  30 seconds input rate 1108256 bits/sec, 414 packets/sec
+  30 seconds output rate 5933232 bits/sec, 686 packets/sec
+  Load-Interval #2: 5 minute (300 seconds)
+    input rate 789.52 Kbps, 351 pps; output rate 10.31 Mbps, 967 pps
+  RX
+    4906019096 unicast packets  347776934 multicast packets  40781622 broadcast packets
+    5294577652 input packets  1608586074753 bytes
+    310633283 jumbo packets  0 storm suppression bytes
+    0 runts  0 giants  0 CRC  0 no buffer
+    0 input error  0 short frame  0 overrun   0 underrun  0 ignored
+    0 watchdog  0 bad etype drop  0 bad proto drop  0 if down drop
+    0 input with dribble  0 input discard
+    0 Rx pause
+  TX
+    12053440606 unicast packets  124476161 multicast packets  4232432 broadcast packets
+    12182149199 output packets  14301655330997 bytes
+    8321835888 jumbo packets
+    0 output errors  0 collision  0 deferred  0 late collision
+    0 lost carrier  0 no carrier  0 babble 0 output discard
+    0 Tx pause
+  1 interface resets
+
+```
+
+Output is format repeating block with line pattern `(\w+) is (up|down)`. For each block
+we use `GenericTextParser` where we specify regex pattern in key(columnName) and value(regex with group selection 
+using parenthesis). For <b>name</b> field we used configuration as below defined under <b>rules</b>.
+`name: "(.*) is (?:up|down).*"` Question mark is used to forget the second match. Therefore, regex will remember only 
+first match surrounded using parenthesis.
+
+Once above two commands are parsed and result is list of dictionaries (tabular representation), now outputs can be 
+merged with table joiners. Tables created by executing above commands are referred using `table_id`. Now to join tables,
+parameters required by `SimpleTableJoiner` are `source_table`, `source_column`, `destination_table` and `destination_column`.
+Resulting table is referred by `joined_table_id`. 

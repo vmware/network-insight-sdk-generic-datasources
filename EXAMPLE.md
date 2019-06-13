@@ -71,7 +71,7 @@ Since, `HorizontalTableParser` suites well for tabular data we used same for par
 
 <a name="switch-ports"></a>
 ## 2. Switch Ports
-Now let's look filling up details required by switch ports csv file. Here, we need to execute two commands because not 
+Now let's look at filling up details required by switch-ports.csv file. Here, we need to execute two commands because not 
 all the columns can be filled up using single command. 
 
 ```
@@ -105,13 +105,13 @@ VLAN Name                             Status    Ports
                                                 Eth100/1/28, Eth100/1/29
 ``` 
 
-Since above output a tabular with some deviations like column data spilling over next row, we will
-format so that data is tabular without spill over. We used `CiscoInterfaceVlanPrePostProcessor.pre_process()` to do this 
-job. Furthermore, we wanted to create dat in such a way that ports to vlans map can be queries. This is done in
-`CiscoInterfaceVlanPrePostProcessor.post_process()`
+Since above command prints with tabular data with some deviations like column data spilling over next row, we will
+format so that data do spill over to next row. We used `CiscoInterfaceVlanPrePostProcessor.pre_process()` to do this 
+job. Furthermore, we wanted to create dictionary in such a way that vlans can be queried by switch port names. This is 
+done in `CiscoInterfaceVlanPrePostProcessor.post_process()`.
 
 
-To get other attributes of switch ports. We hit following command.
+To get other attributes of switch ports. We first execute following command.
 ```
 # show interface 
 Ethernet1/1 is down (Link not connected)
@@ -188,13 +188,16 @@ Ethernet1/2 is up
 
 ```
 
-Output is format repeating block with line pattern `(\w+) is (up|down)`. For each block
+Output format can be seen repeating blocks with line pattern `(\w+) is (up|down)`. For each block
 we use `GenericTextParser` where we specify regex pattern in key(columnName) and value(regex with group selection 
 using parenthesis). For <b>name</b> field we used configuration as below defined under <b>rules</b>.
-`name: "(.*) is (?:up|down).*"` Question mark is used to forget the second match. Therefore, regex will remember only 
-first match surrounded using parenthesis.
+`name: "(.*) is (?:up|down).*"` Question mark is used to forget the second match because framework can only process one 
+match.
 
-Once above two commands are parsed and result is list of dictionaries (tabular representation), now outputs can be 
+Once above two commands are parsed and the two results i.e. list of dictionaries (tabular representation), can be 
 merged with table joiners. Tables created by executing above commands are referred using `table_id`. Now to join tables,
 parameters required by `SimpleTableJoiner` are `source_table`, `source_column`, `destination_table` and `destination_column`.
-Resulting table is referred by `joined_table_id`. 
+Resulting table is referred by `joined_table_id`.
+
+Similarly, we write YAML configuration for rest of the commands and Pre-Post processors, if any. YAML configuration also 
+defines result writers and zip handlers to produce final zip file. 

@@ -55,11 +55,10 @@ $ python ./network-insight-sdk-generic-datasources/main.py -d cisco -m n5k -s CI
 
 <a name="zipfile"></a>
 ## 3. Device Configuration File
-SDK creates ZIP file as output. Zip file contains several CSV files of network entities. Each CSV has defined number of 
-column headers. 
+Columns in each CSV file represents attributes of entity.
 
-NOTE: General Guideline is to use double quotes for each value in a cell. Special characters allowed for any data, unless 
-any defined values mentioned, are
+NOTE: General Guideline is to use double quotes for each value in a cell. 
+Special characters allowed for any data of type string except defined values. Accepted special character are
 as follows.
 * _ Underscore
 * \- Hyphen

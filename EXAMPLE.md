@@ -4,11 +4,27 @@ Cisco N5K Device Integration Process
 This document shows process or method on how to approach problems faced during writing YAML configuration or
 Pre-Post Processors for a device.
 
-To support any device we need to first know what network information we need to capture. These informations
-are Router Interfaces, Routes, VRFs, Switch Ports, etc. Therefore we would first find out commands in Cisco Device 
-which we can use to fetch these information. 
+Here, we have taken Cisco N5K as example to demonstrate thought process.
 
-Let's cover integration process by considering few examples.
+Entire parsing pipeline/steps/framework is/are as follows
+
+1. Execute Commands - Commands are defined in command list.
+2. Pre Process Command Output (if required)
+3. Parse Output (Tabular Data) 
+4. Post Process (if required) (Tabular Data)
+5. Join Tables (referred to by table_id/joined_table_id)
+6. Write tables to CSV
+7. Zip the csv files.
+
+All of the above steps are driven by YAML configuration file. Hence, we first need to define YAML configuration. Sample 
+structure has already been provided. User only needs to focus on YAML configuration and, if required, then writing
+Pre-Post Processors. Rest of the steps are taken care by framework.
+
+To support any device we need to first know what network information we need to capture. These pieces of information
+are Router Interfaces, Routes, VRFs, Switch Ports, etc. Each information piece is depicted in the form of CSV file. 
+Therefore, we would first find out commands to execute in Cisco N5K Device which we can use to fetch these information. 
+
+Let's cover integration process by considering few examples
 
 1. [ Routes ](#routes)
 2. [ Switch Ports ](#switch-ports)
@@ -16,8 +32,10 @@ Let's cover integration process by considering few examples.
 <a name="routes"></a>
 ## 1. Routes
 We need to fill up details required by routes.csv file. Upon investigation we would find that following command give all
- necessary information/fields required by routes.csv file.
+ necessary fields required by routes.csv file.
 
+Idea is to cover all the fields in single command, if possible. This makes it easy to process down the pipeline. Below
+command gives routes for all the VRFs and suffices all the fields required by routes.csv file.
 `show ip route vrf all`
 
 ```
@@ -46,13 +64,12 @@ IP Route Table for VRF "KEEPALIVE"
 Looking at the output we quickly observe that a block with VRF having route table. Each block starts with line
 `IP Route Table for VRF`. Therefore, we use `GenericBlockParser` with line_pattern `IP Route Table for VRF` to first 
 take out the blocks and then perform pre-process using `CiscoRoutePrePostProcessor` where we convert double line route 
-output to single line and create output data in tabular format. 
+output to single line and create output data in tabular format with data in rows and column headers representing data.
 
-<br/>
-
-Since `HorizontalTableParser` suites well for tabular data we used same for parsing and created dictionary 
+Since, `HorizontalTableParser` suites well for tabular data we used same for parsing and created dictionary 
 (key-value pair). Here, we only choose data which are relevant for routes.csv file and ignore rest.
 
+NOTE: All the parsers produce output as list of dictionaries.
 
 <a name="switch-ports"></a>
 ## 2. Switch Ports

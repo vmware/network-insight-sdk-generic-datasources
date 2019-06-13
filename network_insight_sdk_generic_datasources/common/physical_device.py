@@ -1,3 +1,7 @@
+# Copyright 2019 VMware, Inc.
+# SPDX-License-Identifier: BSD-2-Clause
+
+
 import network_insight_sdk_generic_datasources.common.import_module_utilities as import_utilities
 from network_insight_sdk_generic_datasources.common.log import py_logger
 from network_insight_sdk_generic_datasources.connection.ssh_connect_handler import SSHConnectHandler

@@ -20,7 +20,6 @@ YAML configuration defines commands, parsers for command output, joiners for two
 <a name="dependencies"></a>
 ## 1. Dependencies
 * netmiko
-* pylogger
 * requests
 * pyyaml
 

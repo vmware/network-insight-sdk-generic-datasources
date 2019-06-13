@@ -1,3 +1,6 @@
+# Copyright 2019 VMware, Inc.
+# SPDX-License-Identifier: BSD-2-Clause
+
 from network_insight_sdk_generic_datasources.parsers.text.text_processor import TextProcessor
 from network_insight_sdk_generic_datasources.parsers.text.text_processor import Rule
 from network_insight_sdk_generic_datasources.parsers.text.text_processor import rule_match_callback

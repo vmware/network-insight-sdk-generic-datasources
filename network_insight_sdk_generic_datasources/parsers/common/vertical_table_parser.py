@@ -1,4 +1,7 @@
-# All Vertical data parseing classes go in this file
+# Copyright 2019 VMware, Inc.
+# SPDX-License-Identifier: BSD-2-Clause
+
+# All Vertical data parsing classes go in this file
 import copy
 
 

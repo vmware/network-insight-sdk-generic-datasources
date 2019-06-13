@@ -20,7 +20,6 @@ YAML configuration defines commands, parsers for command output, joiners for two
 <a name="dependencies"></a>
 ## 1. Dependencies
 * netmiko
-* pylogger
 * requests
 * pyyaml
 
@@ -56,11 +55,10 @@ $ python ./network-insight-sdk-generic-datasources/main.py -d cisco -m n5k -s CI
 
 <a name="zipfile"></a>
 ## 3. Device Configuration File
-SDK creates ZIP file as output. Zip file contains several CSV files of network entities. Each CSV has defined number of 
-column headers. 
+Columns in each CSV file represents attributes of entity.
 
-NOTE: General Guideline is to use double quotes for each value in a cell. Special characters allowed for any data, unless 
-any defined values mentioned, are
+NOTE: General Guideline is to use double quotes for each value in a cell. 
+Special characters allowed for any data of type string except defined values. Accepted special character are
 as follows.
 * _ Underscore
 * \- Hyphen
@@ -239,6 +237,8 @@ There are several kinds of parsers defined broadly defined in two categories
         For example, if we want to parse mtu value from text like `MTU 1500 Bytes`. In that case, we would define
         argument as `mtu: MTU (.*) Bytes` where `mtu` is key and regex would be `MTU (.*) Bytes`. Regex group value is 
         surrounded with parenthesis which will be parsed.
+
+NOTE: All the parsers produce output as list of dictionaries.
             
 
 

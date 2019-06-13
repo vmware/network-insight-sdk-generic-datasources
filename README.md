@@ -239,6 +239,8 @@ There are several kinds of parsers defined broadly defined in two categories
         For example, if we want to parse mtu value from text like `MTU 1500 Bytes`. In that case, we would define
         argument as `mtu: MTU (.*) Bytes` where `mtu` is key and regex would be `MTU (.*) Bytes`. Regex group value is 
         surrounded with parenthesis which will be parsed.
+
+NOTE: All the parsers produce output as list of dictionaries.
             
 
 

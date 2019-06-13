@@ -69,8 +69,6 @@ output to single line and create output data in tabular format with data in rows
 Since, `HorizontalTableParser` suites well for tabular data we used same for parsing and created dictionary 
 (key-value pair). Here, we only choose data which are relevant for routes.csv file and ignore rest.
 
-NOTE: All the parsers produce output as list of dictionaries.
-
 <a name="switch-ports"></a>
 ## 2. Switch Ports
 Now let's look filling up details required by switch ports csv file. Here, we need to execute two commands because not 
@@ -106,6 +104,7 @@ VLAN Name                             Status    Ports
                                                 Eth100/1/25, Eth100/1/26
                                                 Eth100/1/28, Eth100/1/29
 ``` 
+
 Since above output a tabular with some deviations like column data spilling over next row, we will
 format so that data is tabular without spill over. We used `CiscoInterfaceVlanPrePostProcessor.pre_process()` to do this 
 job. Furthermore, we wanted to create dat in such a way that ports to vlans map can be queries. This is done in

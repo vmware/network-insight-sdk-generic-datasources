@@ -1,3 +1,6 @@
+# Copyright 2019 VMware, Inc.
+# SPDX-License-Identifier: BSD-2-Clause
+
 from netmiko import ConnectHandler
 from device_type import DeviceType
 from network_insight_sdk_generic_datasources.common.log import py_logger

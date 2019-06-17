@@ -255,7 +255,7 @@ Such table join can be considered as RIGHT join denoted by source_table RIGHT JO
 
 <a name="example"></a>
 ## 7. Example
-See example [here] (EXAMPLE.md)
+See example [here](EXAMPLE.md)
 
 Contributing
 ============

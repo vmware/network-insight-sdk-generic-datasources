@@ -16,6 +16,7 @@ YAML configuration defines commands, parsers for command output, joiners for two
 4. [ YAML Configuration ](#yaml-configuration)
 5. [ Parser Definition ](#parser-definition)
 6. [ Table Joiner ](#table-joiner)
+7. [ Example ](#example)
 
 <a name="dependencies"></a>
 ## 1. Dependencies
@@ -252,6 +253,9 @@ Such table join can be considered as RIGHT join denoted by source_table RIGHT JO
 
 * SimpleTableJoiner - a table joiner which is able to join two tables (list for key value pairs) into a single table.
 
+<a name="example"></a>
+## 7. Example
+See example [here] (EXAMPLE.md)
 
 Contributing
 ============

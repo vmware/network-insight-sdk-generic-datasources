@@ -1,0 +1,18 @@
+# device_type: Juniper_srx
+
+package_handler:
+  <<: *PACKAGE_HANDLER
+
+command_list:
+  - <<: *SHOW_VERSION
+  - <<: *SHOW_INTERFACE
+  - <<: *SHOW_ROUTER_INTERFACES
+  - <<: *SHOW_ROUTE_DETAIL
+  - <<: *SHOW_ARP_NO_RESOLVE
+  - <<: *SHOW_LLDP_NEIGHBORS
+  - <<: *SHOW_VRF
+
+table_joiners:
+
+result_writer:
+  <<: *RESULT_WRITER

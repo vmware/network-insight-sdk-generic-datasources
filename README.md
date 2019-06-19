@@ -77,7 +77,7 @@ os             | optional             | operating system of the switch |
 model          | optional             | model of the switch            |
 vendor         | optional             | vendor of the switch           |
 hostname       | mandatory            | hostname of the switch         |
-haState        | optional             | redundant of the switch        | ACTIVE, STANDBY
+haState        | optional             | redundant state of the switch  | ACTIVE, STANDBY
 
 * switch-ports.csv - contains all the switch ports and their attributes. MANDATORY
 

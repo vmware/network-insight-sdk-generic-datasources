@@ -146,6 +146,68 @@ class JuniperRouterInterfacePrePostProcessor(PrePostProcessor):
         return ""
 
 
+class JuniperPortChannelPrePostProcessor(PrePostProcessor):
+
+    def pre_process(self, data):
+        output_lines = []
+        skip_interface_names = [".local.", ".local..0", ".local..1", ".local..2", "fab0.0", "fab1.0", "fxp1.0",
+                                "fxp2.0", "lo0.16384", "lo0.16385"]
+        parser = LineBasedBlockParser('Physical interface:')
+        blocks = parser.parse(data)
+        for block in blocks:
+            administrative_status = "administrativeStatus: UP"
+            switch_port_mode = "switchPortMode: TRUNK"
+            mtu = self.get_pattern_match(block, ".*Link-level type: .*, MTU: (.*?),")
+            name = self.get_pattern_match(block, "Physical interface: (.*), Enabled.*")
+            ops_status = self.get_pattern_match(block, ".*, Enabled, Physical link is (.*)")
+            ops_status = "UP" if ops_status == "Up" else "DOWN"
+            connected = "connected: {}".format("TRUE" if ops_status == 'UP' else "FALSE")
+            hardware_address = self.get_pattern_match(block, ".*Current address: .*, Hardware address: (.*)")
+            parser = LineBasedBlockParser('Logical interface')
+            blocks_1 = parser.parse(block)
+            for block_1 in blocks_1:
+                logical_name = self.get_pattern_match(block_1, "Logical interface (.*) \(Index .*")
+                name = logical_name if logical_name else name
+                vlan = "vlan: {}".format(logical_name.split('.')[1]) if logical_name else "vlan"
+                output_interface_name = "name: {}".format(name)
+                output_operational_status = "operationalStatus: {}".format(ops_status)
+                output_hardware_address = "hardwareAddress: {}".format("" if hardware_address.isalpha()
+                                                                       else hardware_address)
+                output_mtu = "mtu: {}".format(mtu if mtu.isdigit() else 0)
+                ip_address = self.get_pattern_match(block_1, ".*Local: (.*), Broadcast:.*")
+                if not ip_address or name in skip_interface_names:
+                    continue
+                mask = self.get_pattern_match(block_1, ".*Destination: (.*), Local:.*")
+                output_ip_address = "ipAddress: {}/{}".format(ip_address, mask.split('/')[1])
+                output_line = "{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n".format(output_interface_name,
+                                                                            administrative_status,
+                                                                            switch_port_mode,
+                                                                            output_operational_status,
+                                                                            output_hardware_address,
+                                                                            output_mtu,
+                                                                            vlan, connected, output_ip_address)
+                output_lines.append(output_line)
+        return '\n'.join(output_lines)
+
+    def post_process(self, data):
+        result = []
+        for d in data:
+            temp = {}
+            for i in d.split('\n'):
+                val = i.split(': ')
+                temp[val[0]] = val[1] if len(val) > 1 else ""
+            result.append(temp)
+        return result
+
+    @staticmethod
+    def get_pattern_match(line_block, pattern):
+        match_pattern = re.compile(pattern)
+        for line in line_block.splitlines():
+            match = match_pattern.match(line.strip())
+            if match:
+                return match.groups()[0]
+        return ""
+
 class JuniperSRXRoutePrePostProcessor(PrePostProcessor):
 
     def pre_process(self, data):

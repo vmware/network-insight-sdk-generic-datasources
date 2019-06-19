@@ -25,6 +25,13 @@ command_list: &COMMAND_LIST
       pre_post_processor: JuniperSRXRoutePrePostProcessor
       name: parsers.common.block_parser.SimpleBlockParser
 
+  - &SHOW_INTERFACE
+    table_id: switch-ports
+    command: show interfaces detail | no-more
+    parser:
+      pre_post_processor: JuniperSwitchPortPrePostProcessor
+      name: parsers.common.block_parser.SimpleBlockParser
+
   - &SHOW_ROUTER_INTERFACES
     table_id: router-interfaces
     reuse_command: show interfaces detail | no-more
@@ -32,11 +39,11 @@ command_list: &COMMAND_LIST
       pre_post_processor: JuniperRouterInterfacePrePostProcessor
       name: parsers.common.block_parser.SimpleBlockParser
 
-  - &SHOW_INTERFACE
-    table_id: switch-ports
-    command: show interfaces detail | no-more
+  - &SHOW_PORT_CHANNELS
+    table_id: port-channels
+    reuse_command: show interfaces detail | no-more
     parser:
-      pre_post_processor: JuniperSwitchPortPrePostProcessor
+      pre_post_processor: JuniperPortChannelPrePostProcessor
       name: parsers.common.block_parser.SimpleBlockParser
 
   - &SHOW_LLDP_NEIGHBORS
@@ -67,7 +74,7 @@ command_list: &COMMAND_LIST
 
   - &SHOW_VRF
     table_id: vrfs
-    command: show route instance detail
+    command: show route instance detail | no-more
     parser:
       pre_post_processor: JuniperSRXVRFPrePostProcessor
       name: *VERTICAL_TABLE_PARSER

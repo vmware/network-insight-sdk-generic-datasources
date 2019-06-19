@@ -6,7 +6,7 @@ SDK is written to support as many physical devices so that vRNI can consume
 network information in defined format. Network information includes Router Interfaces, VRFs, Switch Ports, 
 Routes, etc. SDK can connect to physical device and execute commands. Output of command is then used to create
 files in specific format (eg. CSV). Files generated are then bundled in ZIP format which can then be 
-fed into vRNI. Driver in SDK is governed by YAML configuration file.
+fed into vRNI. SDK generates files compatible to vRNI version 4.2.0 onwards. Driver in SDK is governed by YAML configuration file.
 
 1. [ Dependencies ](#dependencies)
 2. [ Launch SDK ](#launch-sdk)

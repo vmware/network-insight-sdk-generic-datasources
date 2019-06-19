@@ -43,19 +43,8 @@ command_list: &COMMAND_LIST
     table_id: neighbors
     command: show lldp neighbors | no-more
     parser:
-      name: *HORIZONTAL_TABLE_PARSER
-      arguments:
-        skip_head: 1
-        header_keys:
-          - localInterface
-          - remoteInterface
-          - chassisId
-          - PortInfo
-          - remoteDevice
-    select_columns:
-      localInterface: localInterface
-      remoteInterface: remoteInterface
-      remoteDevice: remoteDevice
+      pre_post_processor: JuniperNeighborsTablePrePostProcessor
+      name: parsers.common.block_parser.SimpleBlockParser
 
   - &SHOW_ARP_NO_RESOLVE
     table_id: mac-address-table
@@ -87,6 +76,12 @@ result_writer: &RESULT_WRITER
   name: CsvWriter
   path: /tmp/uani
   table_id:
+    - switch
+    - routes
+    - neighbors
+    - mac-address-table
+    - switch-ports
+    - router-interfaces
     - vrfs
 
 

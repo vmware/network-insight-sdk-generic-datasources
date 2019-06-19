@@ -42,7 +42,7 @@ class PhysicalDevice(object):
 
     def process(self):
         result_map = self.execute_commands()
-        self.join_tables(result_map)
+        self.check_and_join_tables(result_map)
         self.write_results(result_map)
 
     def write_results(self, result_map):
@@ -50,7 +50,10 @@ class PhysicalDevice(object):
             csv_writer = CsvWriter()
             csv_writer.write(self.result_writer[PATH_KEY], table, result_map[table])
 
-    def join_tables(self, result_map):
+    def check_and_join_tables(self, result_map):
+        if not self.table_joiners:
+            return
+
         for joiner_config in self.table_joiners['table']:
             joiner_class = import_utilities.load_class(joiner_config[NAME_KEY])()
             source_table = result_map[joiner_config[SOURCE_TABLE_KEY]]
@@ -83,7 +86,7 @@ class PhysicalDevice(object):
                 table = self.parse_command_output(cmd, command_result)
                 result_map[command_id] = table
         except Exception as e:
-            py_logger.error("Error occurred while executing command")
+            py_logger.error("Error occurred while executing command : {}".format(e))
             raise e
         finally:
             ssh_connect_handler.close_connection()

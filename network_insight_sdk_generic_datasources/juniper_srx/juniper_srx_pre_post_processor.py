@@ -204,16 +204,20 @@ class JuniperPortChannelPrePostProcessor(PrePostProcessor):
         return result
 
     def get_members(self, block_1):
+        result = []
+        got_members = False
         lines = []
         for i in block_1.splitlines():
-            if "Link" in i:
+            if "Link:" in i:
                 lines = []
                 continue
             if "Marker Statistics" in i:
+                got_members = True
                 break
             lines.append(i)
-        members = [mem for mem in lines if "Input" not in mem and "Output" not in mem]
-        return members
+        if got_members:
+            result = [mem for mem in lines if "Input" not in mem and "Output" not in mem]
+        return result
 
     @staticmethod
     def get_pattern_match(line_block, pattern):

@@ -35,6 +35,8 @@ class JuniperSwitchPortPrePostProcessor(PrePostProcessor):
 
     def pre_process(self, data, result_map):
         output_lines = []
+        skip_interface_names = [".local.", ".local..0", ".local..1", ".local..2", "fab0.0", "fab1.0", "fxp1.0",
+                                "fxp2.0", "lo0.16384", "lo0.16385"]
         parser = LineBasedBlockParser('Physical interface:')
         blocks = parser.parse(data)
         for block in blocks:
@@ -54,11 +56,11 @@ class JuniperSwitchPortPrePostProcessor(PrePostProcessor):
                 vlan = "vlan: {}".format(logical_name.split('.')[1]) if logical_name else "vlan"
                 output_interface_name = "name: {}".format(name)
                 output_operational_status = "operationalStatus: {}".format(ops_status)
-                output_hardware_address = "hardwareAddress: {}".format("" if hardware_address.isalpha() else
-                                                                       hardware_address)
+                hardware_address = "" if hardware_address.isalpha() else hardware_address
+                output_hardware_address = "hardwareAddress: {}".format(hardware_address)
                 output_mtu = "mtu: {}".format(mtu if mtu.isdigit() else 0)
                 ip_address = self.get_pattern_match(block_1, ".*Local: (.*), Broadcast:.*")
-                if ip_address:
+                if ip_address or not hardware_address or name in skip_interface_names:
                     continue
                 output_line = "{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n".format(output_interface_name, administrative_status,
                                                                         switch_port_mode, output_operational_status,
@@ -112,14 +114,15 @@ class JuniperRouterInterfacePrePostProcessor(PrePostProcessor):
                 vlan = "vlan: {}".format(logical_name.split('.')[1]) if logical_name else "vlan"
                 output_interface_name = "name: {}".format(name)
                 output_operational_status = "operationalStatus: {}".format(ops_status)
-                output_hardware_address = "hardwareAddress: {}".format("" if hardware_address.isalpha()
-                                                                       else hardware_address)
+                hardware_address = "" if hardware_address.isalpha() else hardware_address
+                output_hardware_address = "hardwareAddress: {}".format(hardware_address)
                 output_mtu = "mtu: {}".format(mtu if mtu.isdigit() else 0)
                 ip_address = self.get_pattern_match(block_1, ".*Local: (.*), Broadcast:.*")
-                if not ip_address or name in skip_interface_names:
+                if not ip_address or name in skip_interface_names or not hardware_address:
                     continue
                 mask = self.get_pattern_match(block_1, ".*Destination: (.*), Local:.*")
-                output_ip_address = "ipAddress: {}/{}".format(ip_address, mask.split('/')[1])
+                output_ip_address = "ipAddress: {}/{}".format(ip_address,
+                                                              24 if mask.isalpha() else mask.split('/')[1])
                 output_vrf = "vrf: master"
                 output_line = "{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n".format(output_interface_name,
                                                                             administrative_status,
@@ -177,12 +180,9 @@ class JuniperPortChannelPrePostProcessor(PrePostProcessor):
                 vlan = "vlan: {}".format(logical_name.split('.')[1]) if logical_name else "vlan"
                 output_interface_name = "name: {}".format(name)
                 output_operational_status = "operationalStatus: {}".format(ops_status)
-                output_hardware_address = "hardwareAddress: {}".format("" if hardware_address.isalpha()
-                                                                       else hardware_address)
+                hardware_address = "" if hardware_address.isalpha() else hardware_address
+                output_hardware_address = "hardwareAddress: {}".format(hardware_address)
                 output_mtu = "mtu: {}".format(mtu if mtu.isdigit() else 0)
-                ip_address = self.get_pattern_match(block_1, ".*Local: (.*), Broadcast:.*")
-                if not ip_address or name in skip_interface_names:
-                    continue
                 if not self.get_members(block_1):
                     continue
                 output_line = "{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n".format(output_interface_name, administrative_status,

@@ -1,3 +1,6 @@
+# Copyright 2019 VMware, Inc.
+# SPDX-License-Identifier: BSD-2-Clause
+
 
 import re
 
@@ -11,7 +14,7 @@ from network_insight_sdk_generic_datasources.parsers.common.line_parser import L
 
 class JuniperSRXDevicePrePostProcessor(PrePostProcessor):
 
-    def pre_process(self, data):
+    def pre_process(self, data, result_map):
         output_lines = []
         block_parser = SimpleBlockParser()
         blocks = block_parser.parse(data)
@@ -24,13 +27,13 @@ class JuniperSRXDevicePrePostProcessor(PrePostProcessor):
         output_lines.append('vendor: Juniper')
         return '\n'.join(output_lines)
 
-    def post_process(self, data):
+    def post_process(self, data, result_map):
         return [merge_dictionaries(data)]
 
 
 class JuniperSwitchPortPrePostProcessor(PrePostProcessor):
 
-    def pre_process(self, data):
+    def pre_process(self, data, result_map):
         output_lines = []
         parser = LineBasedBlockParser('Physical interface:')
         blocks = parser.parse(data)
@@ -64,7 +67,7 @@ class JuniperSwitchPortPrePostProcessor(PrePostProcessor):
                 output_lines.append(output_line)
         return '\n'.join(output_lines)
 
-    def post_process(self, data):
+    def post_process(self, data, result_map):
         result = []
         for d in data:
             temp = {}
@@ -74,7 +77,8 @@ class JuniperSwitchPortPrePostProcessor(PrePostProcessor):
             result.append(temp)
         return result
 
-    def get_pattern_match(self, line_block, pattern):
+    @staticmethod
+    def get_pattern_match(line_block, pattern):
         match_pattern = re.compile(pattern)
         for line in line_block.splitlines():
             match = match_pattern.match(line.strip())
@@ -85,7 +89,7 @@ class JuniperSwitchPortPrePostProcessor(PrePostProcessor):
 
 class JuniperRouterInterfacePrePostProcessor(PrePostProcessor):
 
-    def pre_process(self, data):
+    def pre_process(self, data, result_map):
         output_lines = []
         skip_interface_names = [".local.", ".local..0", ".local..1", ".local..2", "fab0.0", "fab1.0", "fxp1.0",
                                 "fxp2.0", "lo0.16384", "lo0.16385"]
@@ -116,17 +120,18 @@ class JuniperRouterInterfacePrePostProcessor(PrePostProcessor):
                     continue
                 mask = self.get_pattern_match(block_1, ".*Destination: (.*), Local:.*")
                 output_ip_address = "ipAddress: {}/{}".format(ip_address, mask.split('/')[1])
-                output_line = "{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n".format(output_interface_name,
+                output_vrf = "vrf: master"
+                output_line = "{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n".format(output_interface_name,
                                                                             administrative_status,
                                                                             switch_port_mode,
                                                                             output_operational_status,
                                                                             output_hardware_address,
                                                                             output_mtu,
-                                                                            vlan, connected, output_ip_address)
+                                                                            vlan, connected, output_ip_address, output_vrf)
                 output_lines.append(output_line)
         return '\n'.join(output_lines)
 
-    def post_process(self, data):
+    def post_process(self, data, result_map):
         result = []
         for d in data:
             temp = {}
@@ -148,7 +153,7 @@ class JuniperRouterInterfacePrePostProcessor(PrePostProcessor):
 
 class JuniperPortChannelPrePostProcessor(PrePostProcessor):
 
-    def pre_process(self, data):
+    def pre_process(self, data, result_map):
         output_lines = []
         skip_interface_names = [".local.", ".local..0", ".local..1", ".local..2", "fab0.0", "fab1.0", "fxp1.0",
                                 "fxp2.0", "lo0.16384", "lo0.16385"]
@@ -163,6 +168,7 @@ class JuniperPortChannelPrePostProcessor(PrePostProcessor):
             ops_status = "UP" if ops_status == "Up" else "DOWN"
             connected = "connected: {}".format("TRUE" if ops_status == 'UP' else "FALSE")
             hardware_address = self.get_pattern_match(block, ".*Current address: .*, Hardware address: (.*)")
+
             parser = LineBasedBlockParser('Logical interface')
             blocks_1 = parser.parse(block)
             for block_1 in blocks_1:
@@ -177,19 +183,17 @@ class JuniperPortChannelPrePostProcessor(PrePostProcessor):
                 ip_address = self.get_pattern_match(block_1, ".*Local: (.*), Broadcast:.*")
                 if not ip_address or name in skip_interface_names:
                     continue
-                mask = self.get_pattern_match(block_1, ".*Destination: (.*), Local:.*")
-                output_ip_address = "ipAddress: {}/{}".format(ip_address, mask.split('/')[1])
-                output_line = "{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n".format(output_interface_name,
-                                                                            administrative_status,
-                                                                            switch_port_mode,
-                                                                            output_operational_status,
-                                                                            output_hardware_address,
-                                                                            output_mtu,
-                                                                            vlan, connected, output_ip_address)
+                if not self.get_members(block_1):
+                    continue
+                output_line = "{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n".format(output_interface_name, administrative_status,
+                                                                        switch_port_mode, output_operational_status,
+                                                                        output_hardware_address, output_mtu, vlan,
+                                                                        connected)
+
                 output_lines.append(output_line)
         return '\n'.join(output_lines)
 
-    def post_process(self, data):
+    def post_process(self, data, result_map):
         result = []
         for d in data:
             temp = {}
@@ -198,6 +202,18 @@ class JuniperPortChannelPrePostProcessor(PrePostProcessor):
                 temp[val[0]] = val[1] if len(val) > 1 else ""
             result.append(temp)
         return result
+
+    def get_members(self, block_1):
+        lines = []
+        for i in block_1.splitlines():
+            if "Link" in i:
+                lines = []
+                continue
+            if "Marker Statistics" in i:
+                break
+            lines.append(i)
+        members = [mem for mem in lines if "Input" not in mem and "Output" not in mem]
+        return members
 
     @staticmethod
     def get_pattern_match(line_block, pattern):
@@ -208,9 +224,10 @@ class JuniperPortChannelPrePostProcessor(PrePostProcessor):
                 return match.groups()[0]
         return ""
 
+
 class JuniperSRXRoutePrePostProcessor(PrePostProcessor):
 
-    def pre_process(self, data):
+    def pre_process(self, data, result_map):
         output_lines = []
         parser = LineBasedBlockParser('(.*): \d* destinations')
         blocks = parser.parse(data)
@@ -253,13 +270,15 @@ class JuniperSRXRoutePrePostProcessor(PrePostProcessor):
                     output_route_type = "routeType: {}".format(output[0]['route_type'])
                     output_next_hop = "nextHop: {}".format(output[0]['next_hop'] if "next_hop" in output[0].keys()
                                                            else "DIRECT")
+                    if "next_hop" not in output[0].keys():                       # Temporary fix for STATIC and LOCAL
+                        output_route_type = "routeType: {}".format("DIRECT")
                     output_network = "network: {}".format(network_name)
                     output_line = "{}\n{}\n{}\n{}\n{}\n{}\n".format(output_vrf, output_network, output_route_type,
                                                                     output_next_hop, output_interface_name, name)
                     output_lines.append(output_line)
         return '\n'.join(output_lines)
 
-    def post_process(self, data):
+    def post_process(self, data, result_map):
         result = []
         for d in data:
             temp = {}
@@ -278,7 +297,7 @@ class JuniperSRXRoutePrePostProcessor(PrePostProcessor):
 
 class JuniperMACTablePrePostProcessor(PrePostProcessor):
 
-    def post_process(self, data):
+    def post_process(self, data, result_map):
         result = []
         for d in data:
             temp = {}
@@ -293,7 +312,7 @@ class JuniperMACTablePrePostProcessor(PrePostProcessor):
 
 class JuniperSRXVRFPrePostProcessor(PrePostProcessor):
 
-    def post_process(self, data):
+    def post_process(self, data, result_map):
         result = []
         for d in data:
             temp = {}
@@ -307,19 +326,19 @@ class JuniperSRXVRFPrePostProcessor(PrePostProcessor):
 
 class JuniperNeighborsTablePrePostProcessor(PrePostProcessor):
 
-    def pre_process(self, data):
+    def pre_process(self, data, result_map):
         output_lines = []
         for line in data.splitlines()[1:]:
             line_tokenizer = LineTokenizer()
             line_token = line_tokenizer.tokenize(line)
             local_interface = "localInterface: {}".format(line_token[1])
-            remote_interface = "remoteInterface: {}".format(" ".join(line_token[3:-1]))
+            remote_interface = "remoteInterface: {}".format(line_token[5])  # taking only port name
             remote_device = "remoteDevice: {}".format(line_token[-1])
             output_line = "{}\n{}\n{}\n".format(local_interface, remote_device, remote_interface)
             output_lines.append(output_line)
         return '\n'.join(output_lines)
 
-    def post_process(self, data):
+    def post_process(self, data, result_map):
         result = []
         for d in data:
             temp = {}

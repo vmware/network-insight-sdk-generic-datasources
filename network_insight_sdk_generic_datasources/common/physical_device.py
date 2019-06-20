@@ -39,33 +39,33 @@ class PhysicalDevice(object):
         self.credentials = credentials
         self.table_joiners = table_joiners
         self.result_writer = result_writer
+        self.result_map = {}
 
     def process(self):
-        result_map = self.execute_commands()
-        self.check_and_join_tables(result_map)
-        self.write_results(result_map)
+        self.execute_commands()
+        self.check_and_join_tables()
+        self.write_results()
 
-    def write_results(self, result_map):
+    def write_results(self):
         for table in self.result_writer[TABLE_ID_KEY]:
             csv_writer = CsvWriter()
-            csv_writer.write(self.result_writer[PATH_KEY], table, result_map[table])
+            csv_writer.write(self.result_writer[PATH_KEY], table, self.result_map[table])
 
-    def check_and_join_tables(self, result_map):
+    def check_and_join_tables(self):
         if not self.table_joiners:
             return
 
         for joiner_config in self.table_joiners['table']:
             joiner_class = import_utilities.load_class(joiner_config[NAME_KEY])()
-            source_table = result_map[joiner_config[SOURCE_TABLE_KEY]]
-            destination_table = result_map[joiner_config[DESTINATION_TABLE_KEY]]
+            source_table = self.result_map[joiner_config[SOURCE_TABLE_KEY]]
+            destination_table = self.result_map[joiner_config[DESTINATION_TABLE_KEY]]
             source_column = joiner_config[SOURCE_COLUMN_KEY]
             destination_column = joiner_config[DESTINATION_COLUMN_KEY]
             table = import_utilities.load_class_method(joiner_class, 'join_tables')(source_table, destination_table,
                                                                                     source_column, destination_column)
-            result_map[joiner_config[JOINED_TABLE_ID_KEY]] = table
+            self.result_map[joiner_config[JOINED_TABLE_ID_KEY]] = table
 
     def execute_commands(self):
-        result_map = {}
         ssh_connect_handler = None
         try:
             ssh_connect_handler = SSHConnectHandler(ip=self.credentials.ip_or_fqdn,
@@ -84,13 +84,12 @@ class PhysicalDevice(object):
 
                 py_logger.info('Command %s Result %s' % (cmd[COMMAND_KEY], command_result))
                 table = self.parse_command_output(cmd, command_result)
-                result_map[command_id] = table
+                self.result_map[command_id] = table
         except Exception as e:
             py_logger.error("Error occurred while executing command : {}".format(e))
             raise e
         finally:
             ssh_connect_handler.close_connection()
-        return result_map
 
     def parse_command_output(self, cmd, command_result):
         blocks = []
@@ -142,7 +141,7 @@ class PhysicalDevice(object):
         if has_pre_post_processor:
             pre_post_processor = import_utilities.load_device_pre_post_parser(self.device,
                                                                               cmd[PARSER_KEY][PRE_POST_PROCESSOR_KEY])()
-            block = self.call_pre_function(pre_post_processor, block)
+            block = self.call_pre_function(pre_post_processor, block, self.result_map)
 
         # Calling main parse function
         if ARGUMENTS_KEY in cmd[PARSER_KEY]:
@@ -153,7 +152,7 @@ class PhysicalDevice(object):
 
         # Calling post processor
         if has_pre_post_processor:
-            result_dict = self.call_post_function(pre_post_processor, result_dict)
+            result_dict = self.call_post_function(pre_post_processor, result_dict, self.result_map)
         message = 'Expecting result dictionary to be list of dictionaries'
 
         # Verify parsed objects
@@ -164,9 +163,9 @@ class PhysicalDevice(object):
         return result_dict
 
     @staticmethod
-    def call_pre_function(pre_post_processor, block):
-        return import_utilities.load_class_method(pre_post_processor, 'pre_process')(block)
+    def call_pre_function(pre_post_processor, block, result_map):
+        return import_utilities.load_class_method(pre_post_processor, 'pre_process')(block, result_map)
 
     @staticmethod
-    def call_post_function(pre_post_processor, result_dict):
-        return import_utilities.load_class_method(pre_post_processor, 'post_process')(result_dict)
+    def call_post_function(pre_post_processor, result_dict, result_map):
+        return import_utilities.load_class_method(pre_post_processor, 'post_process')(result_dict, result_map)

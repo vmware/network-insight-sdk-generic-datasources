@@ -89,6 +89,7 @@ result_writer: &RESULT_WRITER
     - mac-address-table
     - switch-ports
     - router-interfaces
+    - port-channels
     - vrfs
 
 

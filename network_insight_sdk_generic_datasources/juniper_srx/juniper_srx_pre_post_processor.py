@@ -57,7 +57,7 @@ class JuniperSwitchPortPrePostProcessor(PrePostProcessor):
                 output_hardware_address = "hardwareAddress: {}".format("" if hardware_address.isalpha() else
                                                                        hardware_address)
                 output_mtu = "mtu: {}".format(mtu if mtu.isdigit() else 0)
-                ip_address = self.get_pattern_match(block, ".*Local: (.*), Broadcast:.*")
+                ip_address = self.get_pattern_match(block_1, ".*Local: (.*), Broadcast:.*")
                 if ip_address:
                     continue
                 output_line = "{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n".format(output_interface_name, administrative_status,

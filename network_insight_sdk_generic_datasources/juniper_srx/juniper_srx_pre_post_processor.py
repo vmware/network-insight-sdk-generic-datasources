@@ -19,6 +19,7 @@ class JuniperSRXDevicePrePostProcessor(PrePostProcessor):
         block_parser = SimpleBlockParser()
         blocks = block_parser.parse(data)
         for block in blocks:
+            if not block: continue
             lines = block.splitlines()
             output_lines.append('hostname: {}'.format(lines[2].split(' ')[-1]))
             output_lines.append('name: Juniper {}'.format(lines[3].split(' ')[-1]))
@@ -35,11 +36,10 @@ class JuniperSwitchPortPrePostProcessor(PrePostProcessor):
 
     def pre_process(self, data, result_map):
         output_lines = []
-        skip_interface_names = [".local.", ".local..0", ".local..1", ".local..2", "fab0.0", "fab1.0", "fxp1.0",
-                                "fxp2.0", "lo0.16384", "lo0.16385"]
         parser = LineBasedBlockParser('Physical interface:')
         blocks = parser.parse(data)
         for block in blocks:
+            if not block: continue
             administrative_status = "administrativeStatus: UP"
             switch_port_mode = "switchPortMode: TRUNK"
             mtu = self.get_pattern_match(block, ".*Link-level type: .*, MTU: (.*?),")
@@ -60,7 +60,7 @@ class JuniperSwitchPortPrePostProcessor(PrePostProcessor):
                 output_hardware_address = "hardwareAddress: {}".format(hardware_address)
                 output_mtu = "mtu: {}".format(mtu if mtu.isdigit() else 0)
                 ip_address = self.get_pattern_match(block_1, ".*Local: (.*), Broadcast:.*")
-                if ip_address or not hardware_address or name in skip_interface_names:
+                if ip_address:
                     continue
                 output_line = "{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n".format(output_interface_name, administrative_status,
                                                                         switch_port_mode, output_operational_status,
@@ -93,11 +93,12 @@ class JuniperRouterInterfacePrePostProcessor(PrePostProcessor):
 
     def pre_process(self, data, result_map):
         output_lines = []
-        skip_interface_names = [".local.", ".local..0", ".local..1", ".local..2", "fab0.0", "fab1.0", "fxp1.0",
-                                "fxp2.0", "lo0.16384", "lo0.16385"]
+        skip_interface_names = [".local.", ".local..0", ".local..1", ".local..2", "fxp1.0", "fxp2.0",
+                                "lo0.16384", "lo0.16385"]
         parser = LineBasedBlockParser('Physical interface:')
         blocks = parser.parse(data)
         for block in blocks:
+            if not block: continue
             administrative_status = "administrativeStatus: UP"
             switch_port_mode = "switchPortMode: TRUNK"
             mtu = self.get_pattern_match(block, ".*Link-level type: .*, MTU: (.*?),")
@@ -158,11 +159,10 @@ class JuniperPortChannelPrePostProcessor(PrePostProcessor):
 
     def pre_process(self, data, result_map):
         output_lines = []
-        skip_interface_names = [".local.", ".local..0", ".local..1", ".local..2", "fab0.0", "fab1.0", "fxp1.0",
-                                "fxp2.0", "lo0.16384", "lo0.16385"]
         parser = LineBasedBlockParser('Physical interface:')
         blocks = parser.parse(data)
         for block in blocks:
+            if not block: continue
             administrative_status = "administrativeStatus: UP"
             switch_port_mode = "switchPortMode: TRUNK"
             mtu = self.get_pattern_match(block, ".*Link-level type: .*, MTU: (.*?),")
@@ -244,6 +244,7 @@ class JuniperSRXRoutePrePostProcessor(PrePostProcessor):
         rules = dict(next_hop=next_hop, next_hop_type=next_hop_type, interface=interface,
                      route_type=route_type, network_interface=network_interface)
         for block in blocks:
+            if not block: continue
             vrf = self.get_pattern_match(block, '(.*): \d* destinations')
             block_parser_1 = SimpleBlockParser()
             blocks_1 = block_parser_1.parse(block)
@@ -333,6 +334,7 @@ class JuniperNeighborsTablePrePostProcessor(PrePostProcessor):
     def pre_process(self, data, result_map):
         output_lines = []
         for line in data.splitlines()[1:]:
+            if "Local Interface" in line: continue
             line_tokenizer = LineTokenizer()
             line_token = line_tokenizer.tokenize(line)
             local_interface = "localInterface: {}".format(line_token[1])

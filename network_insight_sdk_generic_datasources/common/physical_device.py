@@ -16,6 +16,7 @@ from network_insight_sdk_generic_datasources.common.constants import PRE_POST_PR
 from network_insight_sdk_generic_datasources.common.constants import SELECT_COLUMNS_KEY
 from network_insight_sdk_generic_datasources.common.constants import REUSE_COMMAND_KEY
 from network_insight_sdk_generic_datasources.common.constants import TABLE_ID_KEY
+from network_insight_sdk_generic_datasources.common.constants import REUSE_PARSED_OUTPUT
 
 
 from network_insight_sdk_generic_datasources.common.constants import DESTINATION_COLUMN_KEY
@@ -49,7 +50,11 @@ class PhysicalDevice(object):
     def write_results(self):
         for table in self.result_writer[TABLE_ID_KEY]:
             csv_writer = CsvWriter()
-            csv_writer.write(self.result_writer[PATH_KEY], table, self.result_map[table])
+            for cmd in self.command_list:
+                if cmd[TABLE_ID_KEY] == table:
+                    result_map = self.filter_columns(cmd, self.result_map[table])
+                    csv_writer.write(self.result_writer[PATH_KEY], table, result_map)
+                    break
 
     def check_and_join_tables(self):
         if not self.table_joiners:
@@ -75,21 +80,27 @@ class PhysicalDevice(object):
             command_output_dict = {}
             for cmd in self.command_list:
                 command_id = cmd[TABLE_ID_KEY]
-                if REUSE_COMMAND_KEY in cmd:
-                    command_result = command_output_dict[cmd[REUSE_COMMAND_KEY]]
-                    cmd[COMMAND_KEY] = cmd[REUSE_COMMAND_KEY]
+                if REUSE_PARSED_OUTPUT in cmd:
+                    result_dict = self.process_parsed_output(cmd)
+                    if len(result_dict) > 0:
+                        table += result_dict
                 else:
-                    command_result = ssh_connect_handler.execute_command(cmd[COMMAND_KEY])
-                    command_output_dict[cmd[COMMAND_KEY]] = command_result
+                    if REUSE_COMMAND_KEY in cmd:
+                        command_result = command_output_dict[cmd[REUSE_COMMAND_KEY]]
+                        cmd[COMMAND_KEY] = cmd[REUSE_COMMAND_KEY]
+                    else:
+                        command_result = ssh_connect_handler.execute_command(cmd[COMMAND_KEY])
+                        command_output_dict[cmd[COMMAND_KEY]] = command_result
 
-                py_logger.info('Command %s Result %s' % (cmd[COMMAND_KEY], command_result))
-                table = self.parse_command_output(cmd, command_result)
+                    py_logger.info('Command %s Result %s' % (cmd[COMMAND_KEY], command_result))
+                    table = self.parse_command_output(cmd, command_result)
+
                 self.result_map[command_id] = table
         except Exception as e:
             py_logger.error("Error occurred while executing command : {}".format(e))
             raise e
         finally:
-            ssh_connect_handler.close_connection()
+             ssh_connect_handler.close_connection()
 
     def parse_command_output(self, cmd, command_result):
         blocks = []
@@ -112,7 +123,6 @@ class PhysicalDevice(object):
             except IndexError as e:
                 py_logger.info("Couldn't parse block {}\nfor command {}".format(block, cmd[COMMAND_KEY]))
                 py_logger.error(e)
-        table = self.filter_columns(cmd, table)
         return table
 
     @staticmethod
@@ -134,7 +144,21 @@ class PhysicalDevice(object):
             final_table.append(new_row)
         return final_table
 
-    def process_block(self, block, cmd):
+    def process_parsed_output(self, cmd):
+        pre_post_processor = import_utilities.load_device_pre_post_parser(self.device,
+                                                                          cmd[PRE_POST_PROCESSOR_KEY])()
+        # Calling post processor
+        result_dict = self.call_post_function(pre_post_processor, {}, self.result_map)
+
+        message = 'Expecting result dictionary to be list of dictionaries'
+        # Verify parsed objects
+        if type(result_dict) != list:
+            raise TypeError(message)
+        if len(result_dict) > 0 and type(result_dict[0]) != dict:
+            raise TypeError(message)
+        return result_dict
+
+    def process_block(self, block=None, cmd=None):
 
         # Calling pre processor
         has_pre_post_processor = PRE_POST_PROCESSOR_KEY in cmd[PARSER_KEY]

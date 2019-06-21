@@ -5,10 +5,11 @@ package_handler:
 
 command_list:
   - <<: *SHOW_VERSION
-  - <<: *SHOW_INTERFACE
   - <<: *SHOW_VRF
-  - <<: *SHOW_ROUTER_INTERFACES
-  - <<: *SHOW_PORT_CHANNELS
+  - <<: *SHOW_INTERFACE
+  - <<: *GET_SWTICH_PORT
+  - <<: *GET_ROUTER_INTERFACES
+  - <<: *GET_PORT_CHANNELS
   - <<: *SHOW_ROUTE_DETAIL
   - <<: *SHOW_ARP_NO_RESOLVE
   - <<: *SHOW_LLDP_NEIGHBORS

@@ -125,12 +125,15 @@ class JuniperSwitchPortPrePostProcessor(PrePostProcessor):
 
     def post_process(self, data, result_map):
         result = []
-        for d in data:
+        for port in result_map['showInterface']:
             temp = {}
-            for i in d.split('\n'):
-                val = i.split(': ')
-                temp[val[0]] = val[1] if len(val) > 1 else ""
-            result.append(temp)
+            add_entry = True
+            for i, j in port.iteritems():
+                if i == "hardwareAddress" and not j:
+                    add_entry = False
+                temp[i] = j
+            if add_entry:
+                result.append(temp)
         return result
 
 class JuniperRouterInterfacePrePostProcessor(PrePostProcessor):

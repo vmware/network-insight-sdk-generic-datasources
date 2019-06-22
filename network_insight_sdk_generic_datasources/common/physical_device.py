@@ -83,7 +83,7 @@ class PhysicalDevice(object):
                 if REUSE_PARSED_OUTPUT in cmd:
                     result_dict = self.process_parsed_output(cmd)
                     if len(result_dict) > 0:
-                        table += result_dict
+                        table = result_dict
                 else:
                     if REUSE_COMMAND_KEY in cmd:
                         command_result = command_output_dict[cmd[REUSE_COMMAND_KEY]]

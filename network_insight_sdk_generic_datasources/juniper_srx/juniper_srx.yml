@@ -26,7 +26,7 @@ command_list: &COMMAND_LIST
       name: parsers.common.block_parser.SimpleBlockParser
 
   - &SHOW_INTERFACE
-    table_id: switch-ports
+    table_id: showInterface
     command: show interfaces detail | no-more
     parser:
       pre_post_processor: JuniperInterfacePrePostProcessor
@@ -36,6 +36,16 @@ command_list: &COMMAND_LIST
     table_id: switch-ports
     reuse_parsed_output: show interfaces detail | no-more
     pre_post_processor: JuniperSwitchPortPrePostProcessor
+    select_columns:
+      name: name
+      vlan: vlan
+      administrativeStatus: administrativeStatus
+      switchPortMode: switchPortMode
+      mtu: mtu
+      operationalStatus: operationalStatus
+      connected: connected
+      hardwareAddress: hardwareAddress
+
 
   - &GET_ROUTER_INTERFACES
     table_id: router-interfaces
@@ -44,7 +54,7 @@ command_list: &COMMAND_LIST
 
   - &GET_PORT_CHANNELS
     table_id: port-channels
-    reuse_table: router-interfaces
+    reuse_table: show interfaces detail | no-more
     pre_post_processor: JuniperPortChannelPrePostProcessor
 
   - &SHOW_LLDP_NEIGHBORS
@@ -89,8 +99,6 @@ result_writer: &RESULT_WRITER
     - neighbors
     - mac-address-table
     - switch-ports
-    - router-interfaces
-    - port-channels
     - vrfs
 
 

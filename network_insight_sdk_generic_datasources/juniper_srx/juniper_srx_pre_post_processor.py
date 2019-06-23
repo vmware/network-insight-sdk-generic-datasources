@@ -4,7 +4,6 @@
 
 import re
 import traceback
-from netaddr import valid_ipv4
 
 from network_insight_sdk_generic_datasources.common.utilities import merge_dictionaries
 from network_insight_sdk_generic_datasources.common.log import py_logger
@@ -13,7 +12,6 @@ from network_insight_sdk_generic_datasources.parsers.common.block_parser import 
 from network_insight_sdk_generic_datasources.parsers.common.text_parser import GenericTextParser
 from network_insight_sdk_generic_datasources.parsers.common.block_parser import LineBasedBlockParser
 from network_insight_sdk_generic_datasources.parsers.common.line_parser import LineTokenizer
-from network_insight_sdk_generic_datasources.parsers.common.vertical_table_parser import VerticalTableParser
 
 
 class JuniperChassisPrePostProcessor(PrePostProcessor):
@@ -29,13 +27,33 @@ class JuniperChassisPrePostProcessor(PrePostProcessor):
                 output_lines.append('name: Juniper {}'.format(lines[3].split(' ')[-1]))
                 output_lines.append('os: JUNOS {}'.format(lines[4].split(' ')[-1]))
                 output_lines.append('model: {}'.format(lines[3].split(' ')[-1]))
-        output_lines.append('ipAddress/fqdn: 10.40.13.37')
+            output_lines.append('ipAddress/fqdn: 10.40.13.37')
         output_lines.append('vendor: Juniper')
         return '\n'.join(output_lines)
 
     def post_process(self, data, result_map):
         return [merge_dictionaries(data)]
 
+
+class JuniperConfigInterfacesPrePostProcessor(PrePostProcessor):
+
+    def pre_process(self, data, result_map):
+        output_lines = []
+        block_parser = SimpleBlockParser()
+        blocks = block_parser.parse(data)
+        for block in blocks:
+            if 'node0' in block:
+                lines = block.splitlines()
+                output_lines.append('hostname: {}'.format(lines[2].split(' ')[-1]))
+                output_lines.append('name: Juniper {}'.format(lines[3].split(' ')[-1]))
+                output_lines.append('os: JUNOS {}'.format(lines[4].split(' ')[-1]))
+                output_lines.append('model: {}'.format(lines[3].split(' ')[-1]))
+            output_lines.append('ipAddress/fqdn: 10.40.13.37')
+        output_lines.append('vendor: Juniper')
+        return '\n'.join(output_lines)
+
+    def post_process(self, data, result_map):
+        return [merge_dictionaries(data)]
 
 
 class JuniperDevicePrePostProcessor(PrePostProcessor):
@@ -99,17 +117,17 @@ class JuniperInterfacePrePostProcessor(PrePostProcessor):
                         output_ip_address = "ipAddress: "
                     output_members = "members: {}".format(self.get_members(block_1))
                     output_line = "{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n".format(output_interface_name,
-                                                                                        administrative_status,
-                                                                                        switch_port_mode,
-                                                                                        output_operational_status,
-                                                                                        output_hardware_address, output_mtu,
-                                                                                        vlan, connected, output_ip_address, output_members)
+                                                                                    administrative_status,
+                                                                                    switch_port_mode,
+                                                                                    output_operational_status,
+                                                                                    output_hardware_address,
+                                                                                    output_mtu, vlan, connected,
+                                                                                    output_ip_address, output_members)
                     output_lines.append(output_line)
         except Exception as e:
             py_logger.error("{}\n{}".format(e, traceback.format_exc()))
             raise e
         return '\n'.join(output_lines)
-
 
     def post_process(self, data, result_map):
         result = []
@@ -157,6 +175,7 @@ class JuniperSwitchPortPrePostProcessor(PrePostProcessor):
                 temp[i] = j
             result.append(temp)
         return result
+
 
 class JuniperRouterInterfacePrePostProcessor(PrePostProcessor):
 
@@ -241,7 +260,7 @@ class JuniperRoutesPrePostProcessor(PrePostProcessor):
                         output_route_type = "routeType: {}".format(output[0]['route_type'])
                         output_next_hop = "nextHop: {}".format(output[0]['next_hop'] if "next_hop" in output[0].keys()
                                                                else "DIRECT")
-                        if "next_hop" not in output[0].keys():                       # Temporary fix for STATIC and LOCAL
+                        if "next_hop" not in output[0].keys():   # Temporary fix for STATIC and LOCAL
                             output_route_type = "routeType: {}".format("DIRECT")
                         output_network = "network: {}".format(network_name)
                         output_line = "{}\n{}\n{}\n{}\n{}\n{}\n".format(output_vrf, output_network, output_route_type,

@@ -291,7 +291,6 @@ class JuniperMACTablePrePostProcessor(PrePostProcessor):
             for i in d:
                 if i == 'switchPort':
                     temp['vlan'] = d['switchPort'].split('.')[1]
-                    result.append(temp)
                 temp[i] = d[i]
             result.append(temp)
         return result

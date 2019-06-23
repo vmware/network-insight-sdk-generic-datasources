@@ -37,23 +37,11 @@ class JuniperChassisPrePostProcessor(PrePostProcessor):
 
 class JuniperConfigInterfacesPrePostProcessor(PrePostProcessor):
 
-    def pre_process(self, data, result_map):
-        output_lines = []
-        block_parser = SimpleBlockParser()
-        blocks = block_parser.parse(data)
-        for block in blocks:
-            if 'node0' in block:
-                lines = block.splitlines()
-                output_lines.append('hostname: {}'.format(lines[2].split(' ')[-1]))
-                output_lines.append('name: Juniper {}'.format(lines[3].split(' ')[-1]))
-                output_lines.append('os: JUNOS {}'.format(lines[4].split(' ')[-1]))
-                output_lines.append('model: {}'.format(lines[3].split(' ')[-1]))
-            output_lines.append('ipAddress/fqdn: 10.40.13.37')
-        output_lines.append('vendor: Juniper')
-        return '\n'.join(output_lines)
-
     def post_process(self, data, result_map):
-        return [merge_dictionaries(data)]
+        result = []
+        if data[0].has_key("vlan"):
+            result.append(data[0])
+        return result
 
 
 class JuniperDevicePrePostProcessor(PrePostProcessor):
@@ -89,7 +77,6 @@ class JuniperInterfacePrePostProcessor(PrePostProcessor):
             for block in blocks:
                 if not block: continue
                 administrative_status = "administrativeStatus: UP"
-                switch_port_mode = "switchPortMode: TRUNK"
                 mtu = self.get_pattern_match(block, ".*Link-level type: .*, MTU: (.*?),")
                 name = self.get_pattern_match(block, "Physical interface: (.*), Enabled.*")
                 ops_status = self.get_pattern_match(block, ".*, Enabled, Physical link is (.*)")
@@ -101,7 +88,6 @@ class JuniperInterfacePrePostProcessor(PrePostProcessor):
                 for block_1 in blocks_1:
                     logical_name = self.get_pattern_match(block_1, "Logical interface (.*) \(Index .*")
                     name = logical_name if logical_name else name
-                    vlan = "vlan: {}".format(logical_name.split('.')[1] if logical_name else "0") # Temp logic need to get from other command
                     output_interface_name = "name: {}".format(name)
                     output_operational_status = "operationalStatus: {}".format(ops_status)
                     hardware_address = "" if hardware_address.isalpha() else hardware_address
@@ -115,6 +101,14 @@ class JuniperInterfacePrePostProcessor(PrePostProcessor):
                                                                       24 if mask.isalpha() else mask.split('/')[1])
                     else:
                         output_ip_address = "ipAddress: "
+                    for i in result_map['showConfigInterface']:
+                        if name == "{}.{}".format(i['interface'], i['unit']):
+                            switch_port_mode = "switchPortMode: TRUNK"
+                            vlan = "vlan: {}".format(i['vlan'])
+                            break
+                        else:
+                            switch_port_mode = "switchPortMode: ACCESS"
+                            vlan = "vlan: 0"
                     output_members = "members: {}".format(self.get_members(block_1))
                     output_line = "{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n".format(output_interface_name,
                                                                                     administrative_status,

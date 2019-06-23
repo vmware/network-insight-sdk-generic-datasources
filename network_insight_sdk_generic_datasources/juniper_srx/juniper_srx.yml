@@ -19,11 +19,20 @@ command_list: &COMMAND_LIST
       name: *VERTICAL_TABLE_PARSER
 
   - &SHOW_CONFIGURATION_INTERFACES
-    table_id: switch
+    table_id: showConfigInterface
     command: show configuration interfaces | display set
+    block_parser:
+      name: GenericBlockParser
+      arguments:
+        line_pattern: 'set interfaces'
     parser:
       pre_post_processor: JuniperConfigInterfacesPrePostProcessor
-      name: *VERTICAL_TABLE_PARSER
+      name: *GENERIC_TEXT_PARSER
+      arguments:
+        rules:
+          unit: ".*unit (.*) vlan-id .*"
+          vlan: ".*unit .* vlan-id (.*)"
+          interface: "set interfaces (.*) unit .*"
 
   - &SHOW_VERSION
     table_id: switch
@@ -48,7 +57,7 @@ command_list: &COMMAND_LIST
 
   - &GET_SWTICH_PORT
     table_id: switch-ports
-    reuse_table: show interfaces detail | no-more
+    reuse_table: showInterface
     pre_post_processor: JuniperSwitchPortPrePostProcessor
     select_columns:
       name: name
@@ -62,7 +71,7 @@ command_list: &COMMAND_LIST
 
   - &GET_ROUTER_INTERFACES
     table_id: router-interfaces
-    reuse_table: show interfaces detail | no-more
+    reuse_table: showInterface
     pre_post_processor: JuniperRouterInterfacePrePostProcessor
     select_columns:
       name: name
@@ -78,8 +87,17 @@ command_list: &COMMAND_LIST
 
   - &GET_PORT_CHANNELS
     table_id: port-channels
-    reuse_table: show interfaces detail | no-more
+    reuse_table: showInterface
     pre_post_processor: JuniperPortChannelPrePostProcessor
+    select_columns:
+      name: name
+      vlan: vlan
+      administrativeStatus: administrativeStatus
+      switchPortMode: switchPortMode
+      mtu: mtu
+      operationalStatus: operationalStatus
+      connected: connected
+      hardwareAddress: hardwareAddress
 
   - &SHOW_LLDP_NEIGHBORS
     table_id: neighbors

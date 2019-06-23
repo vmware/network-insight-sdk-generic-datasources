@@ -16,7 +16,7 @@ from network_insight_sdk_generic_datasources.common.constants import PRE_POST_PR
 from network_insight_sdk_generic_datasources.common.constants import SELECT_COLUMNS_KEY
 from network_insight_sdk_generic_datasources.common.constants import REUSE_COMMAND_KEY
 from network_insight_sdk_generic_datasources.common.constants import TABLE_ID_KEY
-from network_insight_sdk_generic_datasources.common.constants import REUSE_PARSED_OUTPUT
+from network_insight_sdk_generic_datasources.common.constants import REUSE_TABLE
 
 
 from network_insight_sdk_generic_datasources.common.constants import DESTINATION_COLUMN_KEY
@@ -80,7 +80,7 @@ class PhysicalDevice(object):
             command_output_dict = {}
             for cmd in self.command_list:
                 command_id = cmd[TABLE_ID_KEY]
-                if REUSE_PARSED_OUTPUT in cmd:
+                if REUSE_TABLE in cmd:
                     result_dict = self.process_parsed_output(cmd)
                     if len(result_dict) > 0:
                         table = result_dict

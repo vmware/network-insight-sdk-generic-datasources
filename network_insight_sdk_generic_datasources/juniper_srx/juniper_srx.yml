@@ -18,6 +18,13 @@ command_list: &COMMAND_LIST
       pre_post_processor: JuniperChassisPrePostProcessor
       name: *VERTICAL_TABLE_PARSER
 
+  - &SHOW_CONFIGURATION_INTERFACES
+    table_id: switch
+    command: show configuration interfaces | display set
+    parser:
+      pre_post_processor: JuniperConfigInterfacesPrePostProcessor
+      name: *VERTICAL_TABLE_PARSER
+
   - &SHOW_VERSION
     table_id: switch
     command: show version
@@ -41,7 +48,7 @@ command_list: &COMMAND_LIST
 
   - &GET_SWTICH_PORT
     table_id: switch-ports
-    reuse_parsed_output: show interfaces detail | no-more
+    reuse_table: show interfaces detail | no-more
     pre_post_processor: JuniperSwitchPortPrePostProcessor
     select_columns:
       name: name
@@ -55,7 +62,7 @@ command_list: &COMMAND_LIST
 
   - &GET_ROUTER_INTERFACES
     table_id: router-interfaces
-    reuse_parsed_output: show interfaces detail | no-more
+    reuse_table: show interfaces detail | no-more
     pre_post_processor: JuniperRouterInterfacePrePostProcessor
     select_columns:
       name: name
@@ -71,7 +78,7 @@ command_list: &COMMAND_LIST
 
   - &GET_PORT_CHANNELS
     table_id: port-channels
-    reuse_parsed_output: show interfaces detail | no-more
+    reuse_table: show interfaces detail | no-more
     pre_post_processor: JuniperPortChannelPrePostProcessor
 
   - &SHOW_LLDP_NEIGHBORS

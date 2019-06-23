@@ -12,6 +12,29 @@ from network_insight_sdk_generic_datasources.parsers.common.block_parser import 
 from network_insight_sdk_generic_datasources.parsers.common.text_parser import GenericTextParser
 from network_insight_sdk_generic_datasources.parsers.common.block_parser import LineBasedBlockParser
 from network_insight_sdk_generic_datasources.parsers.common.line_parser import LineTokenizer
+from network_insight_sdk_generic_datasources.parsers.common.vertical_table_parser import VerticalTableParser
+
+
+class JuniperChassisPrePostProcessor(PrePostProcessor):
+
+    def pre_process(self, data, result_map):
+        output_lines = []
+        block_parser = SimpleBlockParser()
+        blocks = block_parser.parse(data)
+        for block in blocks:
+            if 'node0' in block:
+                lines = block.splitlines()
+                output_lines.append('hostname: {}'.format(lines[2].split(' ')[-1]))
+                output_lines.append('name: Juniper {}'.format(lines[3].split(' ')[-1]))
+                output_lines.append('os: JUNOS {}'.format(lines[4].split(' ')[-1]))
+        output_lines.append('ipAddress/fqdn: 10.40.13.37')
+        output_lines.append('vendor: Juniper')
+        output_lines.append('model: {}'.format(lines[3].split(' ')[-1]))
+        return '\n'.join(output_lines)
+
+    def post_process(self, data, result_map):
+        return [merge_dictionaries(data)]
+
 
 
 class JuniperDevicePrePostProcessor(PrePostProcessor):
@@ -21,13 +44,14 @@ class JuniperDevicePrePostProcessor(PrePostProcessor):
         block_parser = SimpleBlockParser()
         blocks = block_parser.parse(data)
         for block in blocks:
-            if not block: continue
-            lines = block.splitlines()
-            output_lines.append('hostname: {}'.format(lines[2].split(' ')[-1]))
-            output_lines.append('name: Juniper {}'.format(lines[3].split(' ')[-1]))
-            output_lines.append('os: JUNOS {}'.format(lines[4].split(' ')[-1]))
+            if 'node0' in block:
+                lines = block.splitlines()
+                output_lines.append('hostname: {}'.format(lines[2].split(' ')[-1]))
+                output_lines.append('name: Juniper {}'.format(lines[3].split(' ')[-1]))
+                output_lines.append('os: JUNOS {}'.format(lines[4].split(' ')[-1]))
         output_lines.append('ipAddress/fqdn: 10.40.13.37')
         output_lines.append('vendor: Juniper')
+        output_lines.append('model: {}'.format(lines[3].split(' ')[-1]))
         return '\n'.join(output_lines)
 
     def post_process(self, data, result_map):
@@ -140,12 +164,15 @@ class JuniperRouterInterfacePrePostProcessor(PrePostProcessor):
 
     def post_process(self, data, result_map):
         result = []
-        for d in data:
+        for port in result_map['showInterface']:
             temp = {}
-            for i in d.split('\n'):
-                val = i.split(': ')
-                temp[val[0]] = val[1] if len(val) > 1 else ""
-            result.append(temp)
+            add_entry = True
+            for i, j in port.iteritems():
+                if i == "ipAddress" and not j:
+                    add_entry = False
+                temp[i] = j
+            if add_entry:
+                result.append(temp)
         return result
 
 
@@ -153,12 +180,15 @@ class JuniperPortChannelPrePostProcessor(PrePostProcessor):
 
     def post_process(self, data, result_map):
         result = []
-        for d in data:
+        for port in result_map['showInterface']:
             temp = {}
-            for i in d.split('\n'):
-                val = i.split(': ')
-                temp[val[0]] = val[1] if len(val) > 1 else ""
-            result.append(temp)
+            add_entry = True
+            for i, j in port.iteritems():
+                if i == "members" and not j:
+                    add_entry = False
+                temp[i] = j
+            if add_entry:
+                result.append(temp)
         return result
 
 
@@ -256,13 +286,28 @@ class JuniperVRFPrePostProcessor(PrePostProcessor):
 
     def post_process(self, data, result_map):
         result = []
+
         for d in data:
-            temp = {}
-            vrf_name = d.keys()[0]
-            router_id = [i["Router ID"] for i in d[vrf_name] if i.has_key("Router ID")]
-            if "0.0.0.0" == router_id[0]: continue
-            temp['name'] = "{}".format(vrf_name)
-            result.append(temp)
+            if d:
+                temp = {}
+                vrf_data = d.splitlines()
+                router_id = vrf_data[1].split(":")[1].lstrip()
+                if "0.0.0.0" == router_id: continue
+                vrf_name = vrf_data[0].split(':')[0]
+                temp['name'] = "{}".format(vrf_name)
+                if "Interfaces:" in d:
+                    interfaces = []
+                    got_interface = False
+                    for i in vrf_data:
+                        if "Interfaces:" == i:
+                            got_interface = True
+                            interfaces = []
+                            continue
+                        if ":" in i and got_interface:
+                            break
+                        interfaces.append(i)
+                    temp['interfaces'] = ",".join(interfaces)
+                result.append(temp)
         return result
 
 

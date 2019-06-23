@@ -53,7 +53,6 @@ command_list: &COMMAND_LIST
       connected: connected
       hardwareAddress: hardwareAddress
 
-
   - &GET_ROUTER_INTERFACES
     table_id: router-interfaces
     reuse_parsed_output: show interfaces detail | no-more
@@ -68,6 +67,7 @@ command_list: &COMMAND_LIST
       connected: connected
       hardwareAddress: hardwareAddress
       ipAddress: ipAddress
+      vrf: vrf
 
   - &GET_PORT_CHANNELS
     table_id: port-channels

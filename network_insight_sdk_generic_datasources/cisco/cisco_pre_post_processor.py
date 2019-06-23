@@ -10,7 +10,7 @@ from network_insight_sdk_generic_datasources.parsers.common.block_parser import 
 
 class CiscoDevicePrePostProcessor(PrePostProcessor):
 
-    def pre_process(self, data):
+    def pre_process(self, data, result_map):
         output_lines = []
         block_parser = SimpleBlockParser()
         blocks = block_parser.parse(data)
@@ -30,7 +30,7 @@ class CiscoDevicePrePostProcessor(PrePostProcessor):
         output_lines.append('haState: ACTIVE')
         return '\n'.join(output_lines)
 
-    def post_process(self, data):
+    def post_process(self, data, result_map):
         return [merge_dictionaries(data)]
 
     @staticmethod
@@ -44,7 +44,7 @@ class CiscoDevicePrePostProcessor(PrePostProcessor):
 
 class CiscoRoutePrePostProcessor(PrePostProcessor):
 
-    def pre_process(self, data):
+    def pre_process(self, data, result_map):
         output_lines = []
         lines = data.splitlines()
         vrf = None
@@ -81,7 +81,7 @@ class CiscoRoutePrePostProcessor(PrePostProcessor):
 
 
 class CiscoRouterInterfacePrePostProcessor(PrePostProcessor):
-    def post_process(self, data):
+    def post_process(self, data, result_map):
         result = []
         for d in data:
             if 'line protocol' in d['name']:
@@ -108,7 +108,7 @@ class CiscoRouterInterfacePrePostProcessor(PrePostProcessor):
 
 class CiscoSwitchPortPrePostProcessor(PrePostProcessor):
 
-    def post_process(self, data):
+    def post_process(self, data, result_map):
         result = []
         for d in data:
             if 'line protocol' in d['name']:
@@ -151,7 +151,7 @@ class CiscoSwitchPortPrePostProcessor(PrePostProcessor):
 
 class CiscoPortChannelPrePostProcessor(PrePostProcessor):
 
-    def post_process(self, data):
+    def post_process(self, data, result_map):
         result = []
         for d in data:
             if 'line protocol' in d['name']:
@@ -195,7 +195,7 @@ class CiscoPortChannelPrePostProcessor(PrePostProcessor):
 
 class CiscoRouterInterfaceVrfPrePostProcessor(PrePostProcessor):
 
-    def pre_process(self, data):
+    def pre_process(self, data, result_map):
         output_lines = []
         lines = data.splitlines()
         vrf = None
@@ -210,7 +210,7 @@ class CiscoRouterInterfaceVrfPrePostProcessor(PrePostProcessor):
 
 class CiscoInterfaceVlanPrePostProcessor(PrePostProcessor):
 
-    def pre_process(self, data):
+    def pre_process(self, data, result_map):
         output_lines = []
         lines = data.splitlines()
         for i in range(len(lines)):
@@ -227,7 +227,7 @@ class CiscoInterfaceVlanPrePostProcessor(PrePostProcessor):
                 output_lines.append(line)
         return '\n'.join(output_lines)
 
-    def post_process(self, data):
+    def post_process(self, data, result_map):
         result = []
         port_vlan_dict = {}
         for d in data:

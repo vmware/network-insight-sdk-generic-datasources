@@ -9,10 +9,10 @@ from network_insight_sdk_generic_datasources.parsers.text.pre_post_processor imp
 
 class UBNTVersionPrePostProcessor(PrePostProcessor):
 
-    def pre_process(self, data):
+    def pre_process(self, data, result_map):
         return data
 
-    def post_process(self, data):
+    def post_process(self, data, result_map):
         result = []
         new_d = {}
         for d in data:
@@ -47,7 +47,7 @@ class UBNTVersionPrePostProcessor(PrePostProcessor):
 
 class UBNTMacPrePostProcessor(PrePostProcessor):
 
-    def post_process(self, data):
+    def post_process(self, data, result_map):
         result = []
         for d in data:
             vlan = 1
@@ -64,7 +64,7 @@ class UBNTMacPrePostProcessor(PrePostProcessor):
 
 class UBNTLLDPPrePostProcessor(PrePostProcessor):
 
-    def post_process(self, data):
+    def post_process(self, data, result_map):
         result = []
         for d in data:
             # strip whitespaces of values and remove the prefix "ifname" from the remote interface
@@ -76,7 +76,7 @@ class UBNTLLDPPrePostProcessor(PrePostProcessor):
 
 class UBNTRoutePrePostProcessor(PrePostProcessor):
 
-    def pre_process(self, data):
+    def pre_process(self, data, result_map):
         output_lines = []
         lines = data.splitlines()
         vrf = None
@@ -150,7 +150,7 @@ class UBNTRoutePrePostProcessor(PrePostProcessor):
 
 class UBNTSwitchPortPrePostProcessor(PrePostProcessor):
 
-    def post_process(self, data):
+    def post_process(self, data, result_map):
         result = []
 
         for d in data:
@@ -187,7 +187,7 @@ class UBNTSwitchPortPrePostProcessor(PrePostProcessor):
 
 class UBNTRouterInterfacePrePostProcessor(PrePostProcessor):
 
-    def post_process(self, data):
+    def post_process(self, data, result_map):
         #print("Starting post_process")
         result = []
 
@@ -225,14 +225,14 @@ class UBNTRouterInterfacePrePostProcessor(PrePostProcessor):
 
 class UBNTVrfPrePostProcessor(PrePostProcessor):
     # UBTN doesn't have VRFs, so just return an array with the value "default" as the main VRF name
-    def pre_process(self, data):
+    def pre_process(self, data, result_map):
         result = "name\ndefault"
         return result
 
 
 class UBNTRouterInterfaceVrfPrePostProcessor(PrePostProcessor):
     # UBTN doesn't have VRFs, so just return an array with the value "default" as the main VRF name
-    def post_process(self, data):
+    def post_process(self, data, result_map):
         result = []
         for d in data:
             d['interfaceName'] = d['interfaceName'].split('@', 1)[0]

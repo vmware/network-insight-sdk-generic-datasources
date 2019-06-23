@@ -11,6 +11,13 @@ package_handler: &PACKAGE_HANDLER
 
 # Commands added will be executed in sequence
 command_list: &COMMAND_LIST
+  - &SHOW_CHASSIS_HARDWARE
+    table_id: showChassishardware
+    command: show chassis hardware
+    parser:
+      pre_post_processor: JuniperChassisPrePostProcessor
+      name: *VERTICAL_TABLE_PARSER
+
   - &SHOW_VERSION
     table_id: switch
     command: show version
@@ -51,10 +58,20 @@ command_list: &COMMAND_LIST
     table_id: router-interfaces
     reuse_parsed_output: show interfaces detail | no-more
     pre_post_processor: JuniperRouterInterfacePrePostProcessor
+    select_columns:
+      name: name
+      vlan: vlan
+      administrativeStatus: administrativeStatus
+      switchPortMode: switchPortMode
+      mtu: mtu
+      operationalStatus: operationalStatus
+      connected: connected
+      hardwareAddress: hardwareAddress
+      ipAddress: ipAddress
 
   - &GET_PORT_CHANNELS
     table_id: port-channels
-    reuse_table: show interfaces detail | no-more
+    reuse_parsed_output: show interfaces detail | no-more
     pre_post_processor: JuniperPortChannelPrePostProcessor
 
   - &SHOW_LLDP_NEIGHBORS
@@ -88,7 +105,10 @@ command_list: &COMMAND_LIST
     command: show route instance detail | no-more
     parser:
       pre_post_processor: JuniperVRFPrePostProcessor
-      name: *VERTICAL_TABLE_PARSER
+      name: parsers.common.block_parser.SimpleBlockParser
+    select_columns:
+      name: name
+
 
 result_writer: &RESULT_WRITER
   name: CsvWriter
@@ -97,6 +117,8 @@ result_writer: &RESULT_WRITER
     - switch
     - routes
     - neighbors
+    - router-interfaces
+    - port-channels
     - mac-address-table
     - switch-ports
     - vrfs

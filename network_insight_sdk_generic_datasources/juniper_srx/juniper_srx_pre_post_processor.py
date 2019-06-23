@@ -4,6 +4,7 @@
 
 import re
 import traceback
+from netaddr import valid_ipv4
 
 from network_insight_sdk_generic_datasources.common.utilities import merge_dictionaries
 from network_insight_sdk_generic_datasources.common.log import py_logger
@@ -27,9 +28,9 @@ class JuniperChassisPrePostProcessor(PrePostProcessor):
                 output_lines.append('hostname: {}'.format(lines[2].split(' ')[-1]))
                 output_lines.append('name: Juniper {}'.format(lines[3].split(' ')[-1]))
                 output_lines.append('os: JUNOS {}'.format(lines[4].split(' ')[-1]))
+                output_lines.append('model: {}'.format(lines[3].split(' ')[-1]))
         output_lines.append('ipAddress/fqdn: 10.40.13.37')
         output_lines.append('vendor: Juniper')
-        output_lines.append('model: {}'.format(lines[3].split(' ')[-1]))
         return '\n'.join(output_lines)
 
     def post_process(self, data, result_map):
@@ -49,9 +50,9 @@ class JuniperDevicePrePostProcessor(PrePostProcessor):
                 output_lines.append('hostname: {}'.format(lines[2].split(' ')[-1]))
                 output_lines.append('name: Juniper {}'.format(lines[3].split(' ')[-1]))
                 output_lines.append('os: JUNOS {}'.format(lines[4].split(' ')[-1]))
+                output_lines.append('model: {}'.format(lines[3].split(' ')[-1]))
         output_lines.append('ipAddress/fqdn: 10.40.13.37')
         output_lines.append('vendor: Juniper')
-        output_lines.append('model: {}'.format(lines[3].split(' ')[-1]))
         return '\n'.join(output_lines)
 
     def post_process(self, data, result_map):
@@ -62,6 +63,8 @@ class JuniperInterfacePrePostProcessor(PrePostProcessor):
 
     def pre_process(self, data, result_map):
         try:
+            skip_interface_names = [".local.", ".local..0", ".local..1", ".local..2", "fxp1.0", "fxp2.0",
+                                    "lo0.16384", "lo0.16385"]
             output_lines = []
             parser = LineBasedBlockParser('Physical interface:')
             blocks = parser.parse(data)
@@ -85,6 +88,7 @@ class JuniperInterfacePrePostProcessor(PrePostProcessor):
                     output_operational_status = "operationalStatus: {}".format(ops_status)
                     hardware_address = "" if hardware_address.isalpha() else hardware_address
                     output_hardware_address = "hardwareAddress: {}".format(hardware_address)
+                    if not hardware_address or name in skip_interface_names: continue
                     output_mtu = "mtu: {}".format(mtu if mtu.isdigit() else 0)
                     ip_address = self.get_pattern_match(block_1, ".*Local: (.*), Broadcast:.*")
                     if ip_address:
@@ -93,15 +97,13 @@ class JuniperInterfacePrePostProcessor(PrePostProcessor):
                                                                       24 if mask.isalpha() else mask.split('/')[1])
                     else:
                         output_ip_address = "ipAddress: "
-                    output_vrf = "vrf: master"       # Temp logic need to get this for vrf table
                     output_members = "members: {}".format(self.get_members(block_1))
-                    output_line = "{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n".format(output_interface_name,
+                    output_line = "{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n".format(output_interface_name,
                                                                                         administrative_status,
                                                                                         switch_port_mode,
                                                                                         output_operational_status,
                                                                                         output_hardware_address, output_mtu,
-                                                                                        vlan, connected, output_ip_address,
-                                                                                        output_vrf, output_members)
+                                                                                        vlan, connected, output_ip_address, output_members)
                     output_lines.append(output_line)
         except Exception as e:
             py_logger.error("{}\n{}".format(e, traceback.format_exc()))
@@ -130,7 +132,7 @@ class JuniperInterfacePrePostProcessor(PrePostProcessor):
 
     @staticmethod
     def get_members(block_1):
-        result = []
+        result = ""
         got_members = False
         lines = []
         for i in block_1.splitlines():
@@ -142,7 +144,7 @@ class JuniperInterfacePrePostProcessor(PrePostProcessor):
                 break
             lines.append(i)
         if got_members:
-            result = [mem for mem in lines if "Input" not in mem and "Output" not in mem]
+            result = ",".join([mem for mem in lines if "Input" not in mem and "Output" not in mem])
         return result
 
 class JuniperSwitchPortPrePostProcessor(PrePostProcessor):
@@ -151,13 +153,9 @@ class JuniperSwitchPortPrePostProcessor(PrePostProcessor):
         result = []
         for port in result_map['showInterface']:
             temp = {}
-            add_entry = True
             for i, j in port.iteritems():
-                if i == "hardwareAddress" and not j:
-                    add_entry = False
                 temp[i] = j
-            if add_entry:
-                result.append(temp)
+            result.append(temp)
         return result
 
 class JuniperRouterInterfacePrePostProcessor(PrePostProcessor):
@@ -167,9 +165,14 @@ class JuniperRouterInterfacePrePostProcessor(PrePostProcessor):
         for port in result_map['showInterface']:
             temp = {}
             add_entry = True
+            for i in result_map['vrfs']:
+                if i.has_key("interfaces"):
+                    if port['name'] in i['interfaces']:
+                        temp['vrf'] = i['name']
+                else:
+                    temp['vrf'] = "master"
             for i, j in port.iteritems():
-                if i == "ipAddress" and not j:
-                    add_entry = False
+                add_entry = False if i == "ipAddress" and not j else add_entry
                 temp[i] = j
             if add_entry:
                 result.append(temp)
@@ -182,10 +185,9 @@ class JuniperPortChannelPrePostProcessor(PrePostProcessor):
         result = []
         for port in result_map['showInterface']:
             temp = {}
-            add_entry = True
+            add_entry = False
             for i, j in port.iteritems():
-                if i == "members" and not j:
-                    add_entry = False
+                add_entry = True if i == "members" and j else add_entry
                 temp[i] = j
             if add_entry:
                 result.append(temp)
@@ -286,7 +288,6 @@ class JuniperVRFPrePostProcessor(PrePostProcessor):
 
     def post_process(self, data, result_map):
         result = []
-
         for d in data:
             if d:
                 temp = {}
@@ -319,7 +320,7 @@ class JuniperNeighborsTablePrePostProcessor(PrePostProcessor):
             if "Local Interface" in line: continue
             line_tokenizer = LineTokenizer()
             line_token = line_tokenizer.tokenize(line)
-            local_interface = "localInterface: {}".format(line_token[1])
+            local_interface = "localInterface: {}".format(line_token[0])
             remote_interface = "remoteInterface: {}".format(line_token[5])  # taking only port name
             remote_device = "remoteDevice: {}".format(line_token[-1])
             output_line = "{}\n{}\n{}\n".format(local_interface, remote_device, remote_interface)

@@ -66,6 +66,10 @@ class JuniperDevicePrePostProcessor(PrePostProcessor):
 
 
 class JuniperInterfacePrePostProcessor(PrePostProcessor):
+    physical_interface_regex = {"mtu": ".*Link-level type: .*, MTU: (.*?),",
+                                "name": "Physical interface: (.*), Enabled.*",
+                                "hardware_address": ".*Current address: .*, Hardware address: (.*)",
+                                }
 
     def pre_process(self, data, result_map):
         try:

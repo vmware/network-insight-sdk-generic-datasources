@@ -25,3 +25,13 @@ def load_device_pre_post_parser(device, class_name):
     module_path = "{}.{}.{}_{}".format("network_insight_sdk_generic_datasources", device, device, "pre_post_processor")
     module = importlib.import_module(module_path)
     return getattr(module, class_name)
+
+def load_device_pre_post_parser(device, class_name):
+    module_path = "{}.{}.{}_{}".format("network_insight_sdk_generic_datasources", device, device, "pre_post_processor")
+    module = importlib.import_module(module_path)
+    return getattr(module, class_name)
+
+def load_device_process_table(device, class_name):
+    module_path = "{}.{}.{}_{}".format("network_insight_sdk_generic_datasources", device, device, "pre_post_processor")
+    module = importlib.import_module(module_path)
+    return getattr(module, class_name)

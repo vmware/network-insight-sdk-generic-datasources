@@ -16,7 +16,8 @@ from network_insight_sdk_generic_datasources.common.constants import PRE_POST_PR
 from network_insight_sdk_generic_datasources.common.constants import SELECT_COLUMNS_KEY
 from network_insight_sdk_generic_datasources.common.constants import REUSE_COMMAND_KEY
 from network_insight_sdk_generic_datasources.common.constants import TABLE_ID_KEY
-from network_insight_sdk_generic_datasources.common.constants import REUSE_TABLE
+from network_insight_sdk_generic_datasources.common.constants import REUSE_TABLE_KEY
+from network_insight_sdk_generic_datasources.common.constants import PROCESS_TABLE_KEY
 
 
 from network_insight_sdk_generic_datasources.common.constants import DESTINATION_COLUMN_KEY
@@ -44,7 +45,7 @@ class PhysicalDevice(object):
 
     def process(self):
         self.execute_commands()
-        self.check_and_join_tables()
+        self.join_tables()
         self.write_results()
 
     def write_results(self):
@@ -56,7 +57,7 @@ class PhysicalDevice(object):
                     csv_writer.write(self.result_writer[PATH_KEY], table, result_map)
                     break
 
-    def check_and_join_tables(self):
+    def join_tables(self):
         if not self.table_joiners:
             return
 
@@ -80,8 +81,8 @@ class PhysicalDevice(object):
             command_output_dict = {}
             for cmd in self.command_list:
                 command_id = cmd[TABLE_ID_KEY]
-                if REUSE_TABLE in cmd:
-                    result_dict = self.process_parsed_output(cmd)
+                if REUSE_TABLE_KEY in cmd:
+                    result_dict = self.process_tables(cmd)
                     if len(result_dict) > 0:
                         table = result_dict
                 else:
@@ -144,11 +145,12 @@ class PhysicalDevice(object):
             final_table.append(new_row)
         return final_table
 
-    def process_parsed_output(self, cmd):
-        pre_post_processor = import_utilities.load_device_pre_post_parser(self.device,
-                                                                          cmd[PRE_POST_PROCESSOR_KEY])()
-        # Calling post processor
-        result_dict = self.call_post_function(pre_post_processor, {}, self.result_map)
+    def process_tables(self, cmd):
+        process_table = import_utilities.load_device_process_table(self.device, cmd[PROCESS_TABLE_KEY])()
+        tables = {}
+        for table in cmd[REUSE_TABLE_KEY].split(','):
+            tables[table] = self.result_map[table]
+        result_dict = self.call_process_table_function(process_table, tables)
 
         message = 'Expecting result dictionary to be list of dictionaries'
         # Verify parsed objects
@@ -165,7 +167,7 @@ class PhysicalDevice(object):
         if has_pre_post_processor:
             pre_post_processor = import_utilities.load_device_pre_post_parser(self.device,
                                                                               cmd[PARSER_KEY][PRE_POST_PROCESSOR_KEY])()
-            block = self.call_pre_function(pre_post_processor, block, self.result_map)
+            block = self.call_pre_function(pre_post_processor, block)
 
         # Calling main parse function
         if ARGUMENTS_KEY in cmd[PARSER_KEY]:
@@ -176,7 +178,7 @@ class PhysicalDevice(object):
 
         # Calling post processor
         if has_pre_post_processor:
-            result_dict = self.call_post_function(pre_post_processor, result_dict, self.result_map)
+            result_dict = self.call_post_function(pre_post_processor, result_dict)
         message = 'Expecting result dictionary to be list of dictionaries'
 
         # Verify parsed objects
@@ -187,9 +189,13 @@ class PhysicalDevice(object):
         return result_dict
 
     @staticmethod
-    def call_pre_function(pre_post_processor, block, result_map):
-        return import_utilities.load_class_method(pre_post_processor, 'pre_process')(block, result_map)
+    def call_pre_function(pre_post_processor, block):
+        return import_utilities.load_class_method(pre_post_processor, 'pre_process')(block)
 
     @staticmethod
-    def call_post_function(pre_post_processor, result_dict, result_map):
-        return import_utilities.load_class_method(pre_post_processor, 'post_process')(result_dict, result_map)
+    def call_post_function(pre_post_processor, result_dict):
+        return import_utilities.load_class_method(pre_post_processor, 'post_process')(result_dict)
+
+    @staticmethod
+    def call_process_table_function(process_table, result_dict):
+        return import_utilities.load_class_method(process_table, 'process_tables')(result_dict)

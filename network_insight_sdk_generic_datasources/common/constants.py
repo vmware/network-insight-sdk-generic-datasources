@@ -7,9 +7,10 @@ CREDENTIALS_KEY = 'credentials'
 PACKAGE_HANDLER_KEY = 'package_handler'
 
 PRE_POST_PROCESSOR_KEY = 'pre_post_processor'
+PROCESS_TABLE_KEY = 'process_tables'
 COMMAND_KEY = 'command'
 REUSE_COMMAND_KEY = 'reuse_command'
-REUSE_TABLE = "reuse_table"
+REUSE_TABLE_KEY = "reuse_table"
 TABLE_ID_KEY = 'table_id'
 TABLE_JOINERS_KEY = 'table_joiners'
 COMMAND_LIST_KEY = 'command_list'

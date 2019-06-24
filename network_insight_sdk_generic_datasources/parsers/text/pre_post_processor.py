@@ -4,11 +4,11 @@
 
 class PrePostProcessor(object):
 
-    def pre_process(self, data, result_map):
+    def pre_process(self, data):
         type(self)
         return data
 
-    def post_process(self, data, result_map):
+    def post_process(self, data):
         type(self)
         return data
 

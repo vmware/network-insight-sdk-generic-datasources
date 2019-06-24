@@ -3,6 +3,7 @@ vertical_table_parser: &VERTICAL_TABLE_PARSER network_insight_sdk_generic_dataso
 horizontal_table_parser: &HORIZONTAL_TABLE_PARSER network_insight_sdk_generic_datasources.parsers.common.horizontal_table_parser.HorizontalTableParser
 generic_text_parser: &GENERIC_TEXT_PARSER network_insight_sdk_generic_datasources.parsers.common.text_parser.GenericTextParser
 
+
 package_handler: &PACKAGE_HANDLER
   name: ZipPackageHandler
   arguments:
@@ -58,46 +59,17 @@ command_list: &COMMAND_LIST
   - &GET_SWTICH_PORT
     table_id: switch-ports
     reuse_table: showInterface
-    pre_post_processor: JuniperSwitchPortPrePostProcessor
-    select_columns:
-      name: name
-      vlan: vlan
-      administrativeStatus: administrativeStatus
-      switchPortMode: switchPortMode
-      mtu: mtu
-      operationalStatus: operationalStatus
-      connected: connected
-      hardwareAddress: hardwareAddress
+    process_tables: JuniperSwitchPortTableProcessor
 
   - &GET_ROUTER_INTERFACES
     table_id: router-interfaces
-    reuse_table: showInterface
-    pre_post_processor: JuniperRouterInterfacePrePostProcessor
-    select_columns:
-      name: name
-      vlan: vlan
-      administrativeStatus: administrativeStatus
-      switchPortMode: switchPortMode
-      mtu: mtu
-      operationalStatus: operationalStatus
-      connected: connected
-      hardwareAddress: hardwareAddress
-      ipAddress: ipAddress
-      vrf: vrf
+    reuse_table: showInterface,vrfs
+    process_tables: JuniperRouterInterfaceTableProcessor
 
   - &GET_PORT_CHANNELS
     table_id: port-channels
     reuse_table: showInterface
-    pre_post_processor: JuniperPortChannelPrePostProcessor
-    select_columns:
-      name: name
-      vlan: vlan
-      administrativeStatus: administrativeStatus
-      switchPortMode: switchPortMode
-      mtu: mtu
-      operationalStatus: operationalStatus
-      connected: connected
-      hardwareAddress: hardwareAddress
+    process_tables: JuniperPortChannelTableProcessor
 
   - &SHOW_LLDP_NEIGHBORS
     table_id: neighbors
@@ -123,7 +95,6 @@ command_list: &COMMAND_LIST
     select_columns:
       macAddress: macAddress
       switchPort: switchPort
-      vlan: vlan
 
   - &SHOW_VRF
     table_id: vrfs

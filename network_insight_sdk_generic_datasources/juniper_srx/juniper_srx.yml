@@ -58,12 +58,12 @@ command_list: &COMMAND_LIST
 
   - &GET_SWTICH_PORT
     table_id: switch-ports
-    reuse_table: showInterface
+    reuse_table: showInterface,showConfigInterface
     process_tables: JuniperSwitchPortTableProcessor
 
   - &GET_ROUTER_INTERFACES
     table_id: router-interfaces
-    reuse_table: showInterface,vrfs
+    reuse_table: showInterface,vrfs,showConfigInterface
     process_tables: JuniperRouterInterfaceTableProcessor
 
   - &GET_PORT_CHANNELS

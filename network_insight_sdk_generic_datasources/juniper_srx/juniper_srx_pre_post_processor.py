@@ -105,14 +105,6 @@ class JuniperInterfacePrePostProcessor(PrePostProcessor):
                                                                       24 if mask.isalpha() else mask.split('/')[1])
                     else:
                         output_ip_address = "ipAddress: "
-                    # for i in result_map['showConfigInterface']:
-                    #     if name == "{}.{}".format(i['interface'], i['unit']):
-                    #         switch_port_mode = "switchPortMode: TRUNK"
-                    #         vlan = "vlan: {}".format(i['vlan'])
-                    #         break
-                    #     else:
-                    #         switch_port_mode = "switchPortMode: ACCESS"
-                    #         vlan = "vlan: 0"
                     output_members = "members: {}".format(self.get_members(block_1))
                     output_line = "{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n".format(output_interface_name,
                                                                                     administrative_status,
@@ -162,15 +154,16 @@ class JuniperInterfacePrePostProcessor(PrePostProcessor):
             result = ",".join([mem for mem in lines if "Input" not in mem and "Output" not in mem])
         return result
 
+
 class JuniperSwitchPortTableProcessor():
 
-    def process_tables(self, result_map):
+    def process_tables(self, tables):
         result = []
-        for port in result_map['showInterface']:
-            temp = {}
-            for i, j in port.iteritems():
-                temp[i] = j
-            result.append(temp)
+        vlan_interface = ["{}.{}".format(i['interface'], i['unit']) for i in tables['showConfigInterface']]
+        for port in tables['showInterface']:
+            port["switchPortMode"] = "TRUNK" if port['name'] in vlan_interface else "ACCESS"
+            port["vlan"] = port['name'].split('.')[1] if port['name'] in vlan_interface else "0"
+            result.append(port)
         return result
 
 
@@ -184,10 +177,11 @@ class JuniperRouterInterfaceTableProcessor():
         for port in result_map['showInterface']:
             temp = {}
             add_entry = False
-            for i in result_map['vrfs']:
-                if i.has_key("interfaces"):
-                    if port['name'] in i['interfaces']:
-                        temp['vrf'] = i['name']
+            for vrf in result_map['vrfs']:
+                if vrf.has_key("interfaces"):
+                    if port['name'] in vrf['interfaces']:
+                        temp['vrf'] = vrf['name']
+                        break
                 else:
                     temp['vrf'] = "master"
             for i, j in port.iteritems():
@@ -294,7 +288,7 @@ class JuniperMACTablePrePostProcessor(PrePostProcessor):
         result = []
         for d in data:
             temp = {}
-            for port in result_map["switch-ports"]:
+            for port in data["switch-ports"]:
                 if d['switchPort'] == port['name']:
                     temp['vlan'] = port['vlan']
                     for i in d:

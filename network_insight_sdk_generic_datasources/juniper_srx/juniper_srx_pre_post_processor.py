@@ -66,76 +66,49 @@ class JuniperDevicePrePostProcessor(PrePostProcessor):
 
 
 class JuniperInterfacePrePostProcessor(PrePostProcessor):
-    physical_interface_regex = {"mtu": ".*Link-level type: .*, MTU: (.*?),",
-                                "name": "Physical interface: (.*), Enabled.*",
-                                "hardware_address": ".*Current address: .*, Hardware address: (.*)",
-                                }
+    physical_regex_rule = dict(mtu=".*Link-level type: .*, MTU: (.*?),", name="Physical interface: (.*), Enabled.*",
+                               hardwareAddress=".*Current address: .*, Hardware address: (.*)",
+                               operationalStatus=".*, Enabled, Physical link is (.*)",
+                               administrativeStatus="Physical interface: .*, (.*), Physical link is .*")
+    logical_interface_regex = dict(name="Logical interface (.*) \(Index .*", ipAddress=".*Local: (.*), Broadcast:.*",
+                                   mask=".*Destination: (.*), Local:.*")
+
+    skip_interface_names = [".local.", "fxp1", "fxp2", "lo0"]
 
     def pre_process(self, data):
         try:
-            skip_interface_names = [".local.", ".local..0", ".local..1", ".local..2", "fxp1.0", "fxp2.0",
-                                    "lo0.16384", "lo0.16385"]
             output_lines = []
-            parser = LineBasedBlockParser('Physical interface:')
+            generic_parser = GenericTextParser()
+            physical = generic_parser.parse(data, self.physical_regex_rule)[0]
+            physical.update({'connected': "TRUE" if physical['operationalStatus'] == "Up" else "FALSE"})
+            physical.update({'operationalStatus': "UP" if physical['operationalStatus'] == "Up" else "DOWN"})
+            physical.update({'administrativeStatus': "UP" if physical['administrativeStatus'] == "Enabled" else "DOWN"})
+            physical.update({'hardwareAddress': "" if physical['hardwareAddress'].isalpha() else physical['hardwareAddress']})
+            if physical['name'].rstrip() in self.skip_interface_names: return ""
+
+            parser = LineBasedBlockParser('Logical interface')
             blocks = parser.parse(data)
             for block in blocks:
-                if not block: continue
-                administrative_status = "administrativeStatus: UP"
-                mtu = self.get_pattern_match(block, ".*Link-level type: .*, MTU: (.*?),")
-                name = self.get_pattern_match(block, "Physical interface: (.*), Enabled.*")
-                ops_status = self.get_pattern_match(block, ".*, Enabled, Physical link is (.*)")
-                ops_status = "UP" if ops_status == "Up" else "DOWN"
-                connected = "connected: {}".format("TRUE" if ops_status == 'UP' else "FALSE")
-                hardware_address = self.get_pattern_match(block, ".*Current address: .*, Hardware address: (.*)")
-                parser = LineBasedBlockParser('Logical interface')
-                blocks_1 = parser.parse(block)
-                for block_1 in blocks_1:
-                    logical_name = self.get_pattern_match(block_1, "Logical interface (.*) \(Index .*")
-                    name = logical_name if logical_name else name
-                    output_interface_name = "name: {}".format(name)
-                    output_operational_status = "operationalStatus: {}".format(ops_status)
-                    hardware_address = "" if hardware_address.isalpha() else hardware_address
-                    output_hardware_address = "hardwareAddress: {}".format(hardware_address)
-                    if not hardware_address or name in skip_interface_names: continue
-                    output_mtu = "mtu: {}".format(mtu if mtu.isdigit() else 0)
-                    ip_address = self.get_pattern_match(block_1, ".*Local: (.*), Broadcast:.*")
-                    if ip_address:
-                        mask = self.get_pattern_match(block_1, ".*Destination: (.*), Local:.*")
-                        output_ip_address = "ipAddress: {}/{}".format(ip_address,
-                                                                      24 if mask.isalpha() else mask.split('/')[1])
-                    else:
-                        output_ip_address = "ipAddress: "
-                    output_members = "members: {}".format(self.get_members(block_1))
-                    output_line = "{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n".format(output_interface_name,
-                                                                                    administrative_status,
-                                                                                    output_operational_status,
-                                                                                    output_hardware_address,
-                                                                                    output_mtu, connected,
-                                                                                    output_ip_address, output_members)
-                    output_lines.append(output_line)
+                logical = generic_parser.parse(block, self.logical_interface_regex)[0]
+                physical.update({"ipAddress": "{}/{}".format(logical['ipAddress'], logical['mask'].split('/')[1]) if logical['ipAddress'] else ""})
+                physical.update({"members": "{}".format(self.get_members(block))})
+                physical.update({"name": "{}".format(logical['name'] if logical['name'] else physical['name'])})
+                output_line = "\n".join(["{}:{}".format(i, j) for i, j in physical.iteritems()])
+                output_lines.append(output_line)
         except Exception as e:
             py_logger.error("{}\n{}".format(e, traceback.format_exc()))
             raise e
-        return '\n'.join(output_lines)
+        return '\n\n'.join(output_lines)
 
     def post_process(self, data):
         result = []
         for d in data:
             temp = {}
             for i in d.split('\n'):
-                val = i.split(': ')
-                temp[val[0].split(":")[0] if ":" in val[0] else val[0]] = val[1] if len(val) > 1 else ""
+                val = i.split(':')
+                temp[val[0]] = val[1]
             result.append(temp)
         return result
-
-    @staticmethod
-    def get_pattern_match(line_block, pattern):
-        match_pattern = re.compile(pattern)
-        for line in line_block.splitlines():
-            match = match_pattern.match(line.strip())
-            if match:
-                return match.groups()[0]
-        return ""
 
     @staticmethod
     def get_members(block_1):

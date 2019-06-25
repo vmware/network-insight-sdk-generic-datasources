@@ -65,26 +65,28 @@ class JuniperDevicePrePostProcessor(PrePostProcessor):
         return [merge_dictionaries(data)]
 
 
-class JuniperInterfacePrePostProcessor(PrePostProcessor):
+class JuniperInterfaceParser():
     physical_regex_rule = dict(mtu=".*Link-level type: .*, MTU: (.*?),", name="Physical interface: (.*), Enabled.*",
                                hardwareAddress=".*Current address: .*, Hardware address: (.*)",
                                operationalStatus=".*, Enabled, Physical link is (.*)",
                                administrativeStatus="Physical interface: .*, (.*), Physical link is .*")
+
     logical_interface_regex = dict(name="Logical interface (.*) \(Index .*", ipAddress=".*Local: (.*), Broadcast:.*",
                                    mask=".*Destination: (.*), Local:.*")
 
     skip_interface_names = [".local.", "fxp1", "fxp2", "lo0"]
 
-    def pre_process(self, data):
+    def parse(self, data):
         try:
-            output_lines = []
+            py_dicts = []
             generic_parser = GenericTextParser()
             physical = generic_parser.parse(data, self.physical_regex_rule)[0]
             physical.update({'connected': "TRUE" if physical['operationalStatus'] == "Up" else "FALSE"})
             physical.update({'operationalStatus': "UP" if physical['operationalStatus'] == "Up" else "DOWN"})
             physical.update({'administrativeStatus': "UP" if physical['administrativeStatus'] == "Enabled" else "DOWN"})
             physical.update({'hardwareAddress': "" if physical['hardwareAddress'].isalpha() else physical['hardwareAddress']})
-            if physical['name'].rstrip() in self.skip_interface_names: return ""
+            if physical['name'].rstrip() in self.skip_interface_names or not physical['hardwareAddress']:
+                return py_dicts
 
             parser = LineBasedBlockParser('Logical interface')
             blocks = parser.parse(data)
@@ -93,22 +95,11 @@ class JuniperInterfacePrePostProcessor(PrePostProcessor):
                 physical.update({"ipAddress": "{}/{}".format(logical['ipAddress'], logical['mask'].split('/')[1]) if logical['ipAddress'] else ""})
                 physical.update({"members": "{}".format(self.get_members(block))})
                 physical.update({"name": "{}".format(logical['name'] if logical['name'] else physical['name'])})
-                output_line = "\n".join(["{}:{}".format(i, j) for i, j in physical.iteritems()])
-                output_lines.append(output_line)
+                py_dicts.append(physical.copy())
         except Exception as e:
             py_logger.error("{}\n{}".format(e, traceback.format_exc()))
             raise e
-        return '\n\n'.join(output_lines)
-
-    def post_process(self, data):
-        result = []
-        for d in data:
-            temp = {}
-            for i in d.split('\n'):
-                val = i.split(':')
-                temp[val[0]] = val[1]
-            result.append(temp)
-        return result
+        return py_dicts
 
     @staticmethod
     def get_members(block_1):
@@ -119,7 +110,7 @@ class JuniperInterfacePrePostProcessor(PrePostProcessor):
             if "Link:" in i:
                 lines = []
                 continue
-            if "Marker Statistics" in i:
+            if "Marker Statistics" in i or "LACP info:" in i:
                 got_members = True
                 break
             lines.append(i)
@@ -128,7 +119,9 @@ class JuniperInterfacePrePostProcessor(PrePostProcessor):
         return result
 
 
-class JuniperSwitchPortTableProcessor():
+class JuniperSwitchPortTableProcessor:
+    columns = ["name", "vlan", "administrativeStatus", "switchPortMode", "mtu", "operationalStatus", "connected",
+               "hardwareAddress", "vrf"]
 
     def process_tables(self, tables):
         result = []
@@ -142,15 +135,15 @@ class JuniperSwitchPortTableProcessor():
 
 class JuniperRouterInterfaceTableProcessor():
 
-    def process_tables(self, result_map):
+    def process_tables(self, tables):
         columns = ["name", "vlan", "administrativeStatus", "switchPortMode", "mtu", "operationalStatus", "connected",
-                   "hardwareAddress", "vrf"]
+                   "hardwareAddress", "vrf", "ipAddress"]
 
         result = []
-        for port in result_map['showInterface']:
+        for port in tables['showInterface']:
             temp = {}
             add_entry = False
-            for vrf in result_map['vrfs']:
+            for vrf in tables['vrfs']:
                 if vrf.has_key("interfaces"):
                     if port['name'] in vrf['interfaces']:
                         temp['vrf'] = vrf['name']
@@ -181,62 +174,70 @@ class JuniperPortChannelTableProcessor():
 
 
 class JuniperRoutesPrePostProcessor(PrePostProcessor):
+    route_rules = dict(nextHop="Next hop: (.*) via", next_hop_type=".*Next hop type: (.*?), .*",
+                               interfaceName=".* via (.*),", routeType="\*?(\w+)\s+Preference:.*",
+                               network_interface="Interface: (.*)")
+
+    vrf_rule = dict(name="(.*): \d* destinations")
+
+    network_name_rule = dict(network_name="(.*) \(.* ent")
 
     def pre_process(self, data):
         try:
-            output_lines = []
-            parser = LineBasedBlockParser('(.*): \d* destinations')
+            py_dicts = []
+            parser = LineBasedBlockParser("(.*) \(.* ent")
             blocks = parser.parse(data)
-            next_hop = "Next hop: (.*) via"
-            next_hop_type = ".*Next hop type: (.*?), .*"
-            interface = ".* via (.*),"
-            network_name_regex = "(.*) \(.* ent"
-            route_type = "\*?(\w+)\s+Preference:.*"
-            network_interface = "Interface: (.*)"
-            rules = dict(next_hop=next_hop, next_hop_type=next_hop_type, interface=interface,
-                         route_type=route_type, network_interface=network_interface)
-            for block in blocks:
-                if not block: continue
-                vrf = self.get_pattern_match(block, '(.*): \d* destinations')
-                block_parser_1 = SimpleBlockParser()
-                blocks_1 = block_parser_1.parse(block)
-                for block_1 in blocks_1:
-                    parser = LineBasedBlockParser(route_type)
-                    line_blocks = parser.parse(block_1)
-                    for idx, line_block in enumerate(line_blocks):
-                        if 'inet' in line_block:
-                            if 'announced' in line_block:
-                                network_name = self.get_pattern_match(line_block.splitlines()[1], network_name_regex)
-                            continue
-                        if 'announced' in line_block:
-                            network_name = self.get_pattern_match(line_block, network_name_regex)
-                            continue
-                        if ":" in network_name: continue  # checking skipping if interface is iv6
-                        parser = GenericTextParser()
-                        output = parser.parse(line_block, rules)
-                        if ":" in output[0]['next_hop_type'] == "Receive": continue
-                        vrf = "master" if vrf == "inet.0" else vrf.split('.inet.0')[0]
-                        output_vrf = "vrf: {}".format(vrf)
-                        if 'interface' in output[0].keys():
-                            output_interface_name = "interfaceName: {}".format(output[0]['interface'])
-                        elif 'network_interface' in output[0].keys():
-                            output_interface_name = "interfaceName: {}".format(output[0]['network_interface'])
-                        else:
-                            continue
-                        name = "name: {}_{}".format(network_name, idx)
-                        output_route_type = "routeType: {}".format(output[0]['route_type'])
-                        output_next_hop = "nextHop: {}".format(output[0]['next_hop'] if "next_hop" in output[0].keys()
-                                                               else "DIRECT")
-                        if "next_hop" not in output[0].keys():   # Temporary fix for STATIC and LOCAL
-                            output_route_type = "routeType: {}".format("DIRECT")
-                        output_network = "network: {}".format(network_name)
-                        output_line = "{}\n{}\n{}\n{}\n{}\n{}\n".format(output_vrf, output_network, output_route_type,
-                                                                        output_next_hop, output_interface_name, name)
-                        output_lines.append(output_line)
+            generic_parser = GenericTextParser()
+            vrf_name = generic_parser.parse(blocks[0], self.vrf_rule)[0]
+            vrf = "master" if vrf_name['name'] == "inet.0" else vrf_name['name'].split('.inet.0')[0]
+
+            for block in blocks[1:]:
+
+                parser = LineBasedBlockParser("\*?(\w+)\s+Preference:.*")
+                line_blocks = parser.parse(block)
+                network_name = generic_parser.parse(line_blocks[0], self.network_name_rule)[0]
+                for idx, line_block in enumerate(line_blocks[1:]):
+                    routes = generic_parser.parse(line_block, self.route_rules)[0]
+                    if ":" in routes['next_hop_type'] == "Receive": continue
+                    routes.update({"vrf":vrf})
+                    routes.update({"network": "{}_{}".format(network_name, idx)})
+                    routes.update({"name": "{}_{}".format(network_name, idx)})
+                    py_dicts.append(routes.copy())
+                    print routes
+
+                    # if 'inet' in line_block:
+                    #     if 'announced' in line_block:
+                    #         network_name = self.get_pattern_match(line_block.splitlines()[1], "(.*) \(.* ent")
+                    #     continue
+                    # if 'announced' in line_block:
+                    #     network_name = self.get_pattern_match(line_block, "(.*) \(.* ent")
+                    #     continue
+                    # if ":" in network_name: continue  # checking skipping if interface is iv6
+                    # parser = GenericTextParser()
+                    # output = parser.parse(line_block, rules)
+                    # if ":" in output[0]['next_hop_type'] == "Receive": continue
+                    # vrf = "master" if vrf == "inet.0" else vrf.split('.inet.0')[0]
+                    # output_vrf = "vrf: {}".format(vrf)
+                    # if 'interface' in output[0].keys():
+                    #     output_interface_name = "interfaceName: {}".format(output[0]['interface'])
+                    # elif 'network_interface' in output[0].keys():
+                    #     output_interface_name = "interfaceName: {}".format(output[0]['network_interface'])
+                    # else:
+                    #     continue
+                    # name = "name: {}_{}".format(network_name, idx)
+                    # output_route_type = "routeType: {}".format(output[0]['route_type'])
+                    # output_next_hop = "nextHop: {}".format(output[0]['next_hop'] if "next_hop" in output[0].keys()
+                    #                                        else "DIRECT")
+                    # if "next_hop" not in output[0].keys():   # Temporary fix for STATIC and LOCAL
+                    #     output_route_type = "routeType: {}".format("DIRECT")
+                    # output_network = "network: {}".format(network_name)
+                    # output_line = "{}\n{}\n{}\n{}\n{}\n{}\n".format(output_vrf, output_network, output_route_type,
+                    #                                                 output_next_hop, output_interface_name, name)
+                    # output_lines.append(output_line)
         except Exception as e:
             py_logger.error("{}\n{}".format(e, traceback.format_exc()))
             raise e
-        return '\n'.join(output_lines)
+        return '\n'.join(py_dicts)
 
     def post_process(self, data):
         result = []
@@ -261,13 +262,10 @@ class JuniperMACTablePrePostProcessor(PrePostProcessor):
         result = []
         for d in data:
             temp = {}
-            for port in data["switch-ports"]:
-                if d['switchPort'] == port['name']:
-                    temp['vlan'] = port['vlan']
-                    for i in d:
-                        temp[i] = d[i]
-                    result.append(temp)
-                    break
+            for i in d:
+                temp[i] = d[i]
+            result.append(temp)
+            break
         return result
 
 
@@ -303,8 +301,8 @@ class JuniperNeighborsTablePrePostProcessor(PrePostProcessor):
 
     def pre_process(self, data):
         output_lines = []
-        for line in data.splitlines()[1:]:
-            if "Local Interface" in line: continue
+        for line in data.splitlines():
+            if not line or "Local Interface" in line: continue
             line_tokenizer = LineTokenizer()
             line_token = line_tokenizer.tokenize(line)
             local_interface = "localInterface: {}".format(line_token[0])

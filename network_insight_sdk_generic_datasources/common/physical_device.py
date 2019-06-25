@@ -118,6 +118,7 @@ class PhysicalDevice(object):
             blocks.append(command_result)
         for block in blocks:
             try:
+                if not block: continue
                 result_dict = self.process_block(block, cmd)
                 if len(result_dict) > 0:
                     table += result_dict

@@ -11,28 +11,20 @@ from network_insight_sdk_generic_datasources.parsers.text.pre_post_processor imp
 from network_insight_sdk_generic_datasources.parsers.common.block_parser import SimpleBlockParser
 from network_insight_sdk_generic_datasources.parsers.common.text_parser import GenericTextParser
 from network_insight_sdk_generic_datasources.parsers.common.block_parser import LineBasedBlockParser
+from network_insight_sdk_generic_datasources.parsers.common.block_parser import GenericBlockParser
 from network_insight_sdk_generic_datasources.parsers.common.line_parser import LineTokenizer
+from network_insight_sdk_generic_datasources.parsers.common.horizontal_table_parser import HorizontalTableParser
 
 
 class JuniperChassisPrePostProcessor(PrePostProcessor):
 
-    def pre_process(self, data):
-        output_lines = []
-        block_parser = SimpleBlockParser()
-        blocks = block_parser.parse(data)
-        for block in blocks:
-            if 'node0' in block:
-                lines = block.splitlines()
-                output_lines.append('hostname: {}'.format(lines[2].split(' ')[-1]))
-                output_lines.append('name: Juniper {}'.format(lines[3].split(' ')[-1]))
-                output_lines.append('os: JUNOS {}'.format(lines[4].split(' ')[-1]))
-                output_lines.append('model: {}'.format(lines[3].split(' ')[-1]))
-            output_lines.append('ipAddress/fqdn: 10.40.13.37')
-        output_lines.append('vendor: Juniper')
-        return '\n'.join(output_lines)
-
-    def post_process(self, data):
-        return [merge_dictionaries(data)]
+    def parse(self, data):
+        if 'node0' in data:
+            parser = GenericBlockParser(start_pattern="Item", end_pattern="Chassis")
+            blocks = parser.parse(data)
+            print blocks
+            p = HorizontalTableParser()
+            l = p.parse(blocks[0])
 
 
 class JuniperConfigInterfacesPrePostProcessor(PrePostProcessor):
@@ -120,56 +112,52 @@ class JuniperInterfaceParser():
 
 
 class JuniperSwitchPortTableProcessor:
-    columns = ["name", "vlan", "administrativeStatus", "switchPortMode", "mtu", "operationalStatus", "connected",
-               "hardwareAddress", "vrf"]
 
     def process_tables(self, tables):
         result = []
         vlan_interface = ["{}.{}".format(i['interface'], i['unit']) for i in tables['showConfigInterface']]
         for port in tables['showInterface']:
             port["switchPortMode"] = "TRUNK" if port['name'] in vlan_interface else "ACCESS"
-            port["vlan"] = port['name'].split('.')[1] if port['name'] in vlan_interface else "0"
-            result.append(port)
+            port["vlans"] = port['name'].split('.')[1] if port['name'] in vlan_interface else "0"
+            if port['ipAddress']: continue
+            p = port.copy()
+            p.pop('members')
+            p.pop('ipAddress')
+            result.append(p)
         return result
 
 
 class JuniperRouterInterfaceTableProcessor():
 
     def process_tables(self, tables):
-        columns = ["name", "vlan", "administrativeStatus", "switchPortMode", "mtu", "operationalStatus", "connected",
-                   "hardwareAddress", "vrf", "ipAddress"]
-
         result = []
         for port in tables['showInterface']:
-            temp = {}
-            add_entry = False
             for vrf in tables['vrfs']:
                 if vrf.has_key("interfaces"):
                     if port['name'] in vrf['interfaces']:
-                        temp['vrf'] = vrf['name']
+                        port['vrf'] = vrf['name']
                         break
                 else:
-                    temp['vrf'] = "master"
-            for i, j in port.iteritems():
-                if i in columns:
-                    add_entry = True if i == "ipAddress" and j else add_entry
-                    temp[i] = j
-            if add_entry: result.append(temp)
+                    port['vrf'] = "master"
+            if port["ipAddress"]:
+                p = port.copy()
+                p['vlan'] = port['vlans']
+                p.pop('members')
+                p.pop('vlans')
+                result.append(p)
         return result
 
 
 class JuniperPortChannelTableProcessor():
 
-    def process_tables(self, result_map):
+    def process_tables(self, tables):
         result = []
-        for port in result_map['showInterface']:
-            temp = {}
-            add_entry = False
-            for i, j in port.iteritems():
-                add_entry = True if i == "members" and j else add_entry
-                temp[i] = j
-            if add_entry:
-                result.append(temp)
+        for port in tables['showInterface']:
+            if port['members']:
+                p = port.copy()
+                p.pop('members')
+                p.pop('ipAddress')
+                result.append(p)
         return result
 
 
@@ -218,16 +206,17 @@ class JuniperRoutesPrePostProcessor(PrePostProcessor):
         return py_dicts
 
 
-class JuniperMACTablePrePostProcessor(PrePostProcessor):
+class JuniperMACTableTableProcessor():
 
-    def post_process(self, data):
+    def process_tables(self, tables):
         result = []
-        for d in data:
-            temp = {}
-            for i in d:
-                temp[i] = d[i]
-            result.append(temp)
-            break
+        for mac in tables['showMacTable']:
+            for port in tables['switch-ports']:
+                if mac['switchPort'] == port['name']:
+                    mac['vlan'] = port['vlans']
+                    mac.pop('address')
+                    mac.pop('Flags')
+                    result.append(mac)
         return result
 
 

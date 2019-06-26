@@ -12,6 +12,26 @@ package_handler: &PACKAGE_HANDLER
 
 # Commands added will be executed in sequence
 command_list: &COMMAND_LIST
+  - &SHOW_VERSION
+    table_id: switch
+    command: show version
+    parser:
+      pre_post_processor: JuniperDevicePrePostProcessor
+      name: *VERTICAL_TABLE_PARSER
+
+  - &SHOW_VRF
+    table_id: showVRFInterface
+    command: show route instance detail | no-more
+    block_parser:
+      name: parsers.common.block_parser.SimpleBlockParser
+    parser:
+      name: juniper_srx.juniper_srx_pre_post_processor.JuniperVRFParser
+
+  - &GET_VRF
+    table_id: vrfs
+    reuse_table: showVRFInterface
+    process_tables: JuniperVRFTableProcessor
+
   - &SHOW_CHASSIS_HARDWARE
     table_id: showChassishardware
     command: show chassis hardware
@@ -38,23 +58,6 @@ command_list: &COMMAND_LIST
           vlan: ".*unit .* vlan-id (.*)"
           interface: "set interfaces (.*) unit .*"
 
-  - &SHOW_VERSION
-    table_id: switch
-    command: show version
-    parser:
-      pre_post_processor: JuniperDevicePrePostProcessor
-      name: *VERTICAL_TABLE_PARSER
-
-  - &SHOW_ROUTE_DETAIL
-    table_id: routes
-    command: show route detail | no-more
-    block_parser:
-      name: LineBasedBlockParser
-      arguments:
-        line_pattern: '(.*): \d* destinations'
-    parser:
-      name: juniper_srx.juniper_srx_pre_post_processor.JuniperRoutesParser
-
   - &SHOW_INTERFACE
     table_id: showInterface
     command: show interfaces detail | no-more
@@ -72,7 +75,7 @@ command_list: &COMMAND_LIST
 
   - &GET_ROUTER_INTERFACES
     table_id: router-interfaces
-    reuse_table: showInterface,vrfs,showConfigInterface
+    reuse_table: showInterface,showVRFInterface,showConfigInterface
     process_tables: JuniperRouterInterfaceTableProcessor
 
   - &GET_PORT_CHANNELS
@@ -80,11 +83,15 @@ command_list: &COMMAND_LIST
     reuse_table: showInterface
     process_tables: JuniperPortChannelTableProcessor
 
-  - &SHOW_LLDP_NEIGHBORS
-    table_id: neighbors
-    command: show lldp neighbors | no-more
+  - &SHOW_ROUTE_DETAIL
+    table_id: routes
+    command: show route detail | no-more
+    block_parser:
+      name: LineBasedBlockParser
+      arguments:
+        line_pattern: '(.*): \d* destinations'
     parser:
-      name: juniper_srx.juniper_srx_pre_post_processor.JuniperNeighborsTableParser
+      name: juniper_srx.juniper_srx_pre_post_processor.JuniperRoutesParser
 
   - &SHOW_ARP_NO_RESOLVE
     table_id: showMacTable
@@ -105,16 +112,11 @@ command_list: &COMMAND_LIST
     reuse_table: showMacTable,showInterface
     process_tables: JuniperMACTableTableProcessor
 
-  - &SHOW_VRF
-    table_id: vrfs
-    command: show route instance detail | no-more
-    block_parser:
-      name: parsers.common.block_parser.SimpleBlockParser
+  - &SHOW_LLDP_NEIGHBORS
+    table_id: neighbors
+    command: show lldp neighbors | no-more
     parser:
-      name: juniper_srx.juniper_srx_pre_post_processor.JuniperVRFParser
-    select_columns:
-      name: name
-
+      name: juniper_srx.juniper_srx_pre_post_processor.JuniperNeighborsTableParser
 
 result_writer: &RESULT_WRITER
   name: CsvWriter

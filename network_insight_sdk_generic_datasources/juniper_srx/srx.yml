@@ -6,6 +6,7 @@ package_handler:
 command_list:
   - <<: *SHOW_VERSION
   - <<: *SHOW_VRF
+  - <<: *GET_VRF
   - <<: *SHOW_CONFIGURATION_INTERFACES
   - <<: *SHOW_INTERFACE
   - <<: *GET_SWTICH_PORT

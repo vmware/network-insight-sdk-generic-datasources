@@ -113,7 +113,7 @@ class JuniperSwitchPortTableProcessor:
         return result
 
 
-class JuniperRouterInterfaceTableProcessor():
+class JuniperRouterInterfaceTableProcessor:
 
     def process_tables(self, tables):
         result = []
@@ -134,7 +134,7 @@ class JuniperRouterInterfaceTableProcessor():
         return result
 
 
-class JuniperPortChannelTableProcessor():
+class JuniperPortChannelTableProcessor:
 
     def process_tables(self, tables):
         result = []
@@ -177,7 +177,7 @@ class JuniperRoutesPrePostProcessor(PrePostProcessor):
                     if routes['next_hop_type'] == "Receive": continue
                     routes.pop('next_hop_type')
                     if not routes['interfaceName'] and not routes['network_interface']: continue
-                    routes.update({"vrf":vrf})
+                    routes.update({"vrf": vrf})
                     routes.update({"network": "{}".format(network_name['name'])})
                     routes.update({"name": "{}_{}".format(network_name['name'], idx)})
                     routes.update({"interfaceName": routes['interfaceName'] if routes['interfaceName']
@@ -192,7 +192,7 @@ class JuniperRoutesPrePostProcessor(PrePostProcessor):
         return py_dicts
 
 
-class JuniperMACTableTableProcessor():
+class JuniperMACTableTableProcessor:
 
     def process_tables(self, tables):
         result = []

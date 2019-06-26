@@ -53,7 +53,7 @@ command_list: &COMMAND_LIST
       arguments:
         line_pattern: '(.*): \d* destinations'
     parser:
-      name: juniper_srx.juniper_srx_pre_post_processor.JuniperRoutesPreParser
+      name: juniper_srx.juniper_srx_pre_post_processor.JuniperRoutesParser
 
   - &SHOW_INTERFACE
     table_id: showInterface

@@ -159,7 +159,6 @@ class PhysicalDevice(object):
             raise TypeError(message)
         if len(result_dict) > 0 and type(result_dict[0]) != dict:
             raise TypeError(message)
-        result_dict = self.filter_columns(cmd, result_dict)
         return result_dict
 
     def process_block(self, block=None, cmd=None):

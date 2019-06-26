@@ -103,7 +103,7 @@ command_list: &COMMAND_LIST
 
   - &GET_MAC_TABLE
     table_id: mac-address-table
-    reuse_table: showMacTable,switch-ports
+    reuse_table: showMacTable,showInterface
     process_tables: JuniperMACTableTableProcessor
 
   - &SHOW_VRF

@@ -51,11 +51,23 @@ class PhysicalDevice(object):
     def write_results(self):
         for table in self.result_writer[TABLE_ID_KEY]:
             csv_writer = CsvWriter()
-            for cmd in self.command_list:
-                if cmd[TABLE_ID_KEY] == table:
-                    result_map = self.filter_columns(cmd, self.result_map[table])
-                    csv_writer.write(self.result_writer[PATH_KEY], table, result_map)
-                    break
+            result_map = {}
+            if table in [cmd[TABLE_ID_KEY] for cmd in self.command_list]:
+                result_map = self.write_command_output_results(csv_writer, table)
+            elif table in [join_table[JOINED_TABLE_ID_KEY] for join_table in self.table_joiners['table']]:
+                result_map = self.write_join_table_results(csv_writer, result_map, table)
+            csv_writer.write(self.result_writer[PATH_KEY], table, result_map)
+
+    def write_join_table_results(self, csv_writer, result_map, table):
+        for join_table in self.table_joiners['table']:
+            if join_table['joined_table_id'] == table:
+                return self.result_map[table]
+
+    def write_command_output_results(self, csv_writer, table):
+        for cmd in self.command_list:
+            if cmd[TABLE_ID_KEY] == table:
+                result_map = self.filter_columns(cmd, self.result_map[table])
+                return result_map
 
     def join_tables(self):
         if not self.table_joiners:

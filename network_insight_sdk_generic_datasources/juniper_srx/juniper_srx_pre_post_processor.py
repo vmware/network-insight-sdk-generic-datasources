@@ -70,7 +70,10 @@ class JuniperInterfaceParser():
             blocks = parser.parse(data)
             for block in blocks:
                 logical = generic_parser.parse(block, self.logical_interface_regex)[0]
-                physical.update({"ipAddress": "{}/{}".format(logical['ipAddress'], logical['mask'].split('/')[1]) if logical['ipAddress'] else ""})
+                if logical['ipAddress']:
+                    physical.update({"ipAddress": "{}/{}".format(logical['ipAddress'], logical['mask'].split('/')[1])})
+                else:
+                    physical.update({"ipAddress": ""})
                 physical.update({"members": "{}".format(self.get_members(block))})
                 physical.update({"name": "{}".format(logical['name'] if logical['name'] else physical['name'])})
                 py_dicts.append(physical.copy())
@@ -197,7 +200,7 @@ class JuniperMACTableTableProcessor:
     def process_tables(self, tables):
         result = []
         for mac in tables['showMacTable']:
-            for port in tables['switch-ports']:
+            for port in tables['showInterface']:
                 if mac['switchPort'] == port['name']:
                     mac['vlan'] = port['vlans']
                     mac.pop('address')

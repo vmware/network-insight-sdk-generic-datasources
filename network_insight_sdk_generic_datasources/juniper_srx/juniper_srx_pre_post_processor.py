@@ -180,80 +180,42 @@ class JuniperRoutesPrePostProcessor(PrePostProcessor):
 
     vrf_rule = dict(name="(.*): \d* destinations")
 
-    network_name_rule = dict(network_name="(.*) \(.* ent")
+    network_name_rule = dict(name="(.*) \(.* ent")
 
-    def pre_process(self, data):
+    def parse(self, data):
         try:
             py_dicts = []
             parser = LineBasedBlockParser("(.*) \(.* ent")
             blocks = parser.parse(data)
             generic_parser = GenericTextParser()
             vrf_name = generic_parser.parse(blocks[0], self.vrf_rule)[0]
+            if "inet6.0" in vrf_name['name']:
+                return py_dicts
             vrf = "master" if vrf_name['name'] == "inet.0" else vrf_name['name'].split('.inet.0')[0]
 
             for block in blocks[1:]:
-
                 parser = LineBasedBlockParser("\*?(\w+)\s+Preference:.*")
                 line_blocks = parser.parse(block)
                 network_name = generic_parser.parse(line_blocks[0], self.network_name_rule)[0]
+
                 for idx, line_block in enumerate(line_blocks[1:]):
                     routes = generic_parser.parse(line_block, self.route_rules)[0]
-                    if ":" in routes['next_hop_type'] == "Receive": continue
+                    if routes['next_hop_type'] == "Receive": continue
+                    routes.pop('next_hop_type')
+                    if not routes['interfaceName'] and not routes['network_interface']: continue
                     routes.update({"vrf":vrf})
-                    routes.update({"network": "{}_{}".format(network_name, idx)})
-                    routes.update({"name": "{}_{}".format(network_name, idx)})
+                    routes.update({"network": "{}".format(network_name['name'])})
+                    routes.update({"name": "{}_{}".format(network_name['name'], idx)})
+                    routes.update({"interfaceName": routes['interfaceName'] if routes['interfaceName']
+                                                                            else routes['network_interface']})
+                    routes.pop('network_interface')
+                    routes.update({"routeType": "{}".format(routes['routeType'] if routes['nextHop'] else "DIRECT")})
+                    routes.update({"nextHop": "{}".format(routes['nextHop'] if routes['nextHop'] else "DIRECT")})
                     py_dicts.append(routes.copy())
-                    print routes
-
-                    # if 'inet' in line_block:
-                    #     if 'announced' in line_block:
-                    #         network_name = self.get_pattern_match(line_block.splitlines()[1], "(.*) \(.* ent")
-                    #     continue
-                    # if 'announced' in line_block:
-                    #     network_name = self.get_pattern_match(line_block, "(.*) \(.* ent")
-                    #     continue
-                    # if ":" in network_name: continue  # checking skipping if interface is iv6
-                    # parser = GenericTextParser()
-                    # output = parser.parse(line_block, rules)
-                    # if ":" in output[0]['next_hop_type'] == "Receive": continue
-                    # vrf = "master" if vrf == "inet.0" else vrf.split('.inet.0')[0]
-                    # output_vrf = "vrf: {}".format(vrf)
-                    # if 'interface' in output[0].keys():
-                    #     output_interface_name = "interfaceName: {}".format(output[0]['interface'])
-                    # elif 'network_interface' in output[0].keys():
-                    #     output_interface_name = "interfaceName: {}".format(output[0]['network_interface'])
-                    # else:
-                    #     continue
-                    # name = "name: {}_{}".format(network_name, idx)
-                    # output_route_type = "routeType: {}".format(output[0]['route_type'])
-                    # output_next_hop = "nextHop: {}".format(output[0]['next_hop'] if "next_hop" in output[0].keys()
-                    #                                        else "DIRECT")
-                    # if "next_hop" not in output[0].keys():   # Temporary fix for STATIC and LOCAL
-                    #     output_route_type = "routeType: {}".format("DIRECT")
-                    # output_network = "network: {}".format(network_name)
-                    # output_line = "{}\n{}\n{}\n{}\n{}\n{}\n".format(output_vrf, output_network, output_route_type,
-                    #                                                 output_next_hop, output_interface_name, name)
-                    # output_lines.append(output_line)
         except Exception as e:
             py_logger.error("{}\n{}".format(e, traceback.format_exc()))
             raise e
-        return '\n'.join(py_dicts)
-
-    def post_process(self, data):
-        result = []
-        for d in data:
-            temp = {}
-            for i in d.split('\n'):
-                val = i.split(': ')
-                temp[val[0]] = val[1] if len(val) > 1 else ""
-            result.append(temp)
-        return result
-
-    @staticmethod
-    def get_pattern_match(line_block, pattern):
-        match_pattern = re.compile(pattern)
-        match = match_pattern.match(line_block.strip())
-        return match.groups()[0]
+        return py_dicts
 
 
 class JuniperMACTablePrePostProcessor(PrePostProcessor):

@@ -11,7 +11,7 @@ from network_insight_sdk_generic_datasources.parsers.common.block_parser import 
 from network_insight_sdk_generic_datasources.parsers.common.text_parser import GenericTextParser
 from network_insight_sdk_generic_datasources.parsers.common.block_parser import LineBasedBlockParser
 from network_insight_sdk_generic_datasources.parsers.common.line_parser import LineTokenizer
-
+from network_insight_sdk_generic_datasources.parsers.common.vertical_table_parser import VerticalTableParser
 
 class JuniperConfigInterfacesPrePostProcessor(PrePostProcessor):
 
@@ -211,30 +211,33 @@ class JuniperMACTableTableProcessor:
 
 class JuniperVRFPrePostProcessor(PrePostProcessor):
 
-    def post_process(self, data):
+    def parse(self, data):
         result = []
-        for d in data:
-            if d:
-                temp = {}
-                vrf_data = d.splitlines()
-                router_id = vrf_data[1].split(":")[1].lstrip()
-                if "0.0.0.0" == router_id: continue
-                vrf_name = vrf_data[0].split(':')[0]
-                temp['name'] = "{}".format(vrf_name)
-                if "Interfaces:" in d:
-                    interfaces = []
-                    got_interface = False
-                    for i in vrf_data:
-                        if "Interfaces:" == i:
-                            got_interface = True
-                            interfaces = []
-                            continue
-                        if ":" in i and got_interface:
-                            break
-                        interfaces.append(i)
-                    temp['interfaces'] = ",".join(interfaces)
-                result.append(temp)
+        temp = {}
+        vrf_data = data.splitlines()
+        router_id = vrf_data[1].split(":")[1].lstrip()
+        if "0.0.0.0" == router_id:
+            return result
+        vrf_name = vrf_data[0].split(':')[0]
+        temp['name'] = "{}".format(vrf_name)
+        temp['interfaces'] = ",".join(self.get_interface(data))
+        result.append(temp)
         return result
+
+    @staticmethod
+    def get_interface(vrf):
+        interfaces = []
+        got_interface = False
+        if "Interfaces:" in vrf:
+            for i in vrf.splitlines():
+                if "Interfaces:" == i:
+                    got_interface = True
+                    interfaces = []
+                    continue
+                if ":" in i and got_interface:
+                    break
+                interfaces.append(i)
+        return interfaces
 
 
 class JuniperNeighborsTablePrePostProcessor(PrePostProcessor):

@@ -109,9 +109,10 @@ command_list: &COMMAND_LIST
   - &SHOW_VRF
     table_id: vrfs
     command: show route instance detail | no-more
-    parser:
-      pre_post_processor: JuniperVRFPrePostProcessor
+    block_parser:
       name: parsers.common.block_parser.SimpleBlockParser
+    parser:
+      name: juniper_srx.juniper_srx_pre_post_processor.JuniperVRFPrePostProcessor
     select_columns:
       name: name
 

@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: BSD-2-Clause
 
 
-import re
 import traceback
 
 from network_insight_sdk_generic_datasources.common.utilities import merge_dictionaries
@@ -11,20 +10,7 @@ from network_insight_sdk_generic_datasources.parsers.text.pre_post_processor imp
 from network_insight_sdk_generic_datasources.parsers.common.block_parser import SimpleBlockParser
 from network_insight_sdk_generic_datasources.parsers.common.text_parser import GenericTextParser
 from network_insight_sdk_generic_datasources.parsers.common.block_parser import LineBasedBlockParser
-from network_insight_sdk_generic_datasources.parsers.common.block_parser import GenericBlockParser
 from network_insight_sdk_generic_datasources.parsers.common.line_parser import LineTokenizer
-from network_insight_sdk_generic_datasources.parsers.common.horizontal_table_parser import HorizontalTableParser
-
-
-class JuniperChassisPrePostProcessor(PrePostProcessor):
-
-    def parse(self, data):
-        if 'node0' in data:
-            parser = GenericBlockParser(start_pattern="Item", end_pattern="Chassis")
-            blocks = parser.parse(data)
-            print blocks
-            p = HorizontalTableParser()
-            l = p.parse(blocks[0])
 
 
 class JuniperConfigInterfacesPrePostProcessor(PrePostProcessor):

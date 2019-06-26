@@ -17,7 +17,7 @@ class JuniperConfigInterfacesPrePostProcessor(PrePostProcessor):
 
     def post_process(self, data):
         result = []
-        if  data[0]['vlan']:
+        if data[0]['vlan']:
             result.append(data[0])
         return result
 

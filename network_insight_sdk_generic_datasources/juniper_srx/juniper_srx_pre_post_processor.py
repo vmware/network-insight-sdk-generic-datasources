@@ -43,6 +43,17 @@ class JuniperDevicePrePostProcessor(PrePostProcessor):
         return [merge_dictionaries(data)]
 
 
+class JuniperVRFTableProcessor:
+
+    def process_tables(self, tables):
+        result = []
+        for vrf in tables['showVRFInterface']:
+            temp = {}
+            temp['name'] = vrf['name']
+            result.append(temp)
+        return result
+
+
 class JuniperInterfaceParser():
     physical_regex_rule = dict(mtu=".*Link-level type: .*, MTU: (.*?),", name="Physical interface: (.*), Enabled.*",
                                hardwareAddress=".*Current address: .*, Hardware address: (.*)",
@@ -121,13 +132,7 @@ class JuniperRouterInterfaceTableProcessor:
     def process_tables(self, tables):
         result = []
         for port in tables['showInterface']:
-            for vrf in tables['vrfs']:
-                if vrf.has_key("interfaces"):
-                    if port['name'] in vrf['interfaces']:
-                        port['vrf'] = vrf['name']
-                        break
-                else:
-                    port['vrf'] = "master"
+            port.update({"vrf": "{}".format(self.get_vrf(port, tables))})
             if port["ipAddress"]:
                 p = port.copy()
                 p['vlan'] = port['vlans']
@@ -135,6 +140,14 @@ class JuniperRouterInterfaceTableProcessor:
                 p.pop('vlans')
                 result.append(p)
         return result
+
+    @staticmethod
+    def get_vrf(port, tables):
+        vrf_name = "master"
+        for vrf in tables['showVRFInterface']:
+            if port['name'] in vrf['interfaces']:
+                return vrf['name']
+        return vrf_name
 
 
 class JuniperPortChannelTableProcessor:

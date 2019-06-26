@@ -11,7 +11,7 @@ from network_insight_sdk_generic_datasources.parsers.common.block_parser import 
 from network_insight_sdk_generic_datasources.parsers.common.text_parser import GenericTextParser
 from network_insight_sdk_generic_datasources.parsers.common.block_parser import LineBasedBlockParser
 from network_insight_sdk_generic_datasources.parsers.common.line_parser import LineTokenizer
-from network_insight_sdk_generic_datasources.parsers.common.vertical_table_parser import VerticalTableParser
+
 
 class JuniperConfigInterfacesPrePostProcessor(PrePostProcessor):
 
@@ -56,7 +56,7 @@ class JuniperInterfaceParser():
 
     def parse(self, data):
         try:
-            py_dicts = []
+            result = []
             generic_parser = GenericTextParser()
             physical = generic_parser.parse(data, self.physical_regex_rule)[0]
             physical.update({'connected': "TRUE" if physical['operationalStatus'] == "Up" else "FALSE"})
@@ -64,7 +64,7 @@ class JuniperInterfaceParser():
             physical.update({'administrativeStatus': "UP" if physical['administrativeStatus'] == "Enabled" else "DOWN"})
             physical.update({'hardwareAddress': "" if physical['hardwareAddress'].isalpha() else physical['hardwareAddress']})
             if physical['name'].rstrip() in self.skip_interface_names or not physical['hardwareAddress']:
-                return py_dicts
+                return result
 
             parser = LineBasedBlockParser('Logical interface')
             blocks = parser.parse(data)
@@ -76,11 +76,11 @@ class JuniperInterfaceParser():
                     physical.update({"ipAddress": ""})
                 physical.update({"members": "{}".format(self.get_members(block))})
                 physical.update({"name": "{}".format(logical['name'] if logical['name'] else physical['name'])})
-                py_dicts.append(physical.copy())
+                result.append(physical.copy())
         except Exception as e:
             py_logger.error("{}\n{}".format(e, traceback.format_exc()))
             raise e
-        return py_dicts
+        return result
 
     @staticmethod
     def get_members(block_1):
@@ -161,13 +161,13 @@ class JuniperRoutesPrePostProcessor(PrePostProcessor):
 
     def parse(self, data):
         try:
-            py_dicts = []
+            result = []
             parser = LineBasedBlockParser("(.*) \(.* ent")
             blocks = parser.parse(data)
             generic_parser = GenericTextParser()
             vrf_name = generic_parser.parse(blocks[0], self.vrf_rule)[0]
             if "inet6.0" in vrf_name['name']:
-                return py_dicts
+                return result
             vrf = "master" if vrf_name['name'] == "inet.0" else vrf_name['name'].split('.inet.0')[0]
 
             for block in blocks[1:]:
@@ -188,11 +188,11 @@ class JuniperRoutesPrePostProcessor(PrePostProcessor):
                     routes.pop('network_interface')
                     routes.update({"routeType": "{}".format(routes['routeType'] if routes['nextHop'] else "DIRECT")})
                     routes.update({"nextHop": "{}".format(routes['nextHop'] if routes['nextHop'] else "DIRECT")})
-                    py_dicts.append(routes.copy())
+                    result.append(routes.copy())
         except Exception as e:
             py_logger.error("{}\n{}".format(e, traceback.format_exc()))
             raise e
-        return py_dicts
+        return result
 
 
 class JuniperMACTableTableProcessor:
@@ -242,25 +242,16 @@ class JuniperVRFPrePostProcessor(PrePostProcessor):
 
 class JuniperNeighborsTablePrePostProcessor(PrePostProcessor):
 
-    def pre_process(self, data):
-        output_lines = []
+    def parse(self, data):
+        result = []
+
         for line in data.splitlines():
             if not line or "Local Interface" in line: continue
             line_tokenizer = LineTokenizer()
             line_token = line_tokenizer.tokenize(line)
-            local_interface = "localInterface: {}".format(line_token[0])
-            remote_interface = "remoteInterface: {}".format(line_token[5])  # taking only port name
-            remote_device = "remoteDevice: {}".format(line_token[-1])
-            output_line = "{}\n{}\n{}\n".format(local_interface, remote_device, remote_interface)
-            output_lines.append(output_line)
-        return '\n'.join(output_lines)
-
-    def post_process(self, data):
-        result = []
-        for d in data:
             temp = {}
-            for i in d.split('\n'):
-                val = i.split(': ')
-                temp[val[0]] = val[1] if len(val) > 1 else ""
+            temp.update({"localInterface": "{}".format(line_token[0])})
+            temp.update({"remoteInterface": "{}".format(line_token[5])})
+            temp.update({"remoteDevice": "{}".format(line_token[-1])})
             result.append(temp)
         return result

@@ -84,8 +84,7 @@ command_list: &COMMAND_LIST
     table_id: neighbors
     command: show lldp neighbors | no-more
     parser:
-      pre_post_processor: JuniperNeighborsTablePrePostProcessor
-      name: parsers.common.block_parser.SimpleBlockParser
+      name: juniper_srx.juniper_srx_pre_post_processor.JuniperNeighborsTablePrePostProcessor
 
   - &SHOW_ARP_NO_RESOLVE
     table_id: showMacTable

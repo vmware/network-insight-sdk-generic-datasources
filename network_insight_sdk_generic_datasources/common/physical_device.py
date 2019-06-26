@@ -51,23 +51,7 @@ class PhysicalDevice(object):
     def write_results(self):
         for table in self.result_writer[TABLE_ID_KEY]:
             csv_writer = CsvWriter()
-            result = {}
-            if table in [cmd[TABLE_ID_KEY] for cmd in self.command_list]:
-                result = self.write_command_output_results(csv_writer, table)
-            elif table in [join_table[JOINED_TABLE_ID_KEY] for join_table in self.table_joiners['table']]:
-                result = self.write_join_table_results(csv_writer, table)
-            csv_writer.write(self.result_writer[PATH_KEY], table, result)
-
-    def write_join_table_results(self, csv_writer, table):
-        for join_table in self.table_joiners['table']:
-            if join_table['joined_table_id'] == table:
-                return self.result_map[table]
-
-    def write_command_output_results(self, csv_writer, table):
-        for cmd in self.command_list:
-            if cmd[TABLE_ID_KEY] == table:
-                result = self.filter_columns(cmd, self.result_map[table])
-                return result
+            csv_writer.write(self.result_writer[PATH_KEY], table, self.result_map[table])
 
     def join_tables(self):
         if not self.table_joiners:
@@ -140,6 +124,7 @@ class PhysicalDevice(object):
             except IndexError as e:
                 py_logger.info("Couldn't parse block {}\nfor command {}".format(block, cmd[COMMAND_KEY]))
                 py_logger.error(e)
+        table = self.filter_columns(cmd, table)
         return table
 
     @staticmethod
@@ -174,6 +159,7 @@ class PhysicalDevice(object):
             raise TypeError(message)
         if len(result_dict) > 0 and type(result_dict[0]) != dict:
             raise TypeError(message)
+        result_dict = self.filter_columns(cmd, result_dict)
         return result_dict
 
     def process_block(self, block=None, cmd=None):

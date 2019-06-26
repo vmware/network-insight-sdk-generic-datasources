@@ -61,7 +61,7 @@ class JuniperInterfaceParser():
                                administrativeStatus="Physical interface: .*, (.*), Physical link is .*")
 
     logical_interface_regex = dict(name="Logical interface (.*) \(Index .*", ipAddress=".*Local: (.*), Broadcast:.*",
-                                   mask=".*Destination: (.*), Local:.*")
+                                   mask=".*Destination: (.*), Local:.*, Broadcast:.*")
 
     skip_interface_names = [".local.", "fxp1", "fxp2", "lo0"]
 

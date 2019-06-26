@@ -13,6 +13,7 @@ command_list:
   - <<: *GET_PORT_CHANNELS
   - <<: *SHOW_ROUTE_DETAIL
   - <<: *SHOW_ARP_NO_RESOLVE
+  - <<: *GET_MAC_TABLE
   - <<: *SHOW_LLDP_NEIGHBORS
 
 

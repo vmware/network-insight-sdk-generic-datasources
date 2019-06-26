@@ -15,9 +15,12 @@ command_list: &COMMAND_LIST
   - &SHOW_CHASSIS_HARDWARE
     table_id: showChassishardware
     command: show chassis hardware
+    block_parser:
+      name: GenericBlockParser
+      arguments:
+        line_pattern: "node"
     parser:
-      pre_post_processor: JuniperChassisPrePostProcessor
-      name: *VERTICAL_TABLE_PARSER
+      name: juniper_srx.juniper_srx_pre_post_processor.JuniperChassisPrePostProcessor
 
   - &SHOW_CONFIGURATION_INTERFACES
     table_id: showConfigInterface
@@ -85,10 +88,9 @@ command_list: &COMMAND_LIST
       name: parsers.common.block_parser.SimpleBlockParser
 
   - &SHOW_ARP_NO_RESOLVE
-    table_id: mac-address-table
+    table_id: showMacTable
     command: show arp no-resolve | no-more
     parser:
-      pre_post_processor: JuniperMACTablePrePostProcessor
       name: *HORIZONTAL_TABLE_PARSER
       arguments:
         skip_head: 1
@@ -98,9 +100,11 @@ command_list: &COMMAND_LIST
           - address
           - switchPort
           - Flags
-    select_columns:
-      macAddress: macAddress
-      switchPort: switchPort
+
+  - &GET_MAC_TABLE
+    table_id: mac-address-table
+    reuse_table: showMacTable,switch-ports
+    process_tables: JuniperMACTableTableProcessor
 
   - &SHOW_VRF
     table_id: vrfs

@@ -45,16 +45,22 @@ command_list: &COMMAND_LIST
   - &SHOW_ROUTE_DETAIL
     table_id: routes
     command: show route detail | no-more
+    block_parser:
+      name: LineBasedBlockParser
+      arguments:
+        line_pattern: '(.*): \d* destinations'
     parser:
-      pre_post_processor: JuniperRoutesPrePostProcessor
-      name: parsers.common.block_parser.SimpleBlockParser
+      name: juniper_srx.juniper_srx_pre_post_processor.JuniperRoutesPrePostProcessor
 
   - &SHOW_INTERFACE
     table_id: showInterface
     command: show interfaces detail | no-more
+    block_parser:
+      name: LineBasedBlockParser
+      arguments:
+        line_pattern: 'Physical interface:'
     parser:
-      pre_post_processor: JuniperInterfacePrePostProcessor
-      name: parsers.common.block_parser.SimpleBlockParser
+      name: juniper_srx.juniper_srx_pre_post_processor.JuniperInterfaceParser
 
   - &GET_SWTICH_PORT
     table_id: switch-ports

@@ -150,7 +150,7 @@ class JuniperPortChannelTableProcessor:
         return result
 
 
-class JuniperRoutesPrePostProcessor(PrePostProcessor):
+class JuniperRoutesParser(PrePostProcessor):
     route_rules = dict(nextHop="Next hop: (.*) via", next_hop_type=".*Next hop type: (.*?), .*",
                                interfaceName=".* via (.*),", routeType="\*?(\w+)\s+Preference:.*",
                                network_interface="Interface: (.*)")
@@ -209,7 +209,7 @@ class JuniperMACTableTableProcessor:
         return result
 
 
-class JuniperVRFPrePostProcessor(PrePostProcessor):
+class JuniperVRFParser(PrePostProcessor):
 
     def parse(self, data):
         result = []
@@ -240,7 +240,7 @@ class JuniperVRFPrePostProcessor(PrePostProcessor):
         return interfaces
 
 
-class JuniperNeighborsTablePrePostProcessor(PrePostProcessor):
+class JuniperNeighborsTableParser(PrePostProcessor):
 
     def parse(self, data):
         result = []

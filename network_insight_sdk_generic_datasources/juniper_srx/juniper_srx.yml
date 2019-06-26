@@ -20,7 +20,7 @@ command_list: &COMMAND_LIST
       arguments:
         line_pattern: "node"
     parser:
-      name: juniper_srx.juniper_srx_pre_post_processor.JuniperChassisPrePostProcessor
+      name: juniper_srx.juniper_srx_pre_post_processor.JuniperChassisParser
 
   - &SHOW_CONFIGURATION_INTERFACES
     table_id: showConfigInterface
@@ -53,7 +53,7 @@ command_list: &COMMAND_LIST
       arguments:
         line_pattern: '(.*): \d* destinations'
     parser:
-      name: juniper_srx.juniper_srx_pre_post_processor.JuniperRoutesPrePostProcessor
+      name: juniper_srx.juniper_srx_pre_post_processor.JuniperRoutesPreParser
 
   - &SHOW_INTERFACE
     table_id: showInterface
@@ -84,7 +84,7 @@ command_list: &COMMAND_LIST
     table_id: neighbors
     command: show lldp neighbors | no-more
     parser:
-      name: juniper_srx.juniper_srx_pre_post_processor.JuniperNeighborsTablePrePostProcessor
+      name: juniper_srx.juniper_srx_pre_post_processor.JuniperNeighborsTableParser
 
   - &SHOW_ARP_NO_RESOLVE
     table_id: showMacTable
@@ -111,7 +111,7 @@ command_list: &COMMAND_LIST
     block_parser:
       name: parsers.common.block_parser.SimpleBlockParser
     parser:
-      name: juniper_srx.juniper_srx_pre_post_processor.JuniperVRFPrePostProcessor
+      name: juniper_srx.juniper_srx_pre_post_processor.JuniperVRFParser
     select_columns:
       name: name
 

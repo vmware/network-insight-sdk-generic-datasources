@@ -80,28 +80,31 @@ class PhysicalDevice(object):
                                                     device_type=self.credentials.device_type)
             command_output_dict = {}
             for cmd in self.command_list:
+                table = []
                 command_id = cmd[TABLE_ID_KEY]
                 if REUSE_TABLE_KEY in cmd:
                     result_dict = self.process_tables(cmd)
                     if len(result_dict) > 0:
                         table = result_dict
                 else:
-                    if REUSE_COMMAND_KEY in cmd:
-                        command_result = command_output_dict[cmd[REUSE_COMMAND_KEY]]
-                        cmd[COMMAND_KEY] = cmd[REUSE_COMMAND_KEY]
-                    else:
-                        command_result = ssh_connect_handler.execute_command(cmd[COMMAND_KEY])
-                        command_output_dict[cmd[COMMAND_KEY]] = command_result
-
-                    py_logger.info('Command %s Result %s' % (cmd[COMMAND_KEY], command_result))
-                    table = self.parse_command_output(cmd, command_result)
-
+                    table = self.reuse_or_execute_command(cmd, command_output_dict, ssh_connect_handler, table)
                 self.result_map[command_id] = table
         except Exception as e:
             py_logger.error("Error occurred while executing command : {}".format(e))
             raise e
         finally:
-             ssh_connect_handler.close_connection()
+            ssh_connect_handler.close_connection()
+
+    def reuse_or_execute_command(self, cmd, command_output_dict, ssh_connect_handler, table):
+        if REUSE_COMMAND_KEY in cmd:
+            command_result = command_output_dict[cmd[REUSE_COMMAND_KEY]]
+            cmd[COMMAND_KEY] = cmd[REUSE_COMMAND_KEY]
+        else:
+            command_result = ssh_connect_handler.execute_command(cmd[COMMAND_KEY])
+            command_output_dict[cmd[COMMAND_KEY]] = command_result
+        py_logger.info('Command %s Result %s' % (cmd[COMMAND_KEY], command_result))
+        table = self.parse_command_output(cmd, command_result)
+        return table
 
     def parse_command_output(self, cmd, command_result):
         blocks = []

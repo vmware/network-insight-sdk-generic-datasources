@@ -56,6 +56,7 @@ class TextProcessor(object):
                         row.update(parsed_key_values)
                 # End of for loop
                 current_line_number += 1
+            # Adding field_name with empty string if value not found
             row.update({i.field_name: "" for i in self.rules if i.field_name not in row.keys()})
             result = result + [row]
         return result

@@ -17,8 +17,5 @@ command_list:
   - <<: *GET_MAC_TABLE
   - <<: *SHOW_LLDP_NEIGHBORS
 
-
-table_joiners:
-
 result_writer:
   <<: *RESULT_WRITER

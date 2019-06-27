@@ -43,7 +43,7 @@ class JuniperDevicePrePostProcessor(PrePostProcessor):
         return [merge_dictionaries(data)]
 
 
-class JuniperVRFTableProcessor:
+class JuniperVRFTableProcessor(PrePostProcessor):
 
     def process_tables(self, tables):
         result = []
@@ -63,7 +63,6 @@ class JuniperInterfaceParser():
     logical_interface_regex = dict(name="Logical interface (.*) \(Index .*", ipAddress=".*Local: (.*), Broadcast:.*",
                                    mask=".*Destination: (.*), Local:.*, Broadcast:.*")
 
-    skip_interface_names = [".local.", "fxp1", "fxp2", "lo0"]
 
     def parse(self, data):
         try:
@@ -74,14 +73,16 @@ class JuniperInterfaceParser():
             physical.update({'operationalStatus': "UP" if physical['operationalStatus'] == "Up" else "DOWN"})
             physical.update({'administrativeStatus': "UP" if physical['administrativeStatus'] == "Enabled" else "DOWN"})
             physical.update({'hardwareAddress': "" if physical['hardwareAddress'].isalpha() else physical['hardwareAddress']})
-            if physical['name'].rstrip() in self.skip_interface_names or not physical['hardwareAddress']:
+            if not physical['hardwareAddress']:
                 return result
 
             parser = LineBasedBlockParser('Logical interface')
             blocks = parser.parse(data)
             for block in blocks:
                 logical = generic_parser.parse(block, self.logical_interface_regex)[0]
-                if logical['ipAddress']:
+                if logical['mask'] == "Unspecified":
+                    continue
+                if logical['ipAddress'] and logical['mask']:
                     physical.update({"ipAddress": "{}/{}".format(logical['ipAddress'], logical['mask'].split('/')[1])})
                 else:
                     physical.update({"ipAddress": ""})
@@ -94,11 +95,11 @@ class JuniperInterfaceParser():
         return result
 
     @staticmethod
-    def get_members(block_1):
+    def get_members(block):
         result = ""
         got_members = False
         lines = []
-        for i in block_1.splitlines():
+        for i in block.splitlines():
             if "Link:" in i:
                 lines = []
                 continue
@@ -111,7 +112,7 @@ class JuniperInterfaceParser():
         return result
 
 
-class JuniperSwitchPortTableProcessor:
+class JuniperSwitchPortTableProcessor(PrePostProcessor):
 
     def process_tables(self, tables):
         result = []
@@ -127,7 +128,7 @@ class JuniperSwitchPortTableProcessor:
         return result
 
 
-class JuniperRouterInterfaceTableProcessor:
+class JuniperRouterInterfaceTableProcessor(PrePostProcessor):
 
     def process_tables(self, tables):
         result = []
@@ -150,7 +151,7 @@ class JuniperRouterInterfaceTableProcessor:
         return vrf_name
 
 
-class JuniperPortChannelTableProcessor:
+class JuniperPortChannelTableProcessor(PrePostProcessor):
 
     def process_tables(self, tables):
         result = []
@@ -208,7 +209,7 @@ class JuniperRoutesParser(PrePostProcessor):
         return result
 
 
-class JuniperMACTableTableProcessor:
+class JuniperMACTableTableProcessor(PrePostProcessor):
 
     def process_tables(self, tables):
         result = []

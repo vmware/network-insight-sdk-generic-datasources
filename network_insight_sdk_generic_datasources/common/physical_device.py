@@ -56,16 +56,19 @@ class PhysicalDevice(object):
     def join_tables(self):
         if not self.table_joiners:
             return
-
-        for joiner_config in self.table_joiners['table']:
-            joiner_class = import_utilities.load_class(joiner_config[NAME_KEY])()
-            source_table = self.result_map[joiner_config[SOURCE_TABLE_KEY]]
-            destination_table = self.result_map[joiner_config[DESTINATION_TABLE_KEY]]
-            source_column = joiner_config[SOURCE_COLUMN_KEY]
-            destination_column = joiner_config[DESTINATION_COLUMN_KEY]
-            table = import_utilities.load_class_method(joiner_class, 'join_tables')(source_table, destination_table,
-                                                                                    source_column, destination_column)
-            self.result_map[joiner_config[JOINED_TABLE_ID_KEY]] = table
+        try:
+            for joiner_config in self.table_joiners['table']:
+                joiner_class = import_utilities.load_class(joiner_config[NAME_KEY])()
+                source_table = self.result_map[joiner_config[SOURCE_TABLE_KEY]]
+                destination_table = self.result_map[joiner_config[DESTINATION_TABLE_KEY]]
+                source_column = joiner_config[SOURCE_COLUMN_KEY]
+                destination_column = joiner_config[DESTINATION_COLUMN_KEY]
+                table = import_utilities.load_class_method(joiner_class, 'join_tables')(source_table, destination_table,
+                                                                                        source_column, destination_column)
+                self.result_map[joiner_config[JOINED_TABLE_ID_KEY]] = table
+        except KeyError as e:
+            py_logger.error("KeyError : {}".format(e))
+            raise e
 
     def execute_commands(self):
         ssh_connect_handler = None
@@ -76,31 +79,26 @@ class PhysicalDevice(object):
                                                     device_type=self.credentials.device_type)
             command_output_dict = {}
             for cmd in self.command_list:
-                table = []
                 command_id = cmd[TABLE_ID_KEY]
                 if REUSE_TABLE_KEY in cmd:
-                    result_dict = self.process_tables(cmd)
-                    if len(result_dict) > 0:
-                        table = result_dict
+                    table = self.process_tables(cmd)
+                elif REUSE_COMMAND_KEY in cmd:
+                    command_result = command_output_dict[cmd[REUSE_COMMAND_KEY]]
+                    cmd[COMMAND_KEY] = cmd[REUSE_COMMAND_KEY]
+                    py_logger.info('Command %s Result %s' % (cmd[REUSE_COMMAND_KEY], command_result))
+                    table = self.parse_command_output(cmd, command_result)
                 else:
-                    table = self.reuse_or_execute_command(cmd, command_output_dict, ssh_connect_handler, table)
+                    command_result = ssh_connect_handler.execute_command(cmd[COMMAND_KEY])
+                    command_output_dict[cmd[COMMAND_KEY]] = command_result
+                    py_logger.info('Command %s Result %s' % (cmd[COMMAND_KEY], command_result))
+                    table = self.parse_command_output(cmd, command_result)
+
                 self.result_map[command_id] = table
         except Exception as e:
             py_logger.error("Error occurred while executing command : {}".format(e))
             raise e
         finally:
             ssh_connect_handler.close_connection()
-
-    def reuse_or_execute_command(self, cmd, command_output_dict, ssh_connect_handler, table):
-        if REUSE_COMMAND_KEY in cmd:
-            command_result = command_output_dict[cmd[REUSE_COMMAND_KEY]]
-            cmd[COMMAND_KEY] = cmd[REUSE_COMMAND_KEY]
-        else:
-            command_result = ssh_connect_handler.execute_command(cmd[COMMAND_KEY])
-            command_output_dict[cmd[COMMAND_KEY]] = command_result
-        py_logger.info('Command %s Result %s' % (cmd[COMMAND_KEY], command_result))
-        table = self.parse_command_output(cmd, command_result)
-        return table
 
     def parse_command_output(self, cmd, command_result):
         blocks = []
@@ -147,7 +145,7 @@ class PhysicalDevice(object):
         return final_table
 
     def process_tables(self, cmd):
-        process_table = import_utilities.load_device_process_table(self.device, cmd[PROCESS_TABLE_KEY])()
+        process_table = import_utilities.load_class_for_process_table(self.device, cmd[PROCESS_TABLE_KEY])()
         tables = {}
         for table in cmd[REUSE_TABLE_KEY].split(','):
             tables[table] = self.result_map[table]
@@ -166,8 +164,8 @@ class PhysicalDevice(object):
         # Calling pre processor
         has_pre_post_processor = PRE_POST_PROCESSOR_KEY in cmd[PARSER_KEY]
         if has_pre_post_processor:
-            pre_post_processor = import_utilities.load_device_pre_post_parser(self.device,
-                                                                              cmd[PARSER_KEY][PRE_POST_PROCESSOR_KEY])()
+            pre_post_processor = import_utilities.load_class_for_pre_post_parser(self.device,
+                                                                                 cmd[PARSER_KEY][PRE_POST_PROCESSOR_KEY])()
             block = self.call_pre_function(pre_post_processor, block)
 
         # Calling main parse function

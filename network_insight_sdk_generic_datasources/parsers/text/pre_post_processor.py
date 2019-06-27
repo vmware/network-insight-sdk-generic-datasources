@@ -12,3 +12,8 @@ class PrePostProcessor(object):
         type(self)
         return data
 
+    def process_tables(self, tables):
+        type(self)
+        return tables
+
+

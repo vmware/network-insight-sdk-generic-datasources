@@ -16,8 +16,8 @@ from network_insight_sdk_generic_datasources.common.constants import PRE_POST_PR
 from network_insight_sdk_generic_datasources.common.constants import SELECT_COLUMNS_KEY
 from network_insight_sdk_generic_datasources.common.constants import REUSE_COMMAND_KEY
 from network_insight_sdk_generic_datasources.common.constants import TABLE_ID_KEY
-from network_insight_sdk_generic_datasources.common.constants import REUSE_TABLE_KEY
-from network_insight_sdk_generic_datasources.common.constants import PROCESS_TABLE_KEY
+from network_insight_sdk_generic_datasources.common.constants import REUSE_TABLES_KEY
+from network_insight_sdk_generic_datasources.common.constants import REUSE_TABLE_PROCESSOR_KEY
 
 
 from network_insight_sdk_generic_datasources.common.constants import DESTINATION_COLUMN_KEY
@@ -81,7 +81,7 @@ class PhysicalDevice(object):
             command_output_dict = {}
             for cmd in self.command_list:
                 command_id = cmd[TABLE_ID_KEY]
-                if REUSE_TABLE_KEY in cmd:
+                if REUSE_TABLES_KEY in cmd:
                     table = self.process_tables(cmd)
                 elif REUSE_COMMAND_KEY in cmd:
                     command_result = command_output_dict[cmd[REUSE_COMMAND_KEY]]
@@ -146,9 +146,9 @@ class PhysicalDevice(object):
         return final_table
 
     def process_tables(self, cmd):
-        process_table = import_utilities.load_class_for_process_table(self.device, cmd[PROCESS_TABLE_KEY])()
+        process_table = import_utilities.load_class_for_process_table(self.device, cmd[REUSE_TABLE_PROCESSOR_KEY])()
         tables = {}
-        for table in cmd[REUSE_TABLE_KEY].split(','):
+        for table in cmd[REUSE_TABLES_KEY].split(','):
             tables[table] = self.result_map[table]
         result_dict = self.call_process_table_function(process_table, tables)
 

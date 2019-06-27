@@ -29,8 +29,8 @@ command_list: &COMMAND_LIST
 
   - &GET_VRF
     table_id: vrfs
-    reuse_table: showVRFInterface
-    process_tables: JuniperVRFTableProcessor
+    reuse_tables: showVRFInterface
+    reuse_table_processor: JuniperVRFTableProcessor
 
   - &SHOW_CHASSIS_HARDWARE
     table_id: showChassishardware
@@ -70,18 +70,18 @@ command_list: &COMMAND_LIST
 
   - &GET_SWTICH_PORT
     table_id: switch-ports
-    reuse_table: showInterface,showConfigInterface
-    process_tables: JuniperSwitchPortTableProcessor
+    reuse_tables: showInterface,showConfigInterface
+    reuse_table_processor: JuniperSwitchPortTableProcessor
 
   - &GET_ROUTER_INTERFACES
     table_id: router-interfaces
-    reuse_table: showInterface,showVRFInterface,showConfigInterface
-    process_tables: JuniperRouterInterfaceTableProcessor
+    reuse_tables: showInterface,showVRFInterface,showConfigInterface
+    reuse_table_processor: JuniperRouterInterfaceTableProcessor
 
   - &GET_PORT_CHANNELS
     table_id: port-channels
-    reuse_table: showInterface
-    process_tables: JuniperPortChannelTableProcessor
+    reuse_tables: showInterface
+    reuse_table_processor: JuniperPortChannelTableProcessor
 
   - &SHOW_ROUTE_DETAIL
     table_id: routes
@@ -109,8 +109,8 @@ command_list: &COMMAND_LIST
 
   - &GET_MAC_TABLE
     table_id: mac-address-table
-    reuse_table: showMacTable,showInterface
-    process_tables: JuniperMACTableTableProcessor
+    reuse_tables: showMacTable,showInterface
+    reuse_table_processor: JuniperMACTableTableProcessor
 
   - &SHOW_LLDP_NEIGHBORS
     table_id: neighbors

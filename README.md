@@ -194,7 +194,9 @@ defined in bottom is executed last.
     * parser - to parse each block, in any, otherwise full command output
     * pre_post_processor - If there is any custom handling required before and after parsing then it can be defined. 
     * reuse_command - If command output needs to be processed differently then instead of re-executing the same command 
-      we can reuse already stored command output.  
+      we can reuse already stored command output.
+    * reuse_tables - Already created tables can be reused as per requirement.
+    * reuse_table_processor - Define class which can operate on listed reuse_tables.
 2. Table Joiner - Used for joining table. More information below.
 3. Result writer - Used to write table, reference with table_id, to csv file.
     * Result writer accepts path parameter which tells in which directory csv files to generate.

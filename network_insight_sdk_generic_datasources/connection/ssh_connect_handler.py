@@ -9,17 +9,19 @@ from network_insight_sdk_generic_datasources.common.log import py_logger
 class SSHConnectHandler(object):
     LINE_BREAK = '\nLINE_BREAK'
 
-    def __init__(self, ip=None, username=None, password=None, device_type=None, **kwargs):
+    def __init__(self, ip=None, username=None, password=None, device_type=None, port=22, **kwargs):
         self.ip = ip
         self.username = username
         self.password = password
+        self.port = port
+
         if device_type not in DeviceType.values():
             raise ValueError("Invalid device type {}".format(device_type))
 
         self.device_type = DeviceType.value_of(device_type).to_lower_case()
 
         py_logger.info("Making connection to Device IP {} Type {}".format(ip, self.device_type))
-        self.net_connect = ConnectHandler(ip=ip, username=username, password=password, device_type=self.device_type)
+        self.net_connect = ConnectHandler(ip=ip, username=username, password=password, device_type=self.device_type, port=self.port)
 
     def execute_command(self, command=None):
         if command is None:

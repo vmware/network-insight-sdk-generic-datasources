@@ -41,7 +41,7 @@ class PhysicalDevice(object):
         self.credentials = credentials
         self.table_joiners = table_joiners
         self.result_writer = result_writer
-        self.result_map = {}
+        self.result_map = {}  # will be set only after executing commands
 
     def process(self):
         self.execute_commands()
@@ -76,7 +76,8 @@ class PhysicalDevice(object):
             ssh_connect_handler = SSHConnectHandler(ip=self.credentials.ip_or_fqdn,
                                                     username=self.credentials.username,
                                                     password=self.credentials.password,
-                                                    device_type=self.credentials.device_type)
+                                                    device_type=self.credentials.device_type,
+                                                    port=self.credentials.port)
             command_output_dict = {}
             for cmd in self.command_list:
                 command_id = cmd[TABLE_ID_KEY]

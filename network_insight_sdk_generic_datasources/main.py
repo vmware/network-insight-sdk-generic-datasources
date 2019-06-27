@@ -22,6 +22,7 @@ def parse_arguments():
     parser.add_argument('-u', '--username', action='store', help='Username for login')
     parser.add_argument('-p', '--password', action='store', help='Password for login')
     parser.add_argument('-z', '--self_zip', action='store', help='Self Zip the Project', default='false')
+    parser.add_argument('-P', '--port', action='store', help='Specific port to connect', default='22')
     args = parser.parse_args()
     return args
 
@@ -38,10 +39,12 @@ def main():
                               os.path.sep,
                               yaml_definition_file_name)) as f:
         configuration = yaml_utilities.altered_safe_load(f)
+        table_joiner = configuration[args.model][TABLE_JOINERS_KEY] if TABLE_JOINERS_KEY in configuration[
+            args.model] else None
         physical_device = physical_device.PhysicalDevice(args.device, args.model,
                                                          configuration[args.model][COMMAND_LIST_KEY],
                                                          args,
-                                                         configuration[args.model][TABLE_JOINERS_KEY],
+                                                         table_joiner,
                                                          configuration[args.model][RESULT_WRITER_KEY])
         physical_device.process()
         if PACKAGE_HANDLER_KEY in configuration and ARGUMENTS_KEY in configuration[PACKAGE_HANDLER_KEY]:

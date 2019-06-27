@@ -7,6 +7,7 @@ import traceback
 from network_insight_sdk_generic_datasources.common.utilities import merge_dictionaries
 from network_insight_sdk_generic_datasources.common.log import py_logger
 from network_insight_sdk_generic_datasources.parsers.text.pre_post_processor import PrePostProcessor
+from network_insight_sdk_generic_datasources.parsers.text.table_processor import TableProcessor
 from network_insight_sdk_generic_datasources.parsers.common.block_parser import SimpleBlockParser
 from network_insight_sdk_generic_datasources.parsers.common.text_parser import GenericTextParser
 from network_insight_sdk_generic_datasources.parsers.common.block_parser import LineBasedBlockParser
@@ -43,7 +44,7 @@ class JuniperDevicePrePostProcessor(PrePostProcessor):
         return [merge_dictionaries(data)]
 
 
-class JuniperVRFTableProcessor(PrePostProcessor):
+class JuniperVRFTableProcessor(TableProcessor):
 
     def process_tables(self, tables):
         result = []
@@ -128,7 +129,7 @@ class JuniperSwitchPortTableProcessor(PrePostProcessor):
         return result
 
 
-class JuniperRouterInterfaceTableProcessor(PrePostProcessor):
+class JuniperRouterInterfaceTableProcessor(TableProcessor):
 
     def process_tables(self, tables):
         result = []
@@ -151,7 +152,7 @@ class JuniperRouterInterfaceTableProcessor(PrePostProcessor):
         return vrf_name
 
 
-class JuniperPortChannelTableProcessor(PrePostProcessor):
+class JuniperPortChannelTableProcessor(TableProcessor):
 
     def process_tables(self, tables):
         result = []
@@ -209,7 +210,7 @@ class JuniperRoutesParser(PrePostProcessor):
         return result
 
 
-class JuniperMACTableTableProcessor(PrePostProcessor):
+class JuniperMACTableTableProcessor(TableProcessor):
 
     def process_tables(self, tables):
         result = []

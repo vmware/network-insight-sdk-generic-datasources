@@ -67,7 +67,7 @@ class PhysicalDevice(object):
                                                                                         source_column, destination_column)
                 self.result_map[joiner_config[JOINED_TABLE_ID_KEY]] = table
         except KeyError as e:
-            py_logger.error("KeyError : {}".format(e))
+            py_logger.error("Failed to join tables: KeyError : {}".format(e))
             raise e
 
     def execute_commands(self):

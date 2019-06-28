@@ -26,7 +26,6 @@ class UBNTVersionPrePostProcessor(PrePostProcessor):
         new_d['haState'] = "ACTIVE"
         new_d['vendor'] = "Ubiquiti Networks"
         new_d['name'] = "CHANGEME"
-        new_d['ipAddress/fqdn'] = "CHANGEME"
         new_d['hostname'] = "CHANGEME"
 
         # rearrange for the right order (4.1 requires it)

@@ -18,7 +18,7 @@ class CsvWriter(object):
             py_logger.warn('Table is a list of dictionaries. Will not write to csv.')
             return
         if len(table) == 0:
-            py_logger.warn('Table cannot be empty. Will not write to csv.')
+            py_logger.warn('{} Table cannot be empty. Will not write to csv.'.format(filename))
             return
         csv.register_dialect('dialect',
                              quoting=csv.QUOTE_ALL,

@@ -22,12 +22,12 @@ def load_block_parser(class_name):
 
 
 def load_class_for_pre_post_parser(device, class_name):
-    module_path = "{0}.{1}.{1}_{2}".format("network_insight_sdk_generic_datasources", device, "pre_post_processor")
+    module_path = "{0}.{1}.{1}_{2}".format("network_insight_sdk_generic_datasources.devices", device, "pre_post_processor")
     module = importlib.import_module(module_path)
     return getattr(module, class_name)
 
 
 def load_class_for_process_table(device, class_name):
-    module_path = "{0}.{1}.{1}_{2}".format("network_insight_sdk_generic_datasources", device, "pre_post_processor")
+    module_path = "{0}.{1}.{1}_{2}".format("network_insight_sdk_generic_datasources.devices", device, "pre_post_processor")
     module = importlib.import_module(module_path)
     return getattr(module, class_name)

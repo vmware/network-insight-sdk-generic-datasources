@@ -4,58 +4,40 @@
 
 import traceback
 
-from network_insight_sdk_generic_datasources.common.utilities import merge_dictionaries
 from network_insight_sdk_generic_datasources.common.log import py_logger
 from network_insight_sdk_generic_datasources.parsers.text.pre_post_processor import PrePostProcessor
 from network_insight_sdk_generic_datasources.parsers.text.table_processor import TableProcessor
-from network_insight_sdk_generic_datasources.parsers.common.block_parser import SimpleBlockParser
 from network_insight_sdk_generic_datasources.parsers.common.text_parser import GenericTextParser
 from network_insight_sdk_generic_datasources.parsers.common.block_parser import LineBasedBlockParser
 from network_insight_sdk_generic_datasources.parsers.common.line_parser import LineTokenizer
 
 
-class JuniperConfigInterfacesPrePostProcessor(PrePostProcessor):
-
-    def post_process(self, data):
-        result = []
-        if data[0]['vlan']:
-            result.append(data[0])
-        return result
-
-
 class JuniperDevicePrePostProcessor(PrePostProcessor):
-
-    def pre_process(self, data):
-        output_lines = []
-        block_parser = SimpleBlockParser()
-        blocks = block_parser.parse(data)
-        for block in blocks:
-            if 'node0' in block:
-                lines = block.splitlines()
-                output_lines.append('hostname: {}'.format(lines[2].split(' ')[-1]))
-                output_lines.append('name: Juniper {}'.format(lines[3].split(' ')[-1]))
-                output_lines.append('os: JUNOS {}'.format(lines[4].split(' ')[-1]))
-                output_lines.append('model: {}'.format(lines[3].split(' ')[-1]))
-        output_lines.append('ipAddress/fqdn: 10.40.13.37')
-        output_lines.append('vendor: Juniper')
-        return '\n'.join(output_lines)
+    """
+    Get details of juniper SRX
+    """
 
     def post_process(self, data):
-        return [merge_dictionaries(data)]
+        """
+        Get details of juniper SRX
+        :param data: Parsed output of show version command
+        :return: list with dict containing Juniper SRX details
+        """
+        temp = {}
 
-
-class JuniperVRFTableProcessor(TableProcessor):
-
-    def process_tables(self, tables):
-        result = []
-        for vrf in tables['showVRFInterface']:
-            temp = {}
-            temp['name'] = vrf['name']
-            result.append(temp)
-        return result
+        temp.update({"ipAddress/fqdn": "10.40.13.37"}) # Update with your IP/fqdn.
+        temp['name'] = "Juniper-{}".format(data[2]['Model'])
+        temp['hostname'] = data[1]['Hostname']
+        temp['model'] = data[2]['Model']
+        temp['os'] = "JUNOS {}".format(data[3]['Junos'])
+        temp['vendor'] = "Juniper"
+        return [temp]
 
 
 class JuniperInterfaceParser():
+    """
+    Parse output of show interface detail command to get all switch ports
+    """
     physical_regex_rule = dict(mtu=".*Link-level type: .*, MTU: (.*?),", name="Physical interface: (.*), Enabled.*",
                                hardwareAddress=".*Current address: .*, Hardware address: (.*)",
                                operationalStatus=".*, Enabled, Physical link is (.*)",
@@ -66,6 +48,11 @@ class JuniperInterfaceParser():
 
 
     def parse(self, data):
+        """
+        Parse show interface details command output to get interface details
+        :param data: show interface details Command output
+        :return: list of dict contains all interfaces
+        """
         try:
             result = []
             generic_parser = GenericTextParser()
@@ -97,6 +84,11 @@ class JuniperInterfaceParser():
 
     @staticmethod
     def get_members(block):
+        """
+        Get the members link to a interface
+        :param block: Interface command output
+        :return: str containing names of member interfaces
+        """
         result = ""
         got_members = False
         lines = []
@@ -113,9 +105,50 @@ class JuniperInterfaceParser():
         return result
 
 
-class JuniperSwitchPortTableProcessor(PrePostProcessor):
+class JuniperVRFTableProcessor(TableProcessor):
+    """
+    Get name of vrf from showVRFInterface table
+    """
 
     def process_tables(self, tables):
+        """
+        Returns list of dict of vrf names
+        """
+        result = []
+        for vrf in tables['showVRFInterface']:
+            temp = {}
+            temp['name'] = vrf['name']
+            result.append(temp)
+        return result
+
+
+class JuniperConfigInterfacesPrePostProcessor(PrePostProcessor):
+    """
+    Get vlan configured on juniper SRX
+    """
+
+    def post_process(self, data):
+        """
+        :param data:
+        :return:
+        """
+        result = []
+        if data[0]['vlan']:
+            result.append(data[0])
+        return result
+
+
+class JuniperSwitchPortTableProcessor(PrePostProcessor):
+    """
+    Gets all switch ports: ports without IP address
+    """
+
+    def process_tables(self, tables):
+        """
+        Get all the switch port in showInterface table.
+        :param tables: showInterface
+        :return: list with dict of switch ports
+        """
         result = []
         vlan_interface = ["{}.{}".format(i['interface'], i['unit']) for i in tables['showConfigInterface']]
         for port in tables['showInterface']:
@@ -130,8 +163,16 @@ class JuniperSwitchPortTableProcessor(PrePostProcessor):
 
 
 class JuniperRouterInterfaceTableProcessor(TableProcessor):
+    """
+    Gets all router ports: ports with IP address
+    """
 
     def process_tables(self, tables):
+        """
+        Get all the router interface and corresponding vrf from showInterface and showVRFInterface tables.
+        :param tables: showInterface
+        :return: list with dict of router interfaces
+        """
         result = []
         for port in tables['showInterface']:
             port.update({"vrf": "{}".format(self.get_vrf(port, tables))})
@@ -145,6 +186,11 @@ class JuniperRouterInterfaceTableProcessor(TableProcessor):
 
     @staticmethod
     def get_vrf(port, tables):
+        """
+        :param port: interface in showInterface table
+        :param tables: showVRFInterface table
+        :return: vrf name
+        """
         vrf_name = "master"
         for vrf in tables['showVRFInterface']:
             if port['name'] in vrf['interfaces']:
@@ -153,8 +199,17 @@ class JuniperRouterInterfaceTableProcessor(TableProcessor):
 
 
 class JuniperPortChannelTableProcessor(TableProcessor):
+    """
+    Gets all port channels: ports with members
+    """
 
     def process_tables(self, tables):
+        """
+        Get all the port channels from showInterface tables.
+        :param tables: showInterface
+        :return: list with dict of port channels
+        """
+
         result = []
         for port in tables['showInterface']:
             if port['members']:
@@ -166,6 +221,9 @@ class JuniperPortChannelTableProcessor(TableProcessor):
 
 
 class JuniperRoutesParser(PrePostProcessor):
+    """
+    Get routes from show route detail
+    """
     route_rules = dict(nextHop="Next hop: (.*) via", next_hop_type=".*Next hop type: (.*?), .*",
                                interfaceName=".* via (.*),", routeType="\*?(\w+)\s+Preference:.*",
                                network_interface="Interface: (.*)")
@@ -175,6 +233,11 @@ class JuniperRoutesParser(PrePostProcessor):
     network_name_rule = dict(name="(.*) \(.* ent")
 
     def parse(self, data):
+        """
+        Parse show route instance detail command output
+        :param data: show route detail command output
+        :return: List of dict of routes
+        """
         try:
             result = []
             parser = LineBasedBlockParser("(.*) \(.* ent")
@@ -211,8 +274,16 @@ class JuniperRoutesParser(PrePostProcessor):
 
 
 class JuniperMACTableTableProcessor(TableProcessor):
+    """
+    Get MAC address table
+    """
 
     def process_tables(self, tables):
+        """
+        Read showInterface and showMacTable to create MAC adddress table
+        :param tables: showMacTable,showInterface
+        :return: List of dict of MAC address table
+        """
         result = []
         for mac in tables['showMacTable']:
             for port in tables['showInterface']:
@@ -225,8 +296,16 @@ class JuniperMACTableTableProcessor(TableProcessor):
 
 
 class JuniperVRFParser(PrePostProcessor):
+    """
+    Get vrf and corresponding interfaces
+    """
 
     def parse(self, data):
+        """
+        Parse vrf and interface from show route instance detail command output
+        :param data: show route instance detail command output
+        :return: List of dict of vrf
+        """
         result = []
         temp = {}
         vrf_data = data.splitlines()
@@ -241,6 +320,11 @@ class JuniperVRFParser(PrePostProcessor):
 
     @staticmethod
     def get_interface(vrf):
+        """
+
+        :param vrf: vrf details
+        :return: list of interfaces
+        """
         interfaces = []
         got_interface = False
         if "Interfaces:" in vrf:
@@ -256,8 +340,16 @@ class JuniperVRFParser(PrePostProcessor):
 
 
 class JuniperNeighborsTableParser(PrePostProcessor):
+    """
+    Get lldp neighbours
+    """
 
     def parse(self, data):
+        """
+
+        :param data: Output of show lldp neighbors command
+        :return: list of dict of lldp neighbors
+        """
         result = []
 
         for line in data.splitlines():

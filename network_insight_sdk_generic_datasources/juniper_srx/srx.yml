@@ -1,0 +1,21 @@
+# device_type: Juniper_srx
+
+package_handler:
+  <<: *PACKAGE_HANDLER
+
+command_list:
+  - <<: *SHOW_VERSION
+  - <<: *SHOW_VRF
+  - <<: *GET_VRF
+  - <<: *SHOW_CONFIGURATION_INTERFACES
+  - <<: *SHOW_INTERFACE
+  - <<: *GET_SWTICH_PORT
+  - <<: *GET_ROUTER_INTERFACES
+  - <<: *GET_PORT_CHANNELS
+  - <<: *SHOW_ROUTE_DETAIL
+  - <<: *SHOW_ARP_NO_RESOLVE
+  - <<: *GET_MAC_TABLE
+  - <<: *SHOW_LLDP_NEIGHBORS
+
+result_writer:
+  <<: *RESULT_WRITER

@@ -25,7 +25,6 @@ class JuniperDevicePrePostProcessor(PrePostProcessor):
         """
         temp = {}
 
-        temp.update({"ipAddress/fqdn": "10.40.13.37"}) # Update with your IP/fqdn.
         temp['name'] = "Juniper-{}".format(data[2]['Model'])
         temp['hostname'] = data[1]['Hostname']
         temp['model'] = data[2]['Model']

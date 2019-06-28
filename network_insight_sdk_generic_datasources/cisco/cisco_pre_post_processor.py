@@ -24,7 +24,6 @@ class CiscoDevicePrePostProcessor(PrePostProcessor):
             if 'Device name' in lines[0]:
                 output_lines.append('name: {}'.format(lines[0].split(' ')[-1]))
                 output_lines.append('hostname: {}'.format(lines[0].split(' ')[-1]))
-        output_lines.append('ipAddress/fqdn: 10.40.13.36')
         output_lines.append('os: NXOS')
         output_lines.append('vendor: Cisco')
         output_lines.append('haState: ACTIVE')

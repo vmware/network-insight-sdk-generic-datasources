@@ -185,9 +185,9 @@ vlans                 | mandatory             | all the vlans of bridge        |
 ## 4. YAML Configuration
 
 YAML configuration is defined in sections.
-1. Command list - Contains command definition which needs to be run. Commands defined in top are executed first and one
+1. Workloads - Contains workload definition which needs to be run. Workloads defined in top are executed first and one
 defined in bottom is executed last.
-* Each command definition has following items.
+* Each workload definition has following items.
     * table_id - refer result with an id.
     * command - command to execute
     * block parser - Parser to parse blocks

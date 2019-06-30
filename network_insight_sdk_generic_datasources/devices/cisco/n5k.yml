@@ -3,7 +3,7 @@
 package_handler:
   <<: *PACKAGE_HANDLER
 
-command_list:
+workloads:
   - <<: *SHOW_VERSION
   - <<: *MAC_ADDRESS_TABLE
   - <<: *SHOW_CDP_NEIGHBORS

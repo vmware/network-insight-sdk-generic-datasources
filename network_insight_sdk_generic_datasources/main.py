@@ -31,7 +31,7 @@ def parse_arguments():
 def main():
     import common.physical_device as physical_device
     args = parse_arguments()
-    dir_path = "{}".format(args.device)
+    dir_path = "routers_and_switches/{}".format(args.device)
     # yaml_definition_file_name = "{}_{}_command_map.yml".format(args.device, args.model)
     yaml_definition_file_name = "{}.yml".format(args.device)
     self_zip = True if args.self_zip == 'true' or args.self_zip == 'True' else False

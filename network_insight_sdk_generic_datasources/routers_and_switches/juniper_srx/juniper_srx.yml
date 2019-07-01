@@ -8,7 +8,6 @@ package_handler: &PACKAGE_HANDLER
   name: ZipPackageHandler
   arguments:
     path: /tmp/uani
-    filename: juniper-srx
 
 # Commands added will be executed in sequence
 command_list: &COMMAND_LIST

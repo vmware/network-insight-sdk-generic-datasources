@@ -24,7 +24,7 @@ command_list: &COMMAND_LIST
     block_parser:
       name: parsers.common.block_parser.SimpleBlockParser
     parser:
-      name: juniper_srx.juniper_srx_pre_post_processor.JuniperVRFParser
+      name: routers_and_switches.juniper_srx.juniper_srx_pre_post_processor.JuniperVRFParser
 
   - &GET_VRF
     table_id: vrfs
@@ -39,7 +39,7 @@ command_list: &COMMAND_LIST
       arguments:
         line_pattern: "node"
     parser:
-      name: juniper_srx.juniper_srx_pre_post_processor.JuniperChassisParser
+      name: routers_and_switches.juniper_srx.juniper_srx_pre_post_processor.JuniperChassisParser
 
   - &SHOW_CONFIGURATION_INTERFACES
     table_id: showConfigInterface
@@ -65,7 +65,7 @@ command_list: &COMMAND_LIST
       arguments:
         line_pattern: 'Physical interface:'
     parser:
-      name: juniper_srx.juniper_srx_pre_post_processor.JuniperInterfaceParser
+      name: routers_and_switches.juniper_srx.juniper_srx_pre_post_processor.JuniperInterfaceParser
 
   - &GET_SWTICH_PORT
     table_id: switch-ports
@@ -90,7 +90,7 @@ command_list: &COMMAND_LIST
       arguments:
         line_pattern: '(.*): \d* destinations'
     parser:
-      name: juniper_srx.juniper_srx_pre_post_processor.JuniperRoutesParser
+      name: routers_and_switches.juniper_srx.juniper_srx_pre_post_processor.JuniperRoutesParser
 
   - &SHOW_ARP_NO_RESOLVE
     table_id: showMacTable
@@ -115,7 +115,7 @@ command_list: &COMMAND_LIST
     table_id: neighbors
     command: show lldp neighbors | no-more
     parser:
-      name: juniper_srx.juniper_srx_pre_post_processor.JuniperNeighborsTableParser
+      name: routers_and_switches.juniper_srx.juniper_srx_pre_post_processor.JuniperNeighborsTableParser
 
 result_writer: &RESULT_WRITER
   name: CsvWriter

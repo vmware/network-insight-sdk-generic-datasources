@@ -3,7 +3,7 @@ from network_insight_sdk_generic_datasources.routers_and_switches.juniper_srx.ju
 from network_insight_sdk_generic_datasources.parsers.common.block_parser import LineBasedBlockParser
 
 
-class JuniperDevicePrePostProcessorTestCase(unittest.TestCase):
+class JuniperRoutesParserTestCase(unittest.TestCase):
     def test_post_process(self):
         text = """inet.0: 86 destinations, 129 routes (63 active, 0 holddown, 43 hidden)
                 0.0.0.0/0 (3 entries, 1 announced)
@@ -44,7 +44,6 @@ class JuniperDevicePrePostProcessorTestCase(unittest.TestCase):
                             'nextHop': '77.73.224.160', 'routeType': 'BGP', 'vrf': 'master'}],
                            [{'interfaceName': 'reth0.1564', 'network': '0.0.0.0/0', 'name': '0.0.0.0/0_0',
                              'nextHop': '185.158.146.1', 'routeType': 'Static', 'vrf': 'dmz-vr'}]]
-
 
         parser = LineBasedBlockParser('(.*): \d* destinations')
         data = parser.parse(text)

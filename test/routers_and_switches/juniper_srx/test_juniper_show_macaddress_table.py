@@ -2,9 +2,8 @@ import unittest
 from network_insight_sdk_generic_datasources.parsers.common.horizontal_table_parser import HorizontalTableParser
 
 
-class JuniperDevicePrePostProcessorTestCase(unittest.TestCase):
+class JuniperHorizontalTableParserTestCase(unittest.TestCase):
     def test_post_process(self):
-        parser = HorizontalTableParser()
         text = """\nMAC Address       Address         Interface         Flags
                     58:00:bb:5b:29:30 30.65.0.2       fab0.0                   permanent
                     d0:07:ca:76:99:30 30.66.0.1       fab1.0                   permanent"""
@@ -15,6 +14,7 @@ class JuniperDevicePrePostProcessorTestCase(unittest.TestCase):
                             'address': u'30.66.0.1'}]
 
         header_keys = ['macAddress', 'address', 'switchPort', 'Flags']
+        parser = HorizontalTableParser()
         result = parser.parse(text, skip_head=1, skip_tail=None, header_keys=header_keys)
         self.assertEqual(len(result), 2)
         self.assertEqual(type(result), list)

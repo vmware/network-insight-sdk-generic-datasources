@@ -21,7 +21,7 @@ class XmlParser(object):
                     <model-number>SRX600-PWR-645AC-POE</model-number>\
                     </chassis-module>'''
     >>> parser = XmlParser()
-    >>> pprint.pprint(parser.parse(text))
+    >>> pprint.pprint(parser.parse(text)[0])
     {'chassis-module': {'model-number': 'SRX600-PWR-645AC-POE',
                         'part-number': '123-456',
                         'serial-number': 'AA1234'}}

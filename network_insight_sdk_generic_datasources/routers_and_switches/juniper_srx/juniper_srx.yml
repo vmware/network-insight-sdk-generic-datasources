@@ -25,7 +25,7 @@ workloads: &WORKLOADS
     command: show chassis hardware | display xml | no-more
     parser:
       pre_post_processor: JuniperChassisHardwarePrePostProcessor
-      name: network_insight_sdk_generic_datasources.parsers.common.xml_parser.XmlParser
+      name: *XML_PARSER
 
   - &GET_SRX_DETAILS
     table_id: switch

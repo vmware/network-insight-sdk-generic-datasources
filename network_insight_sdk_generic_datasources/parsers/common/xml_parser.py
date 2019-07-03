@@ -51,55 +51,6 @@ class XmlDictObject(dict):
             initdict = {}
         dict.__init__(self, initdict)
 
-    def __getattr__(self, item):
-        return self.__getitem__(item)
-
-    def __getstate__(self):
-        state = self.__dict__.copy()
-        return state
-
-    def __setattr__(self, item, value):
-        self.__setitem__(item, value)
-
-    def __str__(self):
-        if self.has_key('_text'):
-            return self.__getitem__('_text')
-        else:
-            return ''
-
-    def __setstate__(self, items):
-        for key, val in items:
-            self.__dict__[key] = val
-
-    @staticmethod
-    def Wrap(x):
-        """
-        Static method to wrap a dictionary recursively as an XmlDictObject
-        """
-
-        if isinstance(x, dict):
-            return XmlDictObject((k, XmlDictObject.Wrap(v)) for (k, v) in x.iteritems())
-        elif isinstance(x, list):
-            return [XmlDictObject.Wrap(v) for v in x]
-        else:
-            return x
-
-    @staticmethod
-    def _UnWrap(x):
-        if isinstance(x, dict):
-            return dict((k, XmlDictObject._UnWrap(v)) for (k, v) in x.iteritems())
-        elif isinstance(x, list):
-            return [XmlDictObject._UnWrap(v) for v in x]
-        else:
-            return x
-
-    def UnWrap(self):
-        """
-        Recursively converts an XmlDictObject to a standard dictionary and returns the result.
-        """
-
-        return XmlDictObject._UnWrap(self)
-
 
 def _ConvertXmlToDictRecurse(node, dictclass):
     nodedict = dictclass()

@@ -7,7 +7,7 @@ import network_insight_sdk_generic_datasources.common.yaml_utilities as yaml_uti
 from network_insight_sdk_generic_datasources.archive.zip_archiver import ZipArchiver
 
 from network_insight_sdk_generic_datasources.common.constants import TABLE_JOINERS_KEY
-from network_insight_sdk_generic_datasources.common.constants import COMMAND_LIST_KEY
+from network_insight_sdk_generic_datasources.common.constants import WORKLOADS_KEY
 from network_insight_sdk_generic_datasources.common.constants import PACKAGE_HANDLER_KEY
 from network_insight_sdk_generic_datasources.common.constants import RESULT_WRITER_KEY
 from network_insight_sdk_generic_datasources.common.constants import ARGUMENTS_KEY
@@ -43,7 +43,7 @@ def main():
         table_joiner = configuration[args.model][TABLE_JOINERS_KEY] if TABLE_JOINERS_KEY in configuration[
             args.model] else None
         physical_device = physical_device.PhysicalDevice(args.device, args.model,
-                                                         configuration[args.model][COMMAND_LIST_KEY],
+                                                         configuration[args.model][WORKLOADS_KEY],
                                                          args,
                                                          table_joiner,
                                                          configuration[args.model][RESULT_WRITER_KEY])

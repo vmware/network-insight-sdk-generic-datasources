@@ -4,7 +4,7 @@
 package_handler:
   <<: *PACKAGE_HANDLER
 
-command_list:
+workloads:
   - <<: *SHOW_VERSION
   - <<: *SHOW_VRF_ALL
   - <<: *SHOW_INTERFACE

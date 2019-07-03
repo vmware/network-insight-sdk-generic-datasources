@@ -33,10 +33,12 @@ class XmlParser(object):
         @param xml_str:
         @return:
         """
-        xml_str = re.sub(' xmlns="[^"]+"', '', xml_str, count=1)
+        pattern = ' xmlns="[^"]+"'
+        count = len(re.findall(pattern, xml_str))
+        xml_str = re.sub(pattern, '', xml_str, count=count)
         root = ElementTree.XML(xml_str)
         pydicts = ConvertXmlToDict(root)
-        return pydicts
+        return [pydicts]
 
 
 class XmlDictObject(dict):

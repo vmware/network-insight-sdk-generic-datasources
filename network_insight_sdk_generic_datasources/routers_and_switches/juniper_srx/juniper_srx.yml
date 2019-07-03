@@ -2,6 +2,7 @@
 vertical_table_parser: &VERTICAL_TABLE_PARSER network_insight_sdk_generic_datasources.parsers.common.vertical_table_parser.VerticalTableParser
 horizontal_table_parser: &HORIZONTAL_TABLE_PARSER network_insight_sdk_generic_datasources.parsers.common.horizontal_table_parser.HorizontalTableParser
 generic_text_parser: &GENERIC_TEXT_PARSER network_insight_sdk_generic_datasources.parsers.common.text_parser.GenericTextParser
+xml_parser: &XML_PARSER network_insight_sdk_generic_datasources.parsers.common.xml_parser.XmlParser
 
 
 package_handler: &PACKAGE_HANDLER
@@ -13,11 +14,23 @@ package_handler: &PACKAGE_HANDLER
 # workloads added will be executed in sequence
 workloads: &WORKLOADS
   - &SHOW_VERSION
-    table_id: switch
+    table_id: showVersion
     command: show version
     parser:
       pre_post_processor: JuniperDevicePrePostProcessor
       name: *VERTICAL_TABLE_PARSER
+
+  - &SHOW_CHASSIS_HARDWARE
+    table_id: showChassishardware
+    command: show chassis hardware | display xml | no-more
+    parser:
+      pre_post_processor: JuniperChassisHardwarePrePostProcessor
+      name: network_insight_sdk_generic_datasources.parsers.common.xml_parser.XmlParser
+
+  - &GET_SRX_DETAILS
+    table_id: switch
+    reuse_tables: showVersion,showChassishardware
+    reuse_table_processor: JuniperSRXDetails
 
   - &SHOW_VRF
     table_id: showVRFInterface
@@ -31,16 +44,6 @@ workloads: &WORKLOADS
     table_id: vrfs
     reuse_tables: showVRFInterface
     reuse_table_processor: JuniperVRFTableProcessor
-
-  - &SHOW_CHASSIS_HARDWARE
-    table_id: showChassishardware
-    command: show chassis hardware
-    block_parser:
-      name: GenericBlockParser
-      arguments:
-        line_pattern: "node"
-    parser:
-      name: routers_and_switches.juniper_srx.juniper_srx_pre_post_processor.JuniperChassisParser
 
   - &SHOW_CONFIGURATION_INTERFACES
     table_id: showConfigInterface

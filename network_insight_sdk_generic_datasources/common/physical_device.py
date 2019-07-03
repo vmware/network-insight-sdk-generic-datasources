@@ -34,10 +34,10 @@ class PhysicalDevice(object):
     output format. For example, CSV for Excel.
     """
 
-    def __init__(self, device, model,  command_list, credentials, table_joiners, result_writer):
+    def __init__(self, device, model,  workloads, credentials, table_joiners, result_writer):
         self.device = device
         self.model = model
-        self.command_list = command_list
+        self.workloads = workloads
         self.credentials = credentials
         self.table_joiners = table_joiners
         self.result_writer = result_writer
@@ -79,7 +79,7 @@ class PhysicalDevice(object):
                                                     device_type=self.credentials.device_type,
                                                     port=self.credentials.port)
             command_output_dict = {}
-            for cmd in self.command_list:
+            for cmd in self.workloads:
                 command_id = cmd[TABLE_ID_KEY]
                 if REUSE_TABLES_KEY in cmd:
                     table = self.process_tables(cmd)

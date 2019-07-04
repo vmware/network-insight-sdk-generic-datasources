@@ -26,6 +26,8 @@ workloads: &WORKLOADS
     parser:
       pre_post_processor: JuniperChassisHardwarePrePostProcessor
       name: *XML_PARSER
+      arguments:
+        root_tag: rpc-reply
 
   - &GET_SRX_DETAILS
     table_id: switch

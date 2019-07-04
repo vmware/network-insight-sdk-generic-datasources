@@ -4,6 +4,7 @@ import re
 from xml.etree import ElementTree
 from network_insight_sdk_generic_datasources.parsers.common.block_parser import PatternBasedBlockParser
 
+
 class XmlParser(object):
     """
     XML Output like below can be parsed with xml parser and get list of dictionary
@@ -16,16 +17,15 @@ class XmlParser(object):
     >>> from network_insight_sdk_generic_datasources.parsers.common.vertical_table_parser import VerticalTableParser
     >>> import pprint
     >>> text = '''<chassis-module>\
-                    <part-number>123-456</part-number>\
-                    <serial-number>AA1234</serial-number>\
-                    <model-number>SRX600-PWR-645AC-POE</model-number>\
-                    </chassis-module>\
-                    ]]>]]>'''
+                    \\n<part-number>123-456</part-number>\
+                    \\n<serial-number>AA1234</serial-number>\
+                    \\n<model-number>SRX600-PWR-645AC-POE</model-number>\
+                    \\n</chassis-module>'''
     >>> parser = XmlParser()
-    >>> pprint.pprint(parser.parse(text)[0])
-    {'root': {'chassis-module': {'model-number': 'SRX600-PWR-645AC-POE',
-                                 'part-number': '123-456',
-                                 'serial-number': 'AA1234'}}}
+    >>> pprint.pprint(parser.parse(text, 'chassis-module')[0])
+    {'model-number': 'SRX600-PWR-645AC-POE',
+     'part-number': '123-456',
+     'serial-number': 'AA1234'}
     """
     def parse(self, xml_str, root_tag):
         """
@@ -35,7 +35,7 @@ class XmlParser(object):
         """
         data = []
         try:
-            parser = PatternBasedBlockParser(start_pattern="<{} .*>".format(root_tag),
+            parser = PatternBasedBlockParser(start_pattern="<{}.*>".format(root_tag),
                                              end_pattern="</{}>".format(root_tag))
             blocks = parser.parse(xml_str)
             for block in blocks:

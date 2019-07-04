@@ -33,6 +33,7 @@ class JuniperDevicePrePostProcessor(PrePostProcessor):
         temp['vendor'] = "Juniper"
         return [temp]
 
+
 class JuniperChassisHardwarePrePostProcessor(PrePostProcessor):
     """
     Get details of juniper SRX chassis hardware details
@@ -45,9 +46,10 @@ class JuniperChassisHardwarePrePostProcessor(PrePostProcessor):
         :return: list with dict containing Juniper SRX details
         """
         temp = {}
-        for i in data[0]['rpc-reply']['multi-routing-engine-results']['multi-routing-engine-item']:
+        for i in data[0]['multi-routing-engine-results']['multi-routing-engine-item']:
             if i['re-name'] == "node0":
                 temp["serial"] = i['chassis-inventory']['chassis']['serial-number']
+                break
         return [temp]
 
 
@@ -64,7 +66,7 @@ class JuniperSRXDetails(TableProcessor):
         return tables['showVersion']
 
 
-class JuniperInterfaceParser():
+class JuniperInterfaceParser(object):
     """
     Parse output of show interface detail command to get all switch ports
     """
@@ -75,7 +77,6 @@ class JuniperInterfaceParser():
 
     logical_interface_regex = dict(name="Logical interface (.*) \(Index .*", ipAddress=".*Local: (.*), Broadcast:.*",
                                    mask=".*Destination: (.*), Local:.*, Broadcast:.*")
-
 
     def parse(self, data):
         """

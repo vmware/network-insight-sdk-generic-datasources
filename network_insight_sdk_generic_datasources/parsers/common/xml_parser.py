@@ -2,11 +2,11 @@
 # SPDX-License-Identifier: BSD-2-Clause
 import re
 from xml.etree import ElementTree
-
+from network_insight_sdk_generic_datasources.parsers.common.block_parser import PatternBasedBlockParser
 
 class XmlParser(object):
     """
-    XML Output like below can be parsed with vertical table parser
+    XML Output like below can be parsed with xml parser and get list of dictionary
     <chassis-module>\
             <part-number>123-456</part-number>\
             <serial-number>AA1234</serial-number>\
@@ -19,26 +19,35 @@ class XmlParser(object):
                     <part-number>123-456</part-number>\
                     <serial-number>AA1234</serial-number>\
                     <model-number>SRX600-PWR-645AC-POE</model-number>\
-                    </chassis-module>'''
+                    </chassis-module>\
+                    ]]>]]>'''
     >>> parser = XmlParser()
     >>> pprint.pprint(parser.parse(text)[0])
-    {'chassis-module': {'model-number': 'SRX600-PWR-645AC-POE',
-                        'part-number': '123-456',
-                        'serial-number': 'AA1234'}}
+    {'root': {'chassis-module': {'model-number': 'SRX600-PWR-645AC-POE',
+                                 'part-number': '123-456',
+                                 'serial-number': 'AA1234'}}}
     """
-
-    def parse(self, xml_str):
+    def parse(self, xml_str, root_tag):
         """
         Calling the parse function will return list
         @param xml_str:
         @return:
         """
-        pattern = ' xmlns="[^"]+"'
-        count = len(re.findall(pattern, xml_str))
-        xml_str = re.sub(pattern, '', xml_str, count=count)
-        root = ElementTree.XML(xml_str)
-        pydicts = ConvertXmlToDict(root)
-        return [pydicts]
+        data = []
+        try:
+            parser = PatternBasedBlockParser(start_pattern="<{} .*>".format(root_tag),
+                                             end_pattern="</{}>".format(root_tag))
+            blocks = parser.parse(xml_str)
+            for block in blocks:
+                pattern = ' xmlns="[^"]+"'
+                count = len(re.findall(pattern, block))
+                block = re.sub(pattern, '', block, count=count)
+                root = ElementTree.XML(block)
+                pydicts = ConvertXmlToDict(root)
+                data.append(pydicts[root_tag])
+        except Exception as e:
+            raise e
+        return data
 
 
 class XmlDictObject(dict):

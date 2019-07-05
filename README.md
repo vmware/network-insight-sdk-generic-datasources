@@ -15,6 +15,7 @@ fed into vRNI. SDK generates files compatible to vRNI version 4.2.0 onwards. Dri
 5. [ Parser Definition ](#parser-definition)
 6. [ Table Joiner ](#table-joiner)
 7. [ Example ](#example)
+8. [ vRNI API Ref ](#vrni-api-ref)
 
 <a name="dependencies"></a>
 ## 1. Dependencies
@@ -269,6 +270,18 @@ Table Joiner configuration accept following parameters.
 ## 7. Example
 Example depicts the thought process on implementing a new unsupported device.
 See example [here.](EXAMPLE.md)
+
+
+<a name="vrni-api-ref"></a>
+## 8. vRNI API Reference
+SDK also includes API integration with vRNI. Module `network_insight_sdk_generic_datasources/common/vrni_uani_ops.py`
+contain sample APIs which can be used to call and uploaded generated with SDK.
+    * Login API - Login to vRNI and get token for subsequent APIs
+    * List Data Source - List existing Generic Routers & Switches Data Sources.
+      Note: Data Source must exist before running list data source api
+    * Get Data Source - Get information about specific Generic Routers & Switches Data Sources
+    Note: Data Source must exist before running get data source api
+    * Upload File - Upload generated zip file for specific data source.
 
 Contributing
 ============

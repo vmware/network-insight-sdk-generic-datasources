@@ -275,7 +275,7 @@ See example [here.](EXAMPLE.md)
 <a name="vrni-api-ref"></a>
 ## 8. vRNI API Reference
 SDK also includes API integration with vRNI. Module `network_insight_sdk_generic_datasources/common/vrni_uani_ops.py`
-contain sample APIs which can be used to call and uploaded generated with SDK.
+contain sample APIs which can be used to call and upload generated with SDK.
     * Login API - Login to vRNI and get token for subsequent APIs
     * List Data Source - List existing Generic Routers & Switches Data Sources.
       Note: Data Source must exist before running list data source api

@@ -79,21 +79,22 @@ class PhysicalDevice(object):
                                                     device_type=self.credentials.device_type,
                                                     port=self.credentials.port)
             command_output_dict = {}
-            for cmd in self.workloads:
-                command_id = cmd[TABLE_ID_KEY]
-                if REUSE_TABLES_KEY in cmd:
-                    table = self.process_tables(cmd)
-                elif REUSE_COMMAND_KEY in cmd:
-                    command_result = command_output_dict[cmd[REUSE_COMMAND_KEY]]
-                    cmd[COMMAND_KEY] = cmd[REUSE_COMMAND_KEY]
-                    py_logger.info('Command %s Result %s' % (cmd[REUSE_COMMAND_KEY], command_result))
-                    table = self.parse_command_output(cmd, command_result)
+            for workload in self.workloads:
+                command_id = workload[TABLE_ID_KEY]
+                if REUSE_TABLES_KEY in workload:
+                    table = self.process_tables(workload)
+                elif REUSE_COMMAND_KEY in workload:
+                    command_result = command_output_dict[workload[REUSE_COMMAND_KEY]]
+                    workload[COMMAND_KEY] = workload[REUSE_COMMAND_KEY]
+                    py_logger.info('Command %s Result %s' % (workload[REUSE_COMMAND_KEY], command_result))
+                    table = self.parse_command_output(workload, command_result)
                 else:
-                    command_result = ssh_connect_handler.execute_command(cmd[COMMAND_KEY])
-                    command_output_dict[cmd[COMMAND_KEY]] = command_result
-                    py_logger.info('Command %s Result %s' % (cmd[COMMAND_KEY], command_result))
-                    table = self.parse_command_output(cmd, command_result)
-
+                    command_result = ssh_connect_handler.execute_command(workload[COMMAND_KEY])
+                    command_output_dict[workload[COMMAND_KEY]] = command_result
+                    py_logger.info('Command %s Result %s' % (workload[COMMAND_KEY], command_result))
+                    table = self.parse_command_output(workload, command_result)
+                if 'switch' in command_id:
+                    table[0]['ipAddress/fqdn'] = self.credentials.ip_or_fqdn
                 self.result_map[command_id] = table
         except Exception as e:
             py_logger.error("Error occurred while executing command : {}".format(e))

@@ -23,9 +23,7 @@ class JuniperDevicePrePostProcessor(PrePostProcessor):
         :param data: Parsed output of show version command
         :return: list with dict containing Juniper SRX details
         """
-        temp = {}
-
-        temp.update({"ipAddress/fqdn": "10.40.13.37"}) # Update with your IP/fqdn.
+        temp = dict()
         temp['name'] = "Juniper-{}".format(data[2]['Model'])
         temp['hostname'] = data[1]['Hostname']
         temp['model'] = data[2]['Model']
@@ -45,7 +43,6 @@ class JuniperInterfaceParser():
 
     logical_interface_regex = dict(name="Logical interface (.*) \(Index .*", ipAddress=".*Local: (.*), Broadcast:.*",
                                    mask=".*Destination: (.*), Local:.*, Broadcast:.*")
-
 
     def parse(self, data):
         """
@@ -142,7 +139,6 @@ class JuniperSwitchPortTableProcessor(PrePostProcessor):
     """
     Gets all switch ports: ports without IP address
     """
-
     def process_tables(self, tables):
         """
         Get all the switch port in showInterface table.

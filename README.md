@@ -32,7 +32,7 @@ pip install -r requirements.txt
 
 After cloning this project and project folder in PYTHONPATH. Then run following command to run SDK.
 ```shell
-$ python ./network-insight-sdk-generic-datasources/main.py -d <device> -m <model> -s <device_type> -i <ip-address> -u <username> -p <password> -o <output.zip>
+$ python ./network_insight_sdk_generic_datasources/main.py -d <device> -m <model> -s <device_type> -i <ip-address> -u <username> -p <password> -o <output.zip>
 ```
 
 > Command parameter explanation

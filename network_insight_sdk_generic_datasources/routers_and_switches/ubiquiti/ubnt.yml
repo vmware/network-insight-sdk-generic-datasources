@@ -1,4 +1,3 @@
-
 vertical_table_parser: &VERTICAL_TABLE_PARSER network_insight_sdk_generic_datasources.parsers.common.vertical_table_parser.VerticalTableParser
 horizontal_table_parser: &HORIZONTAL_TABLE_PARSER network_insight_sdk_generic_datasources.parsers.common.horizontal_table_parser.HorizontalTableParser
 generic_text_parser: &GENERIC_TEXT_PARSER network_insight_sdk_generic_datasources.parsers.common.text_parser.GenericTextParser
@@ -6,8 +5,7 @@ generic_text_parser: &GENERIC_TEXT_PARSER network_insight_sdk_generic_datasource
 package_handler: &PACKAGE_HANDLER
   name: ZipPackageHandler
   arguments:
-    path: /home/martijn/network-insight/share-system-tests/misc-script/network-insight-sdk-generic-datasources/tmp
-    filename: ubnt-edgerouter-lite-device
+    path: /tmp/uani
 
 # workloads added will be executed in sequence
 workloads: &WORKLOADS
@@ -155,7 +153,7 @@ workloads: &WORKLOADS
 
 result_writer: &RESULT_WRITER
   name: CsvWriter
-  path: /home/martijn/network-insight/share-system-tests/misc-script/network-insight-sdk-generic-datasources/tmp
+  path: /tmp/uani
   table_id:
     - switch
     - mac-address-table

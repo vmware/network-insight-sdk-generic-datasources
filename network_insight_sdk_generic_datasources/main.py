@@ -23,6 +23,7 @@ def parse_arguments():
     parser.add_argument('-p', '--password', action='store', help='Password for login')
     parser.add_argument('-z', '--self_zip', action='store', help='Self Zip the Project', default='false')
     parser.add_argument('-P', '--port', action='store', help='Specific port to connect', default='22')
+    parser.add_argument('-o', '--output_zip', action='store', help='Output zip file to create with CSVs')
     args = parser.parse_args()
     return args
 
@@ -48,7 +49,7 @@ def main():
                                                          configuration[args.model][RESULT_WRITER_KEY])
         physical_device.process()
         if PACKAGE_HANDLER_KEY in configuration and ARGUMENTS_KEY in configuration[PACKAGE_HANDLER_KEY]:
-            zipper = ZipArchiver(self_zip, **configuration[PACKAGE_HANDLER_KEY][ARGUMENTS_KEY])
+            zipper = ZipArchiver(self_zip, args.output_zip, **configuration[PACKAGE_HANDLER_KEY][ARGUMENTS_KEY])
             zipper.zipdir()
 
 

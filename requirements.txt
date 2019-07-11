@@ -1,4 +1,4 @@
 netmiko
 requests
 pyyaml
-git clone https://github.com/vmware/network-insight-sdk-python.git
+-e git+https://github.com/vmware/network-insight-sdk-python.git#egg=network-insight-sdk-python

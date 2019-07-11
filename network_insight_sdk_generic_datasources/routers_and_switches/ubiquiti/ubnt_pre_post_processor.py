@@ -26,12 +26,10 @@ class UBNTVersionPrePostProcessor(PrePostProcessor):
         new_d['haState'] = "ACTIVE"
         new_d['vendor'] = "Ubiquiti Networks"
         new_d['name'] = "CHANGEME"
-        new_d['ipAddress/fqdn'] = "CHANGEME"
         new_d['hostname'] = "CHANGEME"
 
         # rearrange for the right order (4.1 requires it)
         new_new_d = dict()
-        new_new_d['ipAddress/fqdn'] = new_d['ipAddress/fqdn']
         new_new_d['name'] = new_d['name']
         new_new_d['serial'] = new_d['serial']
         new_new_d['os'] = new_d['os']

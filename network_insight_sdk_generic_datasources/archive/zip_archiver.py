@@ -11,7 +11,7 @@ class ZipArchiver(object):
     """
     Utility for creating zip file out of a directory containing other files.
     """
-    def __init__(self, self_zip=False, path=None, filename=None):
+    def __init__(self, self_zip=False, filename=None, path=None):
         if path is None:
             raise ValueError("Invalid Path. Please provide path.")
         if filename is None:
@@ -32,7 +32,8 @@ class ZipArchiver(object):
             return
 
         self.copy_project_base()
-        zip_file_path = '{}/{}.zip'.format(os.path.abspath(os.path.join(self.path, os.pardir)), self.filename)
+        zipfile_path, zipfile_name = os.path.split(os.path.abspath(self.filename))
+        zip_file_path = '{}/{}'.format(zipfile_path, zipfile_name)
         zipf = zipfile.ZipFile(zip_file_path, 'w', zipfile.ZIP_DEFLATED)
         for root, dirs, files in os.walk(self.path):
             for f in files:
@@ -54,5 +55,5 @@ class ZipArchiver(object):
 
 
 if __name__ == '__main__':
-    zipper = ZipArchiver('/tmp/mydir', 'myfile')
+    zipper = ZipArchiver('/tmp/mydir', 'myfile.zip')
     zipper.zipdir()

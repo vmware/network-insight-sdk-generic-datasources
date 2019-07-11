@@ -7,7 +7,6 @@ package_handler: &PACKAGE_HANDLER
   name: ZipPackageHandler
   arguments:
     path: /tmp/uani
-    filename: cisco-device
 
 # workloads added will be executed in sequence
 workloads: &WORKLOADS

@@ -15,6 +15,8 @@ fed into vRNI. SDK generates files compatible to vRNI version 4.2.0 onwards. Dri
 5. [ Parser Definition ](#parser-definition)
 6. [ Table Joiner ](#table-joiner)
 7. [ Example ](#example)
+8. [ Uploading Output Zipfile ](#vrni-api-ref)
+9. [ Running SDK and Uploading ](#run-and-upload)
 
 <a name="dependencies"></a>
 ## 1. Dependencies
@@ -269,6 +271,35 @@ Table Joiner configuration accept following parameters.
 ## 7. Example
 Example depicts the thought process on implementing a new unsupported device.
 See example [here.](EXAMPLE.md)
+
+<a name="vrni-api-ref"></a>
+## 8. Uploading Output Zipfile
+This SDK also includes API integration with vRNI. The script `network_insight_sdk_generic_datasources/common/vrni_uani_ops.py` can be run using the following parameters:
+
+```
+python network_insight_sdk_generic_datasources/common/vrni_uani_ops.py --platform_ip my-platform-hostname \
+  --username admin@local --password 'VMware1!' \
+  --domain_type LOCAL \
+  --zipfile output-sdk-generic-ds.zip --datasource_host router1.lab.corp
+```
+
+The functions of this script could also be used to integrate into other scripts.
+  * Login API - Login to vRNI and get token for subsequent APIs
+  * List Data Source - List existing Generic Routers & Switches Data Sources. Note: Data Source must exist before running list data source api
+  * Get Data Source - Get information about specific Generic Routers & Switches Data Sources Note: Data Source must exist before running get data source api
+  * Upload File - Upload generated zip file for specific data source.
+
+<a name="run-and-upload"></a>
+## 9. Running SDK and Uploading
+
+Combining the SDK and the upload script would go as follows:
+
+```
+export PYTHONPATH=$PYTHONPATH:~/network-insight-sdk-generic-datasources
+python network_insight_sdk_generic_datasources/main.py -d juniper_srx -m srx -s JUNIPER_JUNOS -i fw1.srx.lab -u rancid -p 'R4nc1D' -o fw1.srx.lab.zip
+python network_insight_sdk_generic_datasources/common/vrni_uani_ops.py --platform_ip ni-platform.lab --username admin@local --password 'VMware1!' --datasource_host fw1.srx.lab --zipfile fw1.srx.lab.zip
+```
+
 
 Contributing
 ============

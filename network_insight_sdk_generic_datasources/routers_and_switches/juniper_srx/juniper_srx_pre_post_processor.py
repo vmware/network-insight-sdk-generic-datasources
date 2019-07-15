@@ -32,7 +32,39 @@ class JuniperDevicePrePostProcessor(PrePostProcessor):
         return [temp]
 
 
-class JuniperInterfaceParser():
+class JuniperChassisHardwarePrePostProcessor(PrePostProcessor):
+    """
+    Get details of juniper SRX chassis hardware details
+    """
+
+    def post_process(self, data):
+        """
+        Get details of juniper SRX
+        :param data: Parsed output of show version command
+        :return: list with dict containing Juniper SRX details
+        """
+        temp = {}
+        for i in data[0]['multi-routing-engine-results']['multi-routing-engine-item']:
+            if i['re-name'] == "node0":
+                temp["serial"] = i['chassis-inventory']['chassis']['serial-number']
+                break
+        return [temp]
+
+
+class JuniperSRXDetails(TableProcessor):
+    """
+    Get get details of juniper srx from showVersion,showChassishardware
+    """
+
+    def process_tables(self, tables):
+        """
+        Returns update showVersion table with serial
+        """
+        tables['showVersion'][0].update(tables['showChassishardware'][0])
+        return tables['showVersion']
+
+
+class JuniperInterfaceParser(object):
     """
     Parse output of show interface detail command to get all switch ports
     """

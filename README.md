@@ -284,11 +284,6 @@ python /tmp/network-insight-sdk-python/examples/add_generic_switch_router.py --p
   --zip_file_path path_of_output-sdk-generic-ds.zip
 ```
 
-The functions of this script could also be used to integrate into other scripts.
-  * Login API - Login to vRNI and get token for subsequent APIs
-  * List Data Source - List existing Generic Routers & Switches Data Sources. Note: Data Source must exist before running list data source api
-  * Get Data Source - Get information about specific Generic Routers & Switches Data Sources Note: Data Source must exist before running get data source api
-  * Upload File - Upload generated zip file for specific data source.
 
 <a name="run-and-upload"></a>
 ## 9. Running SDK and Uploading

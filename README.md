@@ -279,9 +279,8 @@ This SDK also includes API integration with vRNI. The script `network_insight_sd
 ```
 export PYTHONPATH=$PYTHONPATH:/tmp/network-insight-sdk-python/swagger_client-py2.7.egg
 python /tmp/network-insight-sdk-python/examples/add_generic_switch_router.py --platform_ip my-platform-hostname \
-  --proxy_ip my-proxy-hostname --username admin@local --password ‘VMware1!’ \
-  --device_ip_or_fqdn device_ip_or_fqdn \
-  --zip_file_path path_of_output-sdk-generic-ds.zip
+ --proxy_ip my-proxy-hostname --username admin@local --password 'VMware1!' \
+ --device_ip_or_fqdn device_ip_or_fqdn --zip_file_path path_of_output-sdk-generic-ds.zip
 ```
 
 <a name="run-and-upload"></a>
@@ -294,9 +293,9 @@ export PYTHONPATH=$PYTHONPATH:~/network-insight-sdk-generic-datasources
 python network_insight_sdk_generic_datasources/main.py -d juniper_srx -m srx -s JUNIPER_JUNOS -i fw1.srx.lab -u rancid -p 'R4nc1D' -o fw1.srx.lab.zip
 
 export PYTHONPATH=$PYTHONPATH:/tmp/network-insight-sdk-python/swagger_client-py2.7.egg
-python /tmp/network-insight-sdk-python/examples/add_generic_switch_router.py --platform_ip ni-platform.lab \
---proxy_ip ni-proxy.lab --username admin@local  --password ‘VMware1!’ \
---device_ip_or_fqdn fw1.srx.lab --zipfile fw1.srx.lab.zip
+python /tmp/network-insight-sdk-python/examples/add_generic_switch_router.py --platform_ip my-platform-hostname \
+ --proxy_ip my-proxy-hostname --username admin@local --password 'VMware1!' \
+ --device_ip_or_fqdn device_ip_or_fqdn --zip_file_path path_of_output-sdk-generic-ds.zip
 ```
 
 

@@ -296,7 +296,7 @@ python network_insight_sdk_generic_datasources/main.py -d juniper_srx -m srx -s 
 export PYTHONPATH=$PYTHONPATH:/tmp/network-insight-sdk-python/swagger_client-py2.7.egg
 python /tmp/network-insight-sdk-python/examples/add_generic_switch_router.py --platform_ip ni-platform.lab \
 --proxy_ip ni-proxy.lab --username admin@local  --password ‘VMware1!’ \
---device_ip_or_fqdnfw1.srx.lab --zipfile fw1.srx.lab.zip
+--device_ip_or_fqdn fw1.srx.lab --zipfile fw1.srx.lab.zip
 ```
 
 

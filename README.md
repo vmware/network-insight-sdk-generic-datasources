@@ -284,7 +284,6 @@ python /tmp/network-insight-sdk-python/examples/add_generic_switch_router.py --p
   --zip_file_path path_of_output-sdk-generic-ds.zip
 ```
 
-
 <a name="run-and-upload"></a>
 ## 9. Running SDK and Uploading
 

@@ -15,6 +15,8 @@ fed into vRNI. SDK generates files compatible to vRNI version 4.2.0 onwards. Dri
 5. [ Parser Definition ](#parser-definition)
 6. [ Table Joiner ](#table-joiner)
 7. [ Example ](#example)
+8. [ Uploading Output Zipfile ](#vrni-api-ref)
+9. [ Running SDK and Uploading ](#run-and-upload)
 
 <a name="dependencies"></a>
 ## 1. Dependencies
@@ -24,8 +26,9 @@ fed into vRNI. SDK generates files compatible to vRNI version 4.2.0 onwards. Dri
 
 Install dependencies using following command.
 ```
-pip install -r requirements.txt
+pip install --src . -r requirements.txt
 ```
+
 
 <a name="launch-sdk"></a>
 ## 2. Launch SDK
@@ -269,6 +272,33 @@ Table Joiner configuration accept following parameters.
 ## 7. Example
 Example depicts the thought process on implementing a new unsupported device.
 See example [here.](EXAMPLE.md)
+
+<a name="vrni-api-ref"></a>
+## 8. Uploading Output Zipfile
+This SDK also includes API integration with vRNI. The script `network_insight_sdk_generic_datasources/common/vrni_uani_ops.py` can be run using the following parameters:
+
+```
+export PYTHONPATH=$PYTHONPATH:./network-insight-sdk-python/swagger_client-py2.7.egg
+python ./network-insight-sdk-python/examples/add_generic_switch_router.py --platform_ip my-platform-hostname \
+ --proxy_ip my-proxy-hostname --username admin@local --password 'VMware1!' \
+ --device_ip_or_fqdn device_ip_or_fqdn --zip_file_path path_of_output-sdk-generic-ds.zip
+```
+
+<a name="run-and-upload"></a>
+## 9. Running SDK and Uploading
+
+Combining the SDK and the upload script would go as follows:
+
+```
+export PYTHONPATH=$PYTHONPATH:~/network-insight-sdk-generic-datasources
+python network_insight_sdk_generic_datasources/main.py -d juniper_srx -m srx -s JUNIPER_JUNOS -i fw1.srx.lab -u rancid -p 'R4nc1D' -o fw1.srx.lab.zip
+
+export PYTHONPATH=$PYTHONPATH:./network-insight-sdk-python/swagger_client-py2.7.egg
+python ./network-insight-sdk-python/examples/add_generic_switch_router.py --platform_ip my-platform-hostname \
+ --proxy_ip my-proxy-hostname --username admin@local --password 'VMware1!' \
+ --device_ip_or_fqdn device_ip_or_fqdn --zip_file_path path_of_output-sdk-generic-ds.zip
+```
+
 
 Contributing
 ============

@@ -26,7 +26,7 @@ fed into vRNI. SDK generates files compatible to vRNI version 4.2.0 onwards. Dri
 
 Install dependencies using following command.
 ```
-pip install --src /tmp -r requirements.txt
+pip install -r requirements.txt
 ```
 
 <a name="launch-sdk"></a>

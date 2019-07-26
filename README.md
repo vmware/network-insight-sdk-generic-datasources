@@ -8,7 +8,7 @@ Routes, etc. SDK can connect to physical device and execute commands. Output of 
 files in specific format (eg. CSV). Files generated are then bundled in ZIP format which can then be
 fed into vRNI. SDK generates files compatible to vRNI version 4.2.0 onwards. Driver in SDK is governed by YAML configuration file.
 
-1. [ Envirnoment Requirement ](#envirnoment)
+1. [ Envirnoment Requirements ](#envirnoment)
 2. [ Dependencies ](#dependencies)
 3. [ Launch SDK ](#launch-sdk)
 4. [ Device Configuration File ](#zipfile)
@@ -20,11 +20,11 @@ fed into vRNI. SDK generates files compatible to vRNI version 4.2.0 onwards. Dri
 10. [ Running SDK and Uploading ](#run-and-upload)
 
 <a name="envirnoment"></a>
-## 1. Envirnoment Requirement
-* Ubuntu machine / Local workstation (MAC, Windows)
-* Pre-requisite packages:
+## 1. Envirnoment Requirements
+* linux based system like ubuntu, CentOS, fedora, etc.
+* Pre-requisite packages/tools should be installed in environment:
     * git
-    * python
+    * python2.7.13 onwards
 
 <a name="dependencies"></a>
 ## 2. Dependencies
@@ -288,7 +288,7 @@ This SDK also includes API integration with vRNI. The script `network_insight_sd
 ```
 export PYTHONPATH=$PYTHONPATH:./network-insight-sdk-python/swagger_client-py2.7.egg
 python ./network-insight-sdk-python/examples/add_generic_switch_router.py --platform_ip my-platform-hostname \
- --proxy_ip my-proxy-hostname --username admin@local --password 'test' \
+ --proxy_ip my-proxy-hostname --username test@local --password 'test' \
  --device_ip_or_fqdn device_ip_or_fqdn --zip_file_path path_of_output-sdk-generic-ds.zip
 ```
 
@@ -303,7 +303,7 @@ python network_insight_sdk_generic_datasources/main.py -d juniper_srx -m srx -s 
 
 export PYTHONPATH=$PYTHONPATH:./network-insight-sdk-python/swagger_client-py2.7.egg
 python ./network-insight-sdk-python/examples/add_generic_switch_router.py --platform_ip my-platform-hostname \
- --proxy_ip my-proxy-hostname --username admin@local --password 'test' \
+ --proxy_ip my-proxy-hostname --username test@local --password 'test' \
  --device_ip_or_fqdn device_ip_or_fqdn --zip_file_path path_of_output-sdk-generic-ds.zip
 ```
 

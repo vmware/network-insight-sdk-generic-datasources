@@ -8,18 +8,26 @@ Routes, etc. SDK can connect to physical device and execute commands. Output of 
 files in specific format (eg. CSV). Files generated are then bundled in ZIP format which can then be
 fed into vRNI. SDK generates files compatible to vRNI version 4.2.0 onwards. Driver in SDK is governed by YAML configuration file.
 
-1. [ Dependencies ](#dependencies)
-2. [ Launch SDK ](#launch-sdk)
-3. [ Device Configuration File ](#zipfile)
-4. [ YAML Configuration ](#yaml-configuration)
-5. [ Parser Definition ](#parser-definition)
-6. [ Table Joiner ](#table-joiner)
-7. [ Example ](#example)
-8. [ Uploading Output Zipfile ](#vrni-api-ref)
-9. [ Running SDK and Uploading ](#run-and-upload)
+1. [ Envirnoment Requirements ](#envirnoment)
+2. [ Dependencies ](#dependencies)
+3. [ Launch SDK ](#launch-sdk)
+4. [ Device Configuration File ](#zipfile)
+5. [ YAML Configuration ](#yaml-configuration)
+6. [ Parser Definition ](#parser-definition)
+7. [ Table Joiner ](#table-joiner)
+8. [ Example ](#example)
+9. [ Uploading Output Zipfile ](#vrni-api-ref)
+10. [ Running SDK and Uploading ](#run-and-upload)
+
+<a name="envirnoment"></a>
+## 1. Envirnoment Requirements
+* Linux distributions like Ubuntu, CentOS, Fedora, etc.
+* Pre-requisite packages/tools should be installed:
+    * git
+    * python2.7.13 onwards
 
 <a name="dependencies"></a>
-## 1. Dependencies
+## 2. Dependencies
 * netmiko
 * requests
 * pyyaml
@@ -31,7 +39,7 @@ pip install --src . -r requirements.txt
 
 
 <a name="launch-sdk"></a>
-## 2. Launch SDK
+## 3. Launch SDK
 
 After cloning this project and project folder in PYTHONPATH. Then run following command to run SDK.
 ```shell
@@ -57,7 +65,7 @@ $ python ./network_insight_sdk_generic_datasources/main.py -d cisco -m n5k -s CI
 ```
 
 <a name="zipfile"></a>
-## 3. Device Configuration File
+## 4. Device Configuration File
 Columns in each CSV file represents attributes of entity.
 
 NOTE: General Guideline is to use double quotes for each value in a cell.
@@ -186,7 +194,7 @@ name                  | mandatory             | name of layer 2 bridge         |
 vlans                 | mandatory             | all the vlans of bridge        | Comma separated Integer values (Note: use double quotes)
 
 <a name="yaml-configuration"></a>
-## 4. YAML Configuration
+## 5. YAML Configuration
 
 YAML configuration is defined in sections.
 1. Workloads - Contains workload definition which needs to be run. Workloads defined in top are executed first and one
@@ -209,7 +217,7 @@ defined in bottom is executed last.
 
 
 <a name="parser-definition"></a>
-## 5. Parser Definition
+## 6. Parser Definition
 
 There are several kinds of parsers defined broadly defined in two categories
 * Block Parsers - To parse command output where there is definite pattern of blocks reappearing every time.
@@ -248,7 +256,7 @@ NOTE: All the parsers produce output as list of dictionaries.
 
 
 <a name="table-joiner"></a>
-## 6. Table Joiner
+## 7. Table Joiner
 
 Parsers create list of key value pairs which is logically in tabular format.
 There are scenarios where we need to join two table having same column values.
@@ -269,23 +277,23 @@ Table Joiner configuration accept following parameters.
   * joined_table_id: table id for referencing final joined table
 
 <a name="example"></a>
-## 7. Example
+## 8. Example
 Example depicts the thought process on implementing a new unsupported device.
 See example [here.](EXAMPLE.md)
 
 <a name="vrni-api-ref"></a>
-## 8. Uploading Output Zipfile
+## 9. Uploading Output Zipfile
 This SDK also includes API integration with vRNI. The script `network_insight_sdk_generic_datasources/common/vrni_uani_ops.py` can be run using the following parameters:
 
 ```
 export PYTHONPATH=$PYTHONPATH:./network-insight-sdk-python/swagger_client-py2.7.egg
 python ./network-insight-sdk-python/examples/add_generic_switch_router.py --platform_ip my-platform-hostname \
- --proxy_ip my-proxy-hostname --username admin@local --password 'VMware1!' \
+ --proxy_ip my-proxy-hostname --username test@local --password 'test' \
  --device_ip_or_fqdn device_ip_or_fqdn --zip_file_path path_of_output-sdk-generic-ds.zip
 ```
 
 <a name="run-and-upload"></a>
-## 9. Running SDK and Uploading
+## 10. Running SDK and Uploading
 
 Combining the SDK and the upload script would go as follows:
 
@@ -295,7 +303,7 @@ python network_insight_sdk_generic_datasources/main.py -d juniper_srx -m srx -s 
 
 export PYTHONPATH=$PYTHONPATH:./network-insight-sdk-python/swagger_client-py2.7.egg
 python ./network-insight-sdk-python/examples/add_generic_switch_router.py --platform_ip my-platform-hostname \
- --proxy_ip my-proxy-hostname --username admin@local --password 'VMware1!' \
+ --proxy_ip my-proxy-hostname --username test@local --password 'test' \
  --device_ip_or_fqdn device_ip_or_fqdn --zip_file_path path_of_output-sdk-generic-ds.zip
 ```
 

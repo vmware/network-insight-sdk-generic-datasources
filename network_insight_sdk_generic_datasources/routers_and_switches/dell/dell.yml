@@ -32,7 +32,7 @@ workloads: &WORKLOADS
           interfaceSpeed: "Port Speed\\.+ (.*)"
           operationalSpeed: "Port Speed\\.+ (.*)"
           mtu: "MTU Size\\.+ (.*)"
-          duplex: "Port Mode [Duplex]\\.+ (.*)"
+          duplex: "Port Mode \\[Duplex\\]\\.+ (.*)"
           switchPortMode: "VLAN Membership Mode\\.+ (.*) Mode"
   - &SHOW_MAC_TABLE
     table_id: showMacTable

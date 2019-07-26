@@ -58,13 +58,18 @@ class DellSwitchPortPrePostProcessor(PrePostProcessor):
     def post_process(self, data):
         result = []
         for d in data:
-            if 'line protocol' in d['name']:
-                d['name'] = d['name'].split()[0]
+            if 'accessVlan' in d:
+                d['accessVlan'] = ''  # TODO
+            if 'interfaceSpeed' in d:
+                d['interfaceSpeed'] = str(int(d['interfaceSpeed']) * 1000000)
+                d['operationalSpeed'] = d['interfaceSpeed']
             if 'duplex' in d:
-                if d['duplex'] == 'half':
+                if d['duplex'] == 'Half':
                     d['duplex'] = 'HALF'
-                elif d['duplex'] == 'full':
+                elif d['duplex'] == 'Full':
                     d['duplex'] = 'FULL'
+                elif d['duplex'] == 'Auto':
+                    d['duplex'] = 'AUTO'
                 else:
                     d['duplex'] = 'OTHER'
             if 'administrativeStatus' in d:
@@ -89,4 +94,16 @@ class DellSwitchPortPrePostProcessor(PrePostProcessor):
                     d['switchPortMode'] = 'TRUNK'
                 else:
                     d['switchPortMode'] = 'OTHER'
+            if 'vlans' in d:
+                vlans = d['vlans'].split(',')
+                result_vlans = []
+                for v in vlans:
+                    if '(' in v or ')' in v:
+                        rv = v.replace('(', '').replace(')', '')
+                        result_vlans.append(str(rv))
+                    elif '-' in v:
+                        ran = v.split('-')
+                        rv = range(int(ran[0]), int(ran[1]) + 1)
+                        result_vlans = result_vlans + rv
+                d['vlans'] = ','.join(map(lambda x : str(x), result_vlans))
         return result

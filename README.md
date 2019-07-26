@@ -21,8 +21,8 @@ fed into vRNI. SDK generates files compatible to vRNI version 4.2.0 onwards. Dri
 
 <a name="envirnoment"></a>
 ## 1. Envirnoment Requirements
-* linux based system like ubuntu, CentOS, fedora, etc.
-* Pre-requisite packages/tools should be installed in environment:
+* Linux distributions like Ubuntu, CentOS, Fedora, etc.
+* Pre-requisite packages/tools should be installed:
     * git
     * python2.7.13 onwards
 

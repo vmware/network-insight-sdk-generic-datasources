@@ -1,0 +1,10 @@
+# device_type: LINUX
+
+package_handler:
+  <<: *PACKAGE_HANDLER
+
+workloads:
+  - <<: *SHOW_PORT_CHANNELS
+
+result_writer:
+  <<: *RESULT_WRITER

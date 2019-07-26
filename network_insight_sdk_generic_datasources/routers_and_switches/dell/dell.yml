@@ -10,6 +10,60 @@ package_handler: &PACKAGE_HANDLER
 
 # workloads added will be executed in sequence
 workloads: &WORKLOADS
+  - &SHOW_INTERFACE
+    table_id: showSwitchPorts
+    command: show interfaces
+    block_parser:
+      name: GenericBlockParser
+      arguments:
+        line_pattern: 'Interface Name'
+    parser:
+      pre_post_processor: DellSwitchPortPrePostProcessor
+      name: *GENERIC_TEXT_PARSER
+      arguments:
+        rules:
+          name: "Interface Name\\.+ (.*)"
+          connected: ".* is.*(up|down).*"
+          accessVlan: "VLAN Membership\\.+ (.*)"
+          vlans: "VLAN Membership\\.+ (.*)"
+          administrativeStatus: "Link Status\\.+ (Up|Down).*"
+          operationalStatus: "Link Status\\.+ (Up|Down).*"
+          hardwareAddress: "Burned In MAC Address\\.+ (.*)"
+          interfaceSpeed: "Port Speed\\.+ (.*)"
+          operationalSpeed: "Port Speed\\.+ (.*)"
+          mtu: "MTU Size\\.+ (.*)"
+          duplex: "Port Mode [Duplex]\\.+ (.*)"
+          switchPortMode: "VLAN Membership Mode\\.+ (.*) Mode"
+  - &SHOW_MAC_TABLE
+    table_id: showMacTable
+    command: show mac address-table
+    parser:
+      name: *HORIZONTAL_TABLE_PARSER
+      arguments:
+        skip_head: 3
+        skip_tail: 1
+        field_marker: '  +'
+        header_keys:
+          - vlan
+          - macAddress
+          - type
+          - port
+  - &SHOW_IP_INTERFACES
+    table_id: showIpInterfaces
+    command: show ip interfaces
+    parser:
+      pre_post_processor: DellIPInterfacesPrePostParser
+      name: *HORIZONTAL_TABLE_PARSER
+      arguments:
+        skip_head: 5
+        field_marker: '  +'
+        header_keys:
+          - interface
+          - state
+          - ipAddress
+          - ipMask
+          - method
+
   - &SHOW_PORT_CHANNELS
     table_id: port-channels
     command: show interfaces port-channel
@@ -23,5 +77,5 @@ result_writer: &RESULT_WRITER
     - port-channels
 
 
-n5k: !include nseries.yml
+nseries: !include nseries.yml
 

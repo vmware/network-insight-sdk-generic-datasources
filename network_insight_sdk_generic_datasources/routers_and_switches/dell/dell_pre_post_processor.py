@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: BSD-2-Clause
 
 import re
+from netaddr import IPAddress
 from network_insight_sdk_generic_datasources.parsers.text.pre_post_processor import PrePostProcessor
 
 
@@ -30,4 +31,62 @@ class DellPortChannelPrePostParser(PrePostProcessor):
                     switchPortMode="OTHER",
                     activePorts=','.join(active_ports),
                     passivePorts=''))
+        return result
+
+
+class DellIPInterfacesPrePostParser(PrePostProcessor):
+
+    def post_process(self, data):
+        result = []
+        for d in data:
+            result.append(dict(interfaceSpeed='',
+                               name=d['interface'],
+                               vlan=d['interface'].replace('Vl', ''),
+                               administrativeStatus=d['state'].lower(),
+                               mtu='',
+                               operationalStatus=d['state'].lower(),
+                               connected='true',
+                               vrf='default',
+                               hardwareAddress='',
+                               ipAddress=d['ipAddress'] + '/' + str(IPAddress(d['ipMask']).netmask_bits()),
+                               operationalSpeed=''))
+        return result
+
+
+class DellSwitchPortPrePostProcessor(PrePostProcessor):
+
+    def post_process(self, data):
+        result = []
+        for d in data:
+            if 'line protocol' in d['name']:
+                d['name'] = d['name'].split()[0]
+            if 'duplex' in d:
+                if d['duplex'] == 'half':
+                    d['duplex'] = 'HALF'
+                elif d['duplex'] == 'full':
+                    d['duplex'] = 'FULL'
+                else:
+                    d['duplex'] = 'OTHER'
+            if 'administrativeStatus' in d:
+                if d['administrativeStatus'] == 'up':
+                    d['administrativeStatus'] = 'UP'
+                else:
+                    d['administrativeStatus'] = 'DOWN'
+            if 'operationalStatus' in d:
+                if d['operationalStatus'] == 'up':
+                    d['operationalStatus'] = 'UP'
+                else:
+                    d['operationalStatus'] = 'DOWN'
+            if 'connected' in d:
+                if d['connected'] == 'up':
+                    d['connected'] = 'true'
+                else:
+                    d['connected'] = 'false'
+            if 'switchPortMode' in d:
+                if d['switchPortMode'] == 'access':
+                    d['switchPortMode'] = 'ACCESS'
+                elif d['switchPortMode'] == 'trunk':
+                    d['switchPortMode'] = 'TRUNK'
+                else:
+                    d['switchPortMode'] = 'OTHER'
         return result

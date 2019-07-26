@@ -1,9 +1,11 @@
-# device_type: LINUX
+# device_type: DELL_OS6
 
 package_handler:
   <<: *PACKAGE_HANDLER
 
 workloads:
+  - <<: *SHOW_MAC_TABLE
+  - <<: *SHOW_IP_INTERFACES
   - <<: *SHOW_PORT_CHANNELS
 
 result_writer:

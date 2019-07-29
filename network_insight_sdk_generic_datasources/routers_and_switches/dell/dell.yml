@@ -98,7 +98,7 @@ workloads: &WORKLOADS
 
   - &SHOW_PORT_CHANNELS
     table_id: port-channels
-    command: show interfaces port-channel
+    command: port-channel
     parser:
       name: routers_and_switches.dell.dell_pre_post_processor.DellPortChannelPrePostParser
 

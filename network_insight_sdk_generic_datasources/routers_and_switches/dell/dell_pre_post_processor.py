@@ -28,7 +28,6 @@ class DellSwitchPrePostProcessor(PrePostProcessor):
         return [temp]
 
 
-
 class DellPortChannelPrePostParser(PrePostProcessor):
     """
     Get details of port channel
@@ -53,8 +52,8 @@ class DellPortChannelPrePostParser(PrePostProcessor):
                             active_ports.append(p.replace(',', ''))
                 result.append(dict(name=d[0],
                     connected="true",
-                    administrativeStatus="up",
-                    operationalStatus="up",
+                    administrativeStatus="UP",
+                    operationalStatus="UP",
                     hardwareAddress="",
                     interfaceSpeed="",
                     operationalSpeed="",
@@ -198,4 +197,5 @@ class DellSwitchPortPrePostProcessor(PrePostProcessor):
                     d['switchPortMode'] = 'TRUNK'
                 else:
                     d['switchPortMode'] = 'OTHER'
+            result.append(d)
         return result

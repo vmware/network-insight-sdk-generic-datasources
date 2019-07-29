@@ -11,7 +11,7 @@ workloads:
   - <<: *SHOW_PORT_CHANNELS
   - <<: *SHOW_LLDP_REMOTE_DEVICE
   - <<: *SHOW_IP_ROUTE_VRF
-
+  - <<: *SHOW_VRF
 
 result_writer:
   <<: *RESULT_WRITER

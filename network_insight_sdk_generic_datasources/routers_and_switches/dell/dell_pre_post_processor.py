@@ -62,9 +62,9 @@ class DellIPInterfacesPrePostParser(PrePostProcessor):
             result.append(dict(interfaceSpeed='',
                                name=d['interface'],
                                vlan=d['interface'].replace('Vl', ''),
-                               administrativeStatus=d['state'].lower(),
+                               administrativeStatus=d['state'].upper(),
                                mtu='',
-                               operationalStatus=d['state'].lower(),
+                               operationalStatus=d['state'].upper(),
                                connected='true',
                                vrf='default',
                                hardwareAddress='',
@@ -149,6 +149,7 @@ class DellLLDPRemoteDevicePrePostParser(PrePostProcessor):
                                    remoteInterface=d['Port ID']))
         return result
 
+
 class DellSwitchPrePostProcessor(PrePostProcessor):
     """
     Get details of dell switch
@@ -169,7 +170,7 @@ class DellRoutesPrePostParser(PrePostProcessor):
     """
     Get routes from show ip route vrf command
     """
-    route_rules = dict(nextHop=".* via (\\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\\b),.*",
+    route_rules = dict(nextHop=".*via (\\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\\b),.*",
                        interfaceName=".*:.*[m|s], (.*)",
                        interface_connected=".*connected, (.*)")
 
@@ -188,7 +189,7 @@ class DellRoutesPrePostParser(PrePostProcessor):
             parser = LineBasedBlockParser(".*(\*).*")
             blocks = parser.parse(data)
             generic_parser = GenericTextParser()
-            vrf = "master"
+            vrf = "default"
 
             for block in blocks[2:]:
                 line_blocks = block.splitlines()
@@ -197,7 +198,7 @@ class DellRoutesPrePostParser(PrePostProcessor):
 
                 for idx, line_block in enumerate(line_blocks):
                     routes = generic_parser.parse(line_block, self.route_rules)[0]
-                    routes.update({"network": "{}".format(route_network['network'])})
+                    routes.update({"network": "{}".format(route_network['network'].rstrip())})
                     routes.update({"name": "{}_{}".format(route_network['network'], idx)})
                     routes.update({"vrf": vrf})
                     routes.update({"interfaceName": routes['interfaceName'].lstrip() if routes['interfaceName']
@@ -211,3 +212,11 @@ class DellRoutesPrePostParser(PrePostProcessor):
             py_logger.error("{}\n{}".format(e, traceback.format_exc()))
             raise e
         return result
+
+
+class DellVRFPrePostParser(PrePostProcessor):
+    """
+    Get vrf
+    """
+    def parse(self, data):
+        return [{"name": "default"}]

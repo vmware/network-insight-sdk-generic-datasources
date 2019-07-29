@@ -49,6 +49,10 @@ workloads: &WORKLOADS
           - macAddress
           - type
           - port
+    select_columns:
+      macAddress: macAddress
+      port: switchPort
+      vlan: vlan
 
   - &SHOW_IP_INTERFACES
     table_id: router-interfaces
@@ -108,6 +112,12 @@ workloads: &WORKLOADS
           - Port ID
           - System Name
 
+  - &SHOW_VRF
+    table_id: vrfs
+    command: vrfs
+    parser:
+      name: routers_and_switches.dell.dell_pre_post_processor.DellVRFPrePostParser
+
 result_writer: &RESULT_WRITER
   name: CsvWriter
   path: /tmp/uani
@@ -119,6 +129,7 @@ result_writer: &RESULT_WRITER
     - mac-address-table
     - neighbors
     - routes
+    - vrfs
 
 
 nseries: !include nseries.yml

@@ -11,7 +11,7 @@ package_handler: &PACKAGE_HANDLER
 # workloads added will be executed in sequence
 workloads: &WORKLOADS
   - &SHOW_INTERFACE
-    table_id: showSwitchPorts
+    table_id: switch-ports
     command: show interfaces
     block_parser:
       name: GenericBlockParser
@@ -36,7 +36,7 @@ workloads: &WORKLOADS
           switchPortMode: "VLAN Membership Mode\\.+ (.*) Mode"
 
   - &SHOW_MAC_TABLE
-    table_id: showMacTable
+    table_id: mac-address-table
     command: show mac address-table
     parser:
       name: *HORIZONTAL_TABLE_PARSER
@@ -51,7 +51,7 @@ workloads: &WORKLOADS
           - port
 
   - &SHOW_IP_INTERFACES
-    table_id: showIpInterfaces
+    table_id: router-interfaces
     command: show ip interfaces
     parser:
       pre_post_processor: DellIPInterfacesPrePostParser

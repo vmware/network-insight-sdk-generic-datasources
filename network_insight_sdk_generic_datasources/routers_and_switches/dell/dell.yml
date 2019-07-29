@@ -10,6 +10,19 @@ package_handler: &PACKAGE_HANDLER
 
 # workloads added will be executed in sequence
 workloads: &WORKLOADS
+  - &SHOW_VERSION
+    table_id: switch
+    command: show version
+    parser:
+      pre_post_processor: DellSwitchPrePostProcessor
+      name: *GENERIC_TEXT_PARSER
+      arguments:
+        rules:
+          name: "Machine Description\\.* (.*)"
+          model: "System Model ID\\.* (.*)"
+          os: "Image File\\.* (.*)"
+          serial: "Serial Number\\.* (.*)"
+          hostname: "Machine Type\\.* (.*)"
   - &SHOW_INTERFACE
     table_id: showSwitchPorts
     command: show interfaces
@@ -48,6 +61,21 @@ workloads: &WORKLOADS
           - macAddress
           - type
           - port
+  - &SHOW_LLDP_REMOTE_DEVICE
+    table_id: neighbors
+    command: show lldp remote-device all
+    parser:
+      pre_post_processor: DellLLDPRemoteDevicePrePostParser
+      name: *HORIZONTAL_TABLE_PARSER
+      arguments:
+        skip_head: 4
+        field_marker: '  +'
+        header_keys:
+          - Interface
+          - RemID
+          - Chassis ID
+          - Port ID
+          - System Name
   - &SHOW_IP_INTERFACES
     table_id: showIpInterfaces
     command: show ip interfaces
@@ -74,7 +102,9 @@ result_writer: &RESULT_WRITER
   name: CsvWriter
   path: /tmp/uani
   table_id:
+    - switch
     - port-channels
+    - neighbors
 
 
 nseries: !include nseries.yml

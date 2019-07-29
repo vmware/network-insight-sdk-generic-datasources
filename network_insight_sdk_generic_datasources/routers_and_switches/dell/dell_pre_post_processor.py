@@ -6,6 +6,23 @@ from netaddr import IPAddress
 from network_insight_sdk_generic_datasources.parsers.text.pre_post_processor import PrePostProcessor
 
 
+class DellSwitchPrePostProcessor(PrePostProcessor):
+    """
+    Get details of dell switch
+    """
+    def post_process(self, data):
+        """
+        Get details of dell
+        :param data: Parsed output of show version command
+        :return: list with dict containing DELL switch details
+        """
+        temp = data[0]
+        temp['vendor'] = "DELL"
+        temp['haState'] = "ACTIVE"
+        return [temp]
+
+
+
 class DellPortChannelPrePostParser(PrePostProcessor):
     def parse(self, data):
         result = []
@@ -31,6 +48,17 @@ class DellPortChannelPrePostParser(PrePostProcessor):
                     switchPortMode="OTHER",
                     activePorts=','.join(active_ports),
                     passivePorts=''))
+        return result
+
+
+class DellLLDPRemoteDevicePrePostParser(PrePostProcessor):
+
+    def post_process(self, data):
+        result = []
+        for d in data:
+            result.append(dict(localInterface=d['interface'],
+                               remoteDevice=d['System Name'],
+                               remoteInterface=['Port ID']))
         return result
 
 

@@ -9,30 +9,12 @@ from netaddr import IPAddress
 from network_insight_sdk_generic_datasources.parsers.text.pre_post_processor import PrePostProcessor
 from network_insight_sdk_generic_datasources.parsers.common.block_parser import LineBasedBlockParser
 from network_insight_sdk_generic_datasources.parsers.common.text_parser import GenericTextParser
-from network_insight_sdk_generic_datasources.parsers.common.block_parser import SimpleBlockParser
-
-
-class DellSwitchPrePostProcessor(PrePostProcessor):
-    """
-    Get details of dell switch
-    """
-    def post_process(self, data):
-        """
-        Get details of dell switch
-        :param data: Parsed output of show version command
-        :return: list with dict containing DELL switch details
-        """
-        temp = data[0]
-        temp['vendor'] = "DELL"
-        temp['haState'] = "ACTIVE"
-        return [temp]
 
 
 class DellPortChannelPrePostParser(PrePostProcessor):
     """
     Get details of port channel
     """
-
     def parse(self, data):
         """
         Parse show interfaces port-channel command output to get port channel details
@@ -65,6 +47,95 @@ class DellPortChannelPrePostParser(PrePostProcessor):
         return result
 
 
+class DellIPInterfacesPrePostParser(PrePostProcessor):
+    """
+    Get router interface using show ip interfaces command
+    """
+    def post_process(self, data):
+        """
+        Parse show ip interfaces command output to get router interface
+        :param data: show ip interfaces command output
+        :return: List of dict of router interfaces
+        """
+        result = []
+        for d in data:
+            result.append(dict(interfaceSpeed='',
+                               name=d['interface'],
+                               vlan=d['interface'].replace('Vl', ''),
+                               administrativeStatus=d['state'].lower(),
+                               mtu='',
+                               operationalStatus=d['state'].lower(),
+                               connected='true',
+                               vrf='default',
+                               hardwareAddress='',
+                               ipAddress=d['ipAddress'] + '/' + str(IPAddress(d['ipMask']).netmask_bits()),
+                               operationalSpeed=''))
+        return result
+
+
+class DellSwitchPortPrePostProcessor(PrePostProcessor):
+    """
+    Get switch ports using show interfaces command
+    """
+    def post_process(self, data):
+        """
+        Parse show interfaces command output to get switch ports
+        :param data: show interfaces command output
+        :return: List of dict of switch ports
+        """
+        result = []
+        for d in data:
+            if 'accessVlan' in d:
+                d['accessVlan'] = ''  # TODO
+            if 'interfaceSpeed' in d:
+                d['interfaceSpeed'] = str(int(d['interfaceSpeed']) * 1000000)
+                d['operationalSpeed'] = d['interfaceSpeed']
+            if 'duplex' in d:
+                if d['duplex'] == 'Half':
+                    d['duplex'] = 'HALF'
+                elif d['duplex'] == 'Full':
+                    d['duplex'] = 'FULL'
+                elif d['duplex'] == 'Auto':
+                    d['duplex'] = 'AUTO'
+                else:
+                    d['duplex'] = 'OTHER'
+            if 'administrativeStatus' in d:
+                if d['administrativeStatus'] == 'up':
+                    d['administrativeStatus'] = 'UP'
+                else:
+                    d['administrativeStatus'] = 'DOWN'
+            if 'operationalStatus' in d:
+                if d['operationalStatus'] == 'up':
+                    d['operationalStatus'] = 'UP'
+                else:
+                    d['operationalStatus'] = 'DOWN'
+            if 'connected' in d:
+                if d['connected'] == 'up':
+                    d['connected'] = 'true'
+                else:
+                    d['connected'] = 'false'
+            if 'switchPortMode' in d:
+                if d['switchPortMode'] == 'access':
+                    d['switchPortMode'] = 'ACCESS'
+                elif d['switchPortMode'] == 'trunk':
+                    d['switchPortMode'] = 'TRUNK'
+                else:
+                    d['switchPortMode'] = 'OTHER'
+            if 'vlans' in d:
+                vlans = d['vlans'].split(',')
+                result_vlans = []
+                for v in vlans:
+                    if '(' in v or ')' in v:
+                        rv = v.replace('(', '').replace(')', '')
+                        result_vlans.append(str(rv))
+                    elif '-' in v:
+                        ran = v.split('-')
+                        rv = range(int(ran[0]), int(ran[1]) + 1)
+                        result_vlans = result_vlans + rv
+                d['vlans'] = ','.join(map(lambda x : str(x), result_vlans))
+        return result
+
+
 class DellLLDPRemoteDevicePrePostParser(PrePostProcessor):
     """
     Get lldp neighbours
@@ -77,6 +148,21 @@ class DellLLDPRemoteDevicePrePostParser(PrePostProcessor):
                                    remoteDevice=d['System Name'],
                                    remoteInterface=d['Port ID']))
         return result
+
+class DellSwitchPrePostProcessor(PrePostProcessor):
+    """
+    Get details of dell switch
+    """
+    def post_process(self, data):
+        """
+        Get details of dell switch
+        :param data: Parsed output of show version command
+        :return: list with dict containing DELL switch details
+        """
+        temp = data[0]
+        temp['vendor'] = "DELL"
+        temp['haState'] = "ACTIVE"
+        return [temp]
 
 
 class DellRoutesPrePostParser(PrePostProcessor):
@@ -124,78 +210,4 @@ class DellRoutesPrePostParser(PrePostProcessor):
         except Exception as e:
             py_logger.error("{}\n{}".format(e, traceback.format_exc()))
             raise e
-        return result
-
-
-class DellIPInterfacesPrePostParser(PrePostProcessor):
-    """
-    Get router interface using show ip interfaces command
-    """
-
-    def post_process(self, data):
-        """
-        Parse show ip interfaces command output to get router interface
-        :param data: show ip interfaces command output
-        :return: List of dict of router interfaces
-        """
-        result = []
-        for d in data:
-            result.append(dict(interfaceSpeed='',
-                               name=d['interface'],
-                               vlan=d['interface'].replace('Vl', ''),
-                               administrativeStatus=d['state'].lower(),
-                               mtu='',
-                               operationalStatus=d['state'].lower(),
-                               connected='true',
-                               vrf='default',
-                               hardwareAddress='',
-                               ipAddress=d['ipAddress'] + '/' + str(IPAddress(d['ipMask']).netmask_bits()),
-                               operationalSpeed=''))
-        return result
-
-
-class DellSwitchPortPrePostProcessor(PrePostProcessor):
-    """
-    Get switch ports using show interfaces command
-    """
-    def post_process(self, data):
-        """
-        Parse show interfaces command output to get switch ports
-        :param data: show interfaces command output
-        :return: List of dict of switch ports
-        """
-        result = []
-        for d in data:
-            if 'line protocol' in d['name']:
-                d['name'] = d['name'].split()[0]
-            if 'duplex' in d:
-                if d['duplex'] == 'half':
-                    d['duplex'] = 'HALF'
-                elif d['duplex'] == 'full':
-                    d['duplex'] = 'FULL'
-                else:
-                    d['duplex'] = 'OTHER'
-            if 'administrativeStatus' in d:
-                if d['administrativeStatus'] == 'up':
-                    d['administrativeStatus'] = 'UP'
-                else:
-                    d['administrativeStatus'] = 'DOWN'
-            if 'operationalStatus' in d:
-                if d['operationalStatus'] == 'up':
-                    d['operationalStatus'] = 'UP'
-                else:
-                    d['operationalStatus'] = 'DOWN'
-            if 'connected' in d:
-                if d['connected'] == 'up':
-                    d['connected'] = 'true'
-                else:
-                    d['connected'] = 'false'
-            if 'switchPortMode' in d:
-                if d['switchPortMode'] == 'access':
-                    d['switchPortMode'] = 'ACCESS'
-                elif d['switchPortMode'] == 'trunk':
-                    d['switchPortMode'] = 'TRUNK'
-                else:
-                    d['switchPortMode'] = 'OTHER'
-            result.append(d)
         return result

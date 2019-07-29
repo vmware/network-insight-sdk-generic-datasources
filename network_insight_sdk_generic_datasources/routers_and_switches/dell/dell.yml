@@ -10,22 +10,8 @@ package_handler: &PACKAGE_HANDLER
 
 # workloads added will be executed in sequence
 workloads: &WORKLOADS
-  - &SHOW_VERSION
-    table_id: switch
-    command: show version
-    parser:
-      pre_post_processor: DellSwitchPrePostProcessor
-      name: *GENERIC_TEXT_PARSER
-      arguments:
-        rules:
-          name: "Machine Description\\.* (.*)"
-          model: "System Model ID\\.* (.*)"
-          os: "Image File\\.* (.*)"
-          serial: "Serial Number\\.* (.*)"
-          hostname: "Machine Type\\.* (.*)"
-
   - &SHOW_INTERFACE
-    table_id: switch-ports
+    table_id: showSwitchPorts
     command: show interfaces
     block_parser:
       name: GenericBlockParser
@@ -46,11 +32,11 @@ workloads: &WORKLOADS
           interfaceSpeed: "Port Speed\\.+ (.*)"
           operationalSpeed: "Port Speed\\.+ (.*)"
           mtu: "MTU Size\\.+ (.*)"
-          duplex: "Port Mode [Duplex]\\.+ (.*)"
+          duplex: "Port Mode \\[Duplex\\]\\.+ (.*)"
           switchPortMode: "VLAN Membership Mode\\.+ (.*) Mode"
 
   - &SHOW_MAC_TABLE
-    table_id: mac-address-table
+    table_id: showMacTable
     command: show mac address-table
     parser:
       name: *HORIZONTAL_TABLE_PARSER
@@ -64,24 +50,8 @@ workloads: &WORKLOADS
           - type
           - port
 
-  - &SHOW_LLDP_REMOTE_DEVICE
-    table_id: neighbors
-    command: show lldp remote-device all
-    parser:
-      pre_post_processor: DellLLDPRemoteDevicePrePostParser
-      name: *HORIZONTAL_TABLE_PARSER
-      arguments:
-        skip_head: 4
-        field_marker: '  +'
-        header_keys:
-          - Interface
-          - RemID
-          - Chassis ID
-          - Port ID
-          - System Name
-
   - &SHOW_IP_INTERFACES
-    table_id: router-interfaces
+    table_id: showIpInterfaces
     command: show ip interfaces
     parser:
       pre_post_processor: DellIPInterfacesPrePostParser
@@ -98,7 +68,7 @@ workloads: &WORKLOADS
 
   - &SHOW_PORT_CHANNELS
     table_id: port-channels
-    command: port-channel
+    command: show interfaces port-channel
     parser:
       name: routers_and_switches.dell.dell_pre_post_processor.DellPortChannelPrePostParser
 
@@ -107,6 +77,36 @@ workloads: &WORKLOADS
     command: show ip route vrf
     parser:
       name: routers_and_switches.dell.dell_pre_post_processor.DellRoutesPrePostParser
+
+  - &SHOW_VERSION
+    table_id: switch
+    command: show version
+    parser:
+      pre_post_processor: DellSwitchPrePostProcessor
+      name: *GENERIC_TEXT_PARSER
+      arguments:
+        rules:
+          name: "Machine Description\\.* (.*)"
+          model: "System Model ID\\.* (.*)"
+          os: "Image File\\.* (.*)"
+          serial: "Serial Number\\.* (.*)"
+          hostname: "Machine Type\\.* (.*)"
+
+  - &SHOW_LLDP_REMOTE_DEVICE
+    table_id: neighbors
+    command: show lldp remote-device all
+    parser:
+      pre_post_processor: DellLLDPRemoteDevicePrePostParser
+      name: *HORIZONTAL_TABLE_PARSER
+      arguments:
+        skip_head: 4
+        field_marker: '  +'
+        header_keys:
+          - Interface
+          - RemID
+          - Chassis ID
+          - Port ID
+          - System Name
 
 result_writer: &RESULT_WRITER
   name: CsvWriter

@@ -5,6 +5,7 @@ package_handler:
 
 workloads:
   - <<: *SHOW_VERSION
+  - <<: *SHOW_INTERFACE
   - <<: *SHOW_MAC_TABLE
   - <<: *SHOW_IP_INTERFACES
   - <<: *SHOW_PORT_CHANNELS

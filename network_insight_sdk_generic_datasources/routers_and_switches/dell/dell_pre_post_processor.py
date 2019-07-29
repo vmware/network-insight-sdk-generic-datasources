@@ -115,8 +115,8 @@ class DellRoutesPrePostParser(PrePostProcessor):
                     routes.update({"network": "{}".format(route_network['network'])})
                     routes.update({"name": "{}_{}".format(route_network['network'], idx)})
                     routes.update({"vrf": vrf})
-                    routes.update({"interfaceName": routes['interfaceName'] if routes['interfaceName']
-                                                                            else routes['interface_connected']})
+                    routes.update({"interfaceName": routes['interfaceName'].lstrip() if routes['interfaceName']
+                                                                            else routes['interface_connected'].lstrip()})
                     routes.pop('interface_connected')
                     routes.update({"routeType": "{}".format(self.route_types[route_type]
                                                             if self.route_types.has_key(route_type) else "DIRECT")})

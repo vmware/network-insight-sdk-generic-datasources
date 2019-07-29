@@ -25,7 +25,7 @@ workloads: &WORKLOADS
           hostname: "Machine Type\\.* (.*)"
 
   - &SHOW_INTERFACE
-    table_id: showSwitchPorts
+    table_id: switch-ports
     command: show interfaces
     block_parser:
       name: GenericBlockParser
@@ -50,7 +50,7 @@ workloads: &WORKLOADS
           switchPortMode: "VLAN Membership Mode\\.+ (.*) Mode"
 
   - &SHOW_MAC_TABLE
-    table_id: showMacTable
+    table_id: mac-address-table
     command: show mac address-table
     parser:
       name: *HORIZONTAL_TABLE_PARSER
@@ -81,7 +81,7 @@ workloads: &WORKLOADS
           - System Name
 
   - &SHOW_IP_INTERFACES
-    table_id: showIpInterfaces
+    table_id: router-interfaces
     command: show ip interfaces
     parser:
       pre_post_processor: DellIPInterfacesPrePostParser
@@ -113,7 +113,10 @@ result_writer: &RESULT_WRITER
   path: /tmp/uani
   table_id:
     - switch
+    - switch-ports
+    - router-interfaces
     - port-channels
+    - mac-address-table
     - neighbors
     - routes
 

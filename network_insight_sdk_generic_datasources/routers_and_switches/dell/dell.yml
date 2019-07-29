@@ -23,6 +23,7 @@ workloads: &WORKLOADS
           os: "Image File\\.* (.*)"
           serial: "Serial Number\\.* (.*)"
           hostname: "Machine Type\\.* (.*)"
+
   - &SHOW_INTERFACE
     table_id: showSwitchPorts
     command: show interfaces
@@ -47,6 +48,7 @@ workloads: &WORKLOADS
           mtu: "MTU Size\\.+ (.*)"
           duplex: "Port Mode [Duplex]\\.+ (.*)"
           switchPortMode: "VLAN Membership Mode\\.+ (.*) Mode"
+
   - &SHOW_MAC_TABLE
     table_id: showMacTable
     command: show mac address-table
@@ -61,6 +63,7 @@ workloads: &WORKLOADS
           - macAddress
           - type
           - port
+
   - &SHOW_LLDP_REMOTE_DEVICE
     table_id: neighbors
     command: show lldp remote-device all
@@ -76,6 +79,7 @@ workloads: &WORKLOADS
           - Chassis ID
           - Port ID
           - System Name
+
   - &SHOW_IP_INTERFACES
     table_id: showIpInterfaces
     command: show ip interfaces
@@ -98,6 +102,12 @@ workloads: &WORKLOADS
     parser:
       name: routers_and_switches.dell.dell_pre_post_processor.DellPortChannelPrePostParser
 
+  - &SHOW_IP_ROUTE_VRF
+    table_id: routes
+    command: show ip route vrf
+    parser:
+      name: routers_and_switches.dell.dell_pre_post_processor.DellRoutesPrePostParser
+
 result_writer: &RESULT_WRITER
   name: CsvWriter
   path: /tmp/uani
@@ -105,6 +115,7 @@ result_writer: &RESULT_WRITER
     - switch
     - port-channels
     - neighbors
+    - routes
 
 
 nseries: !include nseries.yml

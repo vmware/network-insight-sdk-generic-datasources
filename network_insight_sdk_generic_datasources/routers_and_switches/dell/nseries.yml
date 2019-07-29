@@ -4,11 +4,13 @@ package_handler:
   <<: *PACKAGE_HANDLER
 
 workloads:
-  - <<: *SHOW_LLDP_REMOTE_DEVICE
   - <<: *SHOW_VERSION
   - <<: *SHOW_MAC_TABLE
   - <<: *SHOW_IP_INTERFACES
   - <<: *SHOW_PORT_CHANNELS
+  - <<: *SHOW_LLDP_REMOTE_DEVICE
+  - <<: *SHOW_IP_ROUTE_VRF
+
 
 result_writer:
   <<: *RESULT_WRITER

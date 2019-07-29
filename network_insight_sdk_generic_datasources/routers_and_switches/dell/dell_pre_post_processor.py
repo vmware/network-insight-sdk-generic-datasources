@@ -1,9 +1,15 @@
 # Copyright 2019 VMware, Inc.
 # SPDX-License-Identifier: BSD-2-Clause
 
+
+import traceback
 import re
+from network_insight_sdk_generic_datasources.common.log import py_logger
 from netaddr import IPAddress
 from network_insight_sdk_generic_datasources.parsers.text.pre_post_processor import PrePostProcessor
+from network_insight_sdk_generic_datasources.parsers.common.block_parser import LineBasedBlockParser
+from network_insight_sdk_generic_datasources.parsers.common.text_parser import GenericTextParser
+from network_insight_sdk_generic_datasources.parsers.common.block_parser import SimpleBlockParser
 
 
 class DellSwitchPrePostProcessor(PrePostProcessor):
@@ -12,7 +18,7 @@ class DellSwitchPrePostProcessor(PrePostProcessor):
     """
     def post_process(self, data):
         """
-        Get details of dell
+        Get details of dell switch
         :param data: Parsed output of show version command
         :return: list with dict containing DELL switch details
         """
@@ -24,7 +30,16 @@ class DellSwitchPrePostProcessor(PrePostProcessor):
 
 
 class DellPortChannelPrePostParser(PrePostProcessor):
+    """
+    Get details of port channel
+    """
+
     def parse(self, data):
+        """
+        Parse show interfaces port-channel command output to get port channel details
+        :param data: show interfaces port-channel Command output
+        :return: list of dict contains all port channels
+        """
         result = []
         lines = data.splitlines()
         for d in lines:
@@ -52,19 +67,78 @@ class DellPortChannelPrePostParser(PrePostProcessor):
 
 
 class DellLLDPRemoteDevicePrePostParser(PrePostProcessor):
-
+    """
+    Get lldp neighbours
+    """
     def post_process(self, data):
         result = []
         for d in data:
-            result.append(dict(localInterface=d['interface'],
-                               remoteDevice=d['System Name'],
-                               remoteInterface=['Port ID']))
+            if 'Embedded' not in d['Chassis ID']:
+                result.append(dict(localInterface=d['Interface'],
+                                   remoteDevice=d['System Name'],
+                                   remoteInterface=d['Port ID']))
+        return result
+
+
+class DellRoutesPrePostParser(PrePostProcessor):
+    """
+    Get routes from show ip route vrf command
+    """
+    route_rules = dict(nextHop=".* via (\\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\\b),.*",
+                       interfaceName=".*:.*[m|s], (.*)",
+                       interface_connected=".*connected, (.*)")
+
+    rules = dict(network=".*\*(\\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\\b/.*)\[.*", routeType="(.*).*\*.*")
+
+    route_types = dict(B="BGP", S="Static", C="DIRECT", O="OSPF")
+
+    def parse(self, data):
+        """
+        Parse show ip route vrf command output
+        :param data: show ip route vrf command output
+        :return: List of dict of routes
+        """
+        try:
+            result = []
+            parser = LineBasedBlockParser(".*(\*).*")
+            blocks = parser.parse(data)
+            generic_parser = GenericTextParser()
+            vrf = "master"
+
+            for block in blocks[2:]:
+                line_blocks = block.splitlines()
+                route_network = generic_parser.parse(line_blocks[0], self.rules)[0]
+                route_type = route_network['routeType'].rstrip()
+
+                for idx, line_block in enumerate(line_blocks):
+                    routes = generic_parser.parse(line_block, self.route_rules)[0]
+                    routes.update({"network": "{}".format(route_network['network'])})
+                    routes.update({"name": "{}_{}".format(route_network['network'], idx)})
+                    routes.update({"vrf": vrf})
+                    routes.update({"interfaceName": routes['interfaceName'] if routes['interfaceName']
+                                                                            else routes['interface_connected']})
+                    routes.pop('interface_connected')
+                    routes.update({"routeType": "{}".format(self.route_types[route_type]
+                                                            if self.route_types.has_key(route_type) else "DIRECT")})
+                    routes.update({"nextHop": "{}".format(routes['nextHop'] if routes['nextHop'] else "DIRECT")})
+                    result.append(routes.copy())
+        except Exception as e:
+            py_logger.error("{}\n{}".format(e, traceback.format_exc()))
+            raise e
         return result
 
 
 class DellIPInterfacesPrePostParser(PrePostProcessor):
+    """
+    Get router interface using show ip interfaces command
+    """
 
     def post_process(self, data):
+        """
+        Parse show ip interfaces command output to get router interface
+        :param data: show ip interfaces command output
+        :return: List of dict of router interfaces
+        """
         result = []
         for d in data:
             result.append(dict(interfaceSpeed='',
@@ -82,8 +156,15 @@ class DellIPInterfacesPrePostParser(PrePostProcessor):
 
 
 class DellSwitchPortPrePostProcessor(PrePostProcessor):
-
+    """
+    Get switch ports using show interfaces command
+    """
     def post_process(self, data):
+        """
+        Parse show interfaces command output to get switch ports
+        :param data: show interfaces command output
+        :return: List of dict of switch ports
+        """
         result = []
         for d in data:
             if 'line protocol' in d['name']:

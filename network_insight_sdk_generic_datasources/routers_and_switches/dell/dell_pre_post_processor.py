@@ -133,6 +133,7 @@ class DellSwitchPortPrePostProcessor(PrePostProcessor):
                         rv = range(int(ran[0]), int(ran[1]) + 1)
                         result_vlans = result_vlans + rv
                 d['vlans'] = ','.join(map(lambda x : str(x), result_vlans))
+            result.append(d)
         return result
 
 

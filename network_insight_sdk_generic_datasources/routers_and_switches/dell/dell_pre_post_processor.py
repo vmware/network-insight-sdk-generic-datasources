@@ -88,6 +88,7 @@ class DellSwitchPortPrePostProcessor(PrePostProcessor):
             if 'accessVlan' in d:
                 d['accessVlan'] = ''  # TODO
             if 'interfaceSpeed' in d:
+                # TODO: ISSUE_RAISED: Handle in product to provide value in bits per second.
                 d['interfaceSpeed'] = '0' #str(int(d['interfaceSpeed']) * 1000000)
                 d['operationalSpeed'] = d['interfaceSpeed']
             if 'duplex' in d:
@@ -129,6 +130,7 @@ class DellSwitchPortPrePostProcessor(PrePostProcessor):
                         rv = v.replace('(', '').replace(')', '')
                         result_vlans.append(str(rv))
                     elif '-' in v:
+                        # TODO ISSUE_RAISED: Handle in product to provide vlan range.
                         result_vlans = result_vlans + v.split('-')
                 d['vlans'] = ','.join(map(lambda x : str(x), result_vlans))
             result.append(d)

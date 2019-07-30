@@ -88,7 +88,7 @@ class DellSwitchPortPrePostProcessor(PrePostProcessor):
             if 'accessVlan' in d:
                 d['accessVlan'] = ''  # TODO
             if 'interfaceSpeed' in d:
-                d['interfaceSpeed'] = str(int(d['interfaceSpeed']) * 1000000)
+                d['interfaceSpeed'] = '0' #str(int(d['interfaceSpeed']) * 1000000)
                 d['operationalSpeed'] = d['interfaceSpeed']
             if 'duplex' in d:
                 if d['duplex'] == 'Half':
@@ -129,9 +129,7 @@ class DellSwitchPortPrePostProcessor(PrePostProcessor):
                         rv = v.replace('(', '').replace(')', '')
                         result_vlans.append(str(rv))
                     elif '-' in v:
-                        ran = v.split('-')
-                        rv = range(int(ran[0]), int(ran[1]) + 1)
-                        result_vlans = result_vlans + rv
+                        result_vlans = result_vlans + v.split('-')
                 d['vlans'] = ','.join(map(lambda x : str(x), result_vlans))
             result.append(d)
         return result

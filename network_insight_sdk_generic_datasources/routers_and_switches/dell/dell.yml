@@ -11,7 +11,7 @@ package_handler: &PACKAGE_HANDLER
 # workloads added will be executed in sequence
 workloads: &WORKLOADS
   - &SHOW_INTERFACE
-    table_id: showSwitchPorts
+    table_id: switch-ports
     command: show interfaces
     block_parser:
       name: GenericBlockParser
@@ -34,8 +34,9 @@ workloads: &WORKLOADS
           mtu: "MTU Size\\.+ (.*)"
           duplex: "Port Mode \\[Duplex\\]\\.+ (.*)"
           switchPortMode: "VLAN Membership Mode\\.+ (.*) Mode"
+
   - &SHOW_MAC_TABLE
-    table_id: showMacTable
+    table_id: mac-address-table
     command: show mac address-table
     parser:
       name: *HORIZONTAL_TABLE_PARSER
@@ -48,8 +49,13 @@ workloads: &WORKLOADS
           - macAddress
           - type
           - port
+    select_columns:
+      macAddress: macAddress
+      port: switchPort
+      vlan: vlan
+
   - &SHOW_IP_INTERFACES
-    table_id: showIpInterfaces
+    table_id: router-interfaces
     command: show ip interfaces
     parser:
       pre_post_processor: DellIPInterfacesPrePostParser
@@ -70,11 +76,60 @@ workloads: &WORKLOADS
     parser:
       name: routers_and_switches.dell.dell_pre_post_processor.DellPortChannelPrePostParser
 
+  - &SHOW_IP_ROUTE_VRF
+    table_id: routes
+    command: show ip route vrf
+    parser:
+      name: routers_and_switches.dell.dell_pre_post_processor.DellRoutesPrePostParser
+
+  - &SHOW_VERSION
+    table_id: switch
+    command: show version
+    parser:
+      pre_post_processor: DellSwitchPrePostProcessor
+      name: *GENERIC_TEXT_PARSER
+      arguments:
+        rules:
+          name: "Machine Description\\.* (.*)"
+          model: "System Model ID\\.* (.*)"
+          os: "Image File\\.* (.*)"
+          serial: "Serial Number\\.* (.*)"
+          hostname: "Machine Type\\.* (.*)"
+
+  - &SHOW_LLDP_REMOTE_DEVICE
+    table_id: neighbors
+    command: show lldp remote-device all
+    parser:
+      pre_post_processor: DellLLDPRemoteDevicePrePostParser
+      name: *HORIZONTAL_TABLE_PARSER
+      arguments:
+        skip_head: 4
+        field_marker: '  +'
+        header_keys:
+          - Interface
+          - RemID
+          - Chassis ID
+          - Port ID
+          - System Name
+
+  - &SHOW_VRF
+    table_id: vrfs
+    command: vrfs
+    parser:
+      name: routers_and_switches.dell.dell_pre_post_processor.DellVRFPrePostParser
+
 result_writer: &RESULT_WRITER
   name: CsvWriter
   path: /tmp/uani
   table_id:
+    - switch
+    - switch-ports
+    - router-interfaces
     - port-channels
+    - mac-address-table
+    - neighbors
+    - routes
+    - vrfs
 
 
 nseries: !include nseries.yml

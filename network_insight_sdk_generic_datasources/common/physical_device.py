@@ -93,7 +93,7 @@ class PhysicalDevice(object):
                     command_output_dict[workload[COMMAND_KEY]] = command_result
                     py_logger.info('Command %s Result %s' % (workload[COMMAND_KEY], command_result))
                     table = self.parse_command_output(workload, command_result)
-                if 'switch' in command_id:
+                if 'switch' == command_id:
                     table[0]['ipAddress/fqdn'] = self.credentials.ip_or_fqdn
                 self.result_map[command_id] = table
         except Exception as e:

@@ -59,6 +59,8 @@ class DellIPInterfacesPrePostParser(PrePostProcessor):
         """
         result = []
         for d in data:
+            if 'loopback' in  d['interface']:
+                continue
             result.append(dict(interfaceSpeed='',
                                name=d['interface'],
                                vlan=d['interface'].replace('Vl', ''),
@@ -101,19 +103,13 @@ class DellSwitchPortPrePostProcessor(PrePostProcessor):
                 else:
                     d['duplex'] = 'OTHER'
             if 'administrativeStatus' in d:
-                if d['administrativeStatus'] == 'up':
+                if d['administrativeStatus'] == 'Up':
                     d['administrativeStatus'] = 'UP'
-                else:
-                    d['administrativeStatus'] = 'DOWN'
-            if 'operationalStatus' in d:
-                if d['operationalStatus'] == 'up':
                     d['operationalStatus'] = 'UP'
-                else:
-                    d['operationalStatus'] = 'DOWN'
-            if 'connected' in d:
-                if d['connected'] == 'up':
                     d['connected'] = 'true'
                 else:
+                    d['administrativeStatus'] = 'DOWN'
+                    d['operationalStatus'] = 'DOWN'
                     d['connected'] = 'false'
             if 'switchPortMode' in d:
                 if d['switchPortMode'] == 'access':

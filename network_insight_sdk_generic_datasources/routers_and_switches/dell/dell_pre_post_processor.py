@@ -158,7 +158,6 @@ class DellSwitchPrePostProcessor(PrePostProcessor):
         :return: list with dict containing DELL switch details
         """
         temp = data[0]
-        temp['name'] = "Dell-switch"
         temp['vendor'] = "DELL"
         temp['haState'] = "ACTIVE"
         return [temp]

@@ -41,7 +41,7 @@ workloads: &WORKLOADS
     parser:
       name: *HORIZONTAL_TABLE_PARSER
       arguments:
-        skip_head: 3
+        skip_head: 5
         skip_tail: 1
         field_marker: '  +'
         header_keys:
@@ -61,7 +61,7 @@ workloads: &WORKLOADS
       pre_post_processor: DellIPInterfacesPrePostParser
       name: *HORIZONTAL_TABLE_PARSER
       arguments:
-        skip_head: 5
+        skip_head: 8
         field_marker: '  +'
         header_keys:
           - interface
@@ -103,7 +103,7 @@ workloads: &WORKLOADS
       pre_post_processor: DellLLDPRemoteDevicePrePostParser
       name: *HORIZONTAL_TABLE_PARSER
       arguments:
-        skip_head: 4
+        skip_head: 6
         field_marker: '  +'
         header_keys:
           - Interface

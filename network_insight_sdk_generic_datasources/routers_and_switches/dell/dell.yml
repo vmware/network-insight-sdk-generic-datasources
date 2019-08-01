@@ -78,7 +78,7 @@ workloads: &WORKLOADS
 
   - &SHOW_IP_ROUTE_VRF
     table_id: routes
-    command: show ip route vrf
+    command: show ip route
     parser:
       name: routers_and_switches.dell.dell_pre_post_processor.DellRoutesPrePostParser
 

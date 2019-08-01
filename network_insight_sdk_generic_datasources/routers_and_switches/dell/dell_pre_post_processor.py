@@ -196,9 +196,9 @@ class DellRoutesPrePostParser(PrePostProcessor):
                     interface_name = line[-1].lstrip()
                     routes = generic_parser.parse(line[0], self.route_rules)[0]
                     routes.update({"network": "{}".format(route_network['network'].rstrip())})
-                    routes.update({"name": "{}_{}".format(route_network['network'], idx)})
+                    routes.update({"name": "{}_{}".format(route_network['network'].rstrip(), idx)})
                     routes.update({"vrf": vrf})
-                    routes.update({"interfaceName": interface_name })
+                    routes.update({"interfaceName": interface_name})
                     # if 'loopback' in routes['interfaceName']:
                     #     continue
                     # if not routes['interfaceName']:

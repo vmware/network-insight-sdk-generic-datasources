@@ -167,7 +167,7 @@ class DellRoutesPrePostParser(PrePostProcessor):
     """
     Get routes from show ip route vrf command
     """
-    route_rules = dict(nextHop=".*via (\\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\\b),.*")
+    route_rules = dict(nextHop=".*via (\\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\\b).*")
 
     rules = dict(network=".*(\\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\\b/.*)\[.*",
                  routeType="(.*) .*(\\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\\b/.*)\[.*")

@@ -169,7 +169,8 @@ class DellRoutesPrePostParser(PrePostProcessor):
     """
     route_rules = dict(nextHop=".*via (\\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\\b),.*")
 
-    rules = dict(network=".*\*(\\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\\b/.*)\[.*", routeType="(.*).*\*.*")
+    rules = dict(network=".*(\\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\\b/.*)\[.*",
+                 routeType="(.*) .*(\\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\\b/.*)\[.*")
 
     route_types = dict(B="BGP", S="Static", C="DIRECT", O="OSPF")
 
@@ -181,12 +182,12 @@ class DellRoutesPrePostParser(PrePostProcessor):
         """
         try:
             result = []
-            parser = LineBasedBlockParser(".*(\*).*")
+            parser = LineBasedBlockParser(".*(\\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\\b/.*)\[.*")
             blocks = parser.parse(data)
             generic_parser = GenericTextParser()
             vrf = "default"
 
-            for block in blocks[2:]:
+            for block in blocks[1:]:
                 line_blocks = block.splitlines()
                 route_network = generic_parser.parse(line_blocks[0], self.rules)[0]
                 route_type = route_network['routeType'].rstrip()
@@ -205,7 +206,7 @@ class DellRoutesPrePostParser(PrePostProcessor):
                     #     continue
                     routes.update({"routeType": "{}".format(self.route_types[route_type]
                                                             if self.route_types.has_key(route_type) else "DIRECT")})
-                    routes.update({"nextHop": "{}".format(routes['nextHop'] if routes['nextHop'] else "DIRECT")})
+                    routes.update({"nextHop": "{}".format(routes['nextHop'] if route_type != 'C' else "DIRECT")})
                     result.append(routes.copy())
         except Exception as e:
             py_logger.error("{}\n{}".format(e, traceback.format_exc()))

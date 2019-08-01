@@ -59,6 +59,7 @@ Example
 ```
 $ git clone https://github.com/vmware/network-insight-sdk-generic-datasources.git
 $ cd network-insight-sdk-generic-datasources
+$ pip install --src . -r requirements.txt
 $ export PYTHONPATH="$PYTHONPATH:../network-insight-sdk-generic-datasources"
 $ python ./network_insight_sdk_generic_datasources/main.py -d cisco -m n5k -s CISCO_IOS -i 10.1.1.1 -u test -p test -o cisco-n5k-10.1.1.1.zip
 

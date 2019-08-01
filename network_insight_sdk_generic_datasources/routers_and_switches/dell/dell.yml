@@ -90,6 +90,7 @@ workloads: &WORKLOADS
       name: *GENERIC_TEXT_PARSER
       arguments:
         rules:
+          name: "Machine Description\\.* (.*)"
           model: "System Model ID\\.* (.*)"
           os: "Image File\\.* (.*)"
           serial: "Serial Number\\.* (.*)"

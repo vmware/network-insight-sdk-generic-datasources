@@ -95,7 +95,6 @@ class PhysicalDevice(object):
                     table = self.parse_command_output(workload, command_result)
                 if 'switch' == command_id:
                     table[0]['ipAddress/fqdn'] = self.credentials.ip_or_fqdn
-                    table[0]['name'] = "{}-{}".format(table[0]['name'], self.credentials.ip_or_fqdn)
                 self.result_map[command_id] = table
         except Exception as e:
             py_logger.error("Error occurred while executing command : {}".format(e))

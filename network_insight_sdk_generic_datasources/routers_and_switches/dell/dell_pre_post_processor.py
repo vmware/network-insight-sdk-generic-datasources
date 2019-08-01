@@ -167,9 +167,7 @@ class DellRoutesPrePostParser(PrePostProcessor):
     """
     Get routes from show ip route vrf command
     """
-    route_rules = dict(nextHop=".*via (\\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\\b),.*",
-                       interfaceName=".*:.*[m|s], (.*)",
-                       interface_connected=".*connected, (.*)")
+    route_rules = dict(nextHop=".*via (\\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\\b),.*")
 
     rules = dict(network=".*\*(\\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\\b/.*)\[.*", routeType="(.*).*\*.*")
 
@@ -194,13 +192,17 @@ class DellRoutesPrePostParser(PrePostProcessor):
                 route_type = route_network['routeType'].rstrip()
 
                 for idx, line_block in enumerate(line_blocks):
-                    routes = generic_parser.parse(line_block, self.route_rules)[0]
+                    line = line_block.split(',')
+                    interface_name = line[-1].lstrip()
+                    routes = generic_parser.parse(line[0], self.route_rules)[0]
                     routes.update({"network": "{}".format(route_network['network'].rstrip())})
                     routes.update({"name": "{}_{}".format(route_network['network'], idx)})
                     routes.update({"vrf": vrf})
-                    routes.update({"interfaceName": routes['interfaceName'].lstrip() if routes['interfaceName']
-                                                                            else routes['interface_connected'].lstrip()})
-                    routes.pop('interface_connected')
+                    routes.update({"interfaceName": interface_name })
+                    # if 'loopback' in routes['interfaceName']:
+                    #     continue
+                    # if not routes['interfaceName']:
+                    #     continue
                     routes.update({"routeType": "{}".format(self.route_types[route_type]
                                                             if self.route_types.has_key(route_type) else "DIRECT")})
                     routes.update({"nextHop": "{}".format(routes['nextHop'] if routes['nextHop'] else "DIRECT")})

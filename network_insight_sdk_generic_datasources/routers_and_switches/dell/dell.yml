@@ -56,7 +56,7 @@ workloads: &WORKLOADS
 
   - &SHOW_IP_INTERFACES
     table_id: router-interfaces
-    command: show ip interfaces
+    command: show ip interface
     parser:
       pre_post_processor: DellIPInterfacesPrePostParser
       name: *HORIZONTAL_TABLE_PARSER

@@ -136,14 +136,9 @@ workloads: &WORKLOADS
       IP Address: loadBalancedIpAddress
       State: loadBalancedStatus
 
-  - &GET_RI_TABLE
-    table_id: router-interfaces
-    reuse_tables: showVRRPInterface,showRouterInterfaces
-    reuse_table_processor: DellRouterInterface
-
 table_joiners: &TABLE_JOINERS
   - &DELL_RI_TABLE
-    name: network_insight_sdk_generic_datasources.joiner.table_joiner.SimpleTableJoiner
+    name: routers_and_switches.dell.dell_pre_post_processor.DellRouterInterfaceUpdate
     source_table: showVRRPInterface
     destination_table: showRouterInterfaces
     source_column: interfaceName

@@ -13,7 +13,9 @@ workloads:
   - <<: *SHOW_IP_ROUTE_VRF
   - <<: *SHOW_VRF
   - <<: *SHOW_VRRP_INTERFACE
-  - <<: *GET_RI_TABLE
+
+table_joiners:
+  - <<: *DELL_RI_TABLE
 
 result_writer:
   <<: *RESULT_WRITER

@@ -9,7 +9,6 @@ from netaddr import IPAddress
 from network_insight_sdk_generic_datasources.parsers.text.pre_post_processor import PrePostProcessor
 from network_insight_sdk_generic_datasources.parsers.common.block_parser import LineBasedBlockParser
 from network_insight_sdk_generic_datasources.parsers.common.text_parser import GenericTextParser
-from network_insight_sdk_generic_datasources.parsers.text.table_processor import TableProcessor
 from network_insight_sdk_generic_datasources.joiner.table_joiner import SimpleTableJoiner
 
 
@@ -224,21 +223,10 @@ class DellVRFPrePostParser(PrePostProcessor):
         return [{"name": "default"}]
 
 
-class DellRouterInterface(TableProcessor):
-    """
-    Get get details of juniper srx from showVersion,showChassishardware
-    """
+class DellRouterInterfaceUpdate(SimpleTableJoiner):
 
-    def process_tables(self, tables):
-        """
-        Returns update showVersion table with serial
-        """
-        joiner = SimpleTableJoiner()
-        result = joiner.join_tables(source_table=tables['showVRRPInterface'],
-                                   destination_table=tables['showRouterInterfaces'],
-                                   source_column='interfaceName',
-                                   destination_column='name')
-        for t in result:
-            if t['loadBalancedIpAddress']:
-                t['loadBalancedIpAddress'] = "{}/{}".format(t['loadBalancedIpAddress'], t['ipAddress'].split('/')[1])
-        return result
+    def update(self, row_dict):
+        if row_dict['loadBalancedIpAddress']:
+            netmask = row_dict['ipAddress'].split('/')[1]
+            row_dict['loadBalancedIpAddress'] = "{}/{}".format(row_dict['loadBalancedIpAddress'], netmask)
+        return row_dict

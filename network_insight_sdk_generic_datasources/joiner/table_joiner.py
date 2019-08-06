@@ -39,9 +39,13 @@ class SimpleTableJoiner(object):
                     if k == source_column:
                         continue
                     pydict[k] = srow[k]
+            pydict = self.update(pydict)
             joined_table += [pydict]
 
         return joined_table
+
+    def update(self, row_dict):
+        return row_dict
 
     @staticmethod
     def fill_with_empty_values(pydict, row_dict, source_column):

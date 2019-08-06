@@ -121,6 +121,7 @@ workloads: &WORKLOADS
     table_id: showVRRPInterface
     command: show vrrp interface brief
     parser:
+      pre_post_processor: DellVRRPPrePostProcessor
       name: *HORIZONTAL_TABLE_PARSER
       arguments:
         skip_head: 2
@@ -135,6 +136,7 @@ workloads: &WORKLOADS
       Interface: interfaceName
       IP Address: loadBalancedIpAddress
       State: loadBalancedStatus
+      loadBalancedProtocol: loadBalancedProtocol
 
 table_joiners: &TABLE_JOINERS
   - &DELL_RI_TABLE

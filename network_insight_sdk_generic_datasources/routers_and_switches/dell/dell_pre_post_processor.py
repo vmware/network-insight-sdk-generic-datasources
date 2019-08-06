@@ -223,6 +223,15 @@ class DellVRFPrePostParser(PrePostProcessor):
         return [{"name": "default"}]
 
 
+class DellVRRPPrePostProcessor(PrePostProcessor):
+
+    def post_process(self, data):
+        for d in data:
+            if d['IP Address']:
+                d['loadBalancedProtocol'] = "VRRP"
+        return data
+
+
 class DellRouterInterfaceUpdate(SimpleTableJoiner):
 
     def update(self, row_dict):

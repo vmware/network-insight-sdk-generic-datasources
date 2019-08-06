@@ -122,6 +122,7 @@ workloads: &WORKLOADS
     table_id: showVRRPInterface
     command: show vrrp interface brief
     parser:
+      pre_post_processor: DellVRRPPrePostParser
       name: *HORIZONTAL_TABLE_PARSER
       arguments:
         skip_head: 2

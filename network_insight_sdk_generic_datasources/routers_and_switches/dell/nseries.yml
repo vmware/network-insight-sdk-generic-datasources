@@ -4,7 +4,6 @@ package_handler:
   <<: *PACKAGE_HANDLER
 
 workloads:
-  - <<: *SHOW_VRRP_INTERFACE
   - <<: *SHOW_VERSION
   - <<: *SHOW_INTERFACE
   - <<: *SHOW_MAC_TABLE
@@ -13,9 +12,10 @@ workloads:
   - <<: *SHOW_LLDP_REMOTE_DEVICE
   - <<: *SHOW_IP_ROUTE_VRF
   - <<: *SHOW_VRF
+  - <<: *SHOW_VRRP_INTERFACE
 
 table_joiners:
-  <<: *TABLE_JOINERS
+  - <<: *DELL_RI_TABLE
 
 result_writer:
   <<: *RESULT_WRITER

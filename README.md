@@ -212,7 +212,7 @@ defined in bottom is executed last.
     * reuse_table_processor - Define class which can operate on listed reuse_tables.
 2. Table Joiner - Used for joining table. More information below.
 3. Result writer - Used to write table, reference with table_id, to csv file.
-    * Result writer accepts path parameter which tells in which directory csv files to generate.
+    * Result writer accepts generation directory parameter which tells in which directory csv files to generate.
 4. Package Handler - Used to package files into a zip format.
     * Package Handler accepts path parameter which tells which directory to compress as zip.
 

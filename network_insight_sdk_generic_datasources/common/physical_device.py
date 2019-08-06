@@ -57,7 +57,7 @@ class PhysicalDevice(object):
         if not self.table_joiners:
             return
         try:
-            for joiner_config in self.table_joiners['table']:
+            for joiner_config in self.table_joiners:
                 joiner_class = import_utilities.load_class(joiner_config[NAME_KEY])()
                 source_table = self.result_map[joiner_config[SOURCE_TABLE_KEY]]
                 destination_table = self.result_map[joiner_config[DESTINATION_TABLE_KEY]]

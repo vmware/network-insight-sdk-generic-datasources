@@ -151,7 +151,7 @@ duplex                | optional             | Duplex                         | 
 connected             | mandatory            | connected                      | TRUE, FALSE
 loadBalancedProtocol  | optional             | Load Balanced Protocol         | VRRP, GLBP, HSRP, VARP, OTHER
 loadBalancedStatus    | optional             | Load Balanced Status           | 1. VRRP -> INITIALIZE, MASTER, BACKUP. 2. GLBP -> ACTIVE, DISABLED, LISTEN, SPEAK, STANDBY, INITIAL. 3. HSRP -> ACTIVE, INITIAL, LEARN, LISTEN, STANDBY, SPEAK. 4.VARP -> ACTIVE. 5. OTHER ->  ACTIVE, STANDBY
-loadBalancedIpAddress | optional             | Load balanced IP Address       | Interfaces defined in switch-ports.csv
+loadBalancedIpAddress | optional             | Load balanced IP Address       | Load Balanced Protocol IP Address
 
 * routes.csv - contains all routes. MANDATORY
 

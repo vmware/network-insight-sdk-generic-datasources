@@ -8,11 +8,11 @@ class SimpleTableJoiner(object):
         pass
 
     def join_tables(self, source_table, destination_table, source_column, destination_column):
-        if source_table is None:
-            raise ValueError('source_table can be None')
+        if not source_table:
+            return destination_table
 
-        if destination_table is None:
-            raise ValueError('destination_table can be None')
+        if not destination_table:
+            raise ValueError('destination_table cannot be empty')
 
         if source_column is None:
             raise ValueError('source_column can be None')

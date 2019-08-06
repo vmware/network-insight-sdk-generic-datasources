@@ -11,6 +11,7 @@ from network_insight_sdk_generic_datasources.common.constants import COMMAND_KEY
 from network_insight_sdk_generic_datasources.common.constants import PARSER_KEY
 from network_insight_sdk_generic_datasources.common.constants import BLOCK_PARSER_KEY
 from network_insight_sdk_generic_datasources.common.constants import NAME_KEY
+from network_insight_sdk_generic_datasources.common.constants import MODIFY_FUNCTION_KEY
 from network_insight_sdk_generic_datasources.common.constants import ARGUMENTS_KEY
 from network_insight_sdk_generic_datasources.common.constants import PRE_POST_PROCESSOR_KEY
 from network_insight_sdk_generic_datasources.common.constants import SELECT_COLUMNS_KEY
@@ -66,6 +67,10 @@ class PhysicalDevice(object):
                 destination_column = joiner_config[DESTINATION_COLUMN_KEY]
                 table = import_utilities.load_class_method(joiner_class, 'join_tables')(source_table, destination_table,
                                                                                         source_column, destination_column)
+                if joiner_config.has_key(MODIFY_FUNCTION_KEY):
+                    process_table = import_utilities.load_class_for_process_table(self.device,
+                                                                          joiner_config[MODIFY_FUNCTION_KEY])()
+                    table = self.call_process_table_function(process_table, table)
                 self.result_map[joiner_config[JOINED_TABLE_ID_KEY]] = table
         except KeyError as e:
             py_logger.error("Failed to join tables: KeyError : {}".format(e))

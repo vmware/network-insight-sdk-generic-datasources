@@ -121,7 +121,6 @@ workloads: &WORKLOADS
     table_id: showVRRPInterface
     command: show vrrp interface brief
     parser:
-      pre_post_processor: DellVRRPPrePostParser
       name: *HORIZONTAL_TABLE_PARSER
       arguments:
         skip_head: 2
@@ -144,6 +143,7 @@ table_joiners: &TABLE_JOINERS
     destination_table: showRouterInterfaces
     source_column: interfaceName
     destination_column: name
+    modify_funtion: DellRouterInterface
     joined_table_id: router-interfaces
 
 result_writer: &RESULT_WRITER

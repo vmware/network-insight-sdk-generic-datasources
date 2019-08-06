@@ -9,6 +9,7 @@ from netaddr import IPAddress
 from network_insight_sdk_generic_datasources.parsers.text.pre_post_processor import PrePostProcessor
 from network_insight_sdk_generic_datasources.parsers.common.block_parser import LineBasedBlockParser
 from network_insight_sdk_generic_datasources.parsers.common.text_parser import GenericTextParser
+from network_insight_sdk_generic_datasources.parsers.text.table_processor import TableProcessor
 
 
 class DellPortChannelPrePostParser(PrePostProcessor):
@@ -220,3 +221,19 @@ class DellVRFPrePostParser(PrePostProcessor):
     """
     def parse(self, data):
         return [{"name": "default"}]
+
+
+class DellRouterInterface(TableProcessor):
+    """
+    Get get details of juniper srx from showVersion,showChassishardware
+    """
+
+    def process_tables(self, data):
+        """
+        Returns update showVersion table with serial
+        """
+        for t in data:
+            if t['loadBalancedIpAddress']:
+                netmask = t['ipAddress'].split('/')[1]
+                t['loadBalancedIpAddress'] = "{}/{}".format(t['loadBalancedIpAddress'], netmask)
+        return data

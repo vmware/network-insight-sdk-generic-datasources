@@ -16,7 +16,10 @@ workloads:
   - <<: *SHOW_VLAN_BRIEF
 
 table_joiners:
-  <<: *TABLE_JOINERS
+  - <<: *N5K_RI_TABLE
+  - <<: *N5K_SP_TABLE
+  - <<: *N5K_PC_TABLE
+
 
 result_writer:
   <<: *RESULT_WRITER

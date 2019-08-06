@@ -10,7 +10,7 @@ from network_insight_sdk_generic_datasources.common.constants import TABLE_JOINE
 from network_insight_sdk_generic_datasources.common.constants import WORKLOADS_KEY
 from network_insight_sdk_generic_datasources.common.constants import PACKAGE_HANDLER_KEY
 from network_insight_sdk_generic_datasources.common.constants import RESULT_WRITER_KEY
-from network_insight_sdk_generic_datasources.common.constants import ARGUMENTS_KEY
+from network_insight_sdk_generic_datasources.common.constants import GENERATION_DIRECTORY_KEY
 
 
 def parse_arguments():
@@ -42,14 +42,16 @@ def main():
         configuration = yaml_utilities.altered_safe_load(f)
         table_joiner = configuration[args.model][TABLE_JOINERS_KEY] if TABLE_JOINERS_KEY in configuration[
             args.model] else None
+        generation_directory = configuration[GENERATION_DIRECTORY_KEY] + '/' + args.ip_or_fqdn
         physical_device = physical_device.PhysicalDevice(args.device, args.model,
                                                          configuration[args.model][WORKLOADS_KEY],
                                                          args,
                                                          table_joiner,
-                                                         configuration[args.model][RESULT_WRITER_KEY])
+                                                         configuration[args.model][RESULT_WRITER_KEY],
+                                                         generation_directory)
         physical_device.process()
-        if PACKAGE_HANDLER_KEY in configuration and ARGUMENTS_KEY in configuration[PACKAGE_HANDLER_KEY]:
-            zipper = ZipArchiver(self_zip, args.output_zip, **configuration[PACKAGE_HANDLER_KEY][ARGUMENTS_KEY])
+        if PACKAGE_HANDLER_KEY in configuration:
+            zipper = ZipArchiver(self_zip, args.output_zip, generation_directory)
             zipper.zipdir()
 
 

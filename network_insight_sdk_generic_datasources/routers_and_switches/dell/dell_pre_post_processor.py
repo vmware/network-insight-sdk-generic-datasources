@@ -9,6 +9,7 @@ from netaddr import IPAddress
 from network_insight_sdk_generic_datasources.parsers.text.pre_post_processor import PrePostProcessor
 from network_insight_sdk_generic_datasources.parsers.common.block_parser import LineBasedBlockParser
 from network_insight_sdk_generic_datasources.parsers.common.text_parser import GenericTextParser
+from network_insight_sdk_generic_datasources.joiner.table_joiner import SimpleTableJoiner
 
 
 class DellPortChannelPrePostParser(PrePostProcessor):
@@ -220,3 +221,21 @@ class DellVRFPrePostParser(PrePostProcessor):
     """
     def parse(self, data):
         return [{"name": "default"}]
+
+
+class DellVRRPPrePostProcessor(PrePostProcessor):
+
+    def post_process(self, data):
+        for d in data:
+            if d['IP Address']:
+                d['loadBalancedProtocol'] = "VRRP"
+        return data
+
+
+class DellRouterInterfaceUpdate(SimpleTableJoiner):
+
+    def update(self, row_dict):
+        if row_dict['loadBalancedIpAddress']:
+            netmask = row_dict['ipAddress'].split('/')[1]
+            row_dict['loadBalancedIpAddress'] = "{}/{}".format(row_dict['loadBalancedIpAddress'], netmask)
+        return row_dict

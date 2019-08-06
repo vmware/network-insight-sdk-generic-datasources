@@ -54,7 +54,7 @@ workloads: &WORKLOADS
       vlan: vlan
 
   - &SHOW_IP_INTERFACES
-    table_id: router-interfaces
+    table_id: showRouterInterfaces
     command: show ip interface
     parser:
       pre_post_processor: DellIPInterfacesPrePostParser
@@ -116,6 +116,36 @@ workloads: &WORKLOADS
     command: vrfs
     parser:
       name: routers_and_switches.dell.dell_pre_post_processor.DellVRFPrePostParser
+
+  - &SHOW_VRRP_INTERFACE
+    table_id: showVRRPInterface
+    command: show vrrp interface brief
+    parser:
+      pre_post_processor: DellVRRPPrePostProcessor
+      name: *HORIZONTAL_TABLE_PARSER
+      arguments:
+        skip_head: 2
+        field_marker: '  +'
+        header_keys:
+          - Interface
+          - VRID
+          - IP Address
+          - Mode
+          - State
+    select_columns:
+      Interface: interfaceName
+      IP Address: loadBalancedIpAddress
+      State: loadBalancedStatus
+      loadBalancedProtocol: loadBalancedProtocol
+
+table_joiners: &TABLE_JOINERS
+  - &DELL_RI_TABLE
+    name: routers_and_switches.dell.dell_pre_post_processor.DellRouterInterfaceUpdate
+    source_table: showVRRPInterface
+    destination_table: showRouterInterfaces
+    source_column: interfaceName
+    destination_column: name
+    joined_table_id: router-interfaces
 
 result_writer: &RESULT_WRITER
   name: CsvWriter

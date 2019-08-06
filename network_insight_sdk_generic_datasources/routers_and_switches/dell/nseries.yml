@@ -12,6 +12,10 @@ workloads:
   - <<: *SHOW_LLDP_REMOTE_DEVICE
   - <<: *SHOW_IP_ROUTE_VRF
   - <<: *SHOW_VRF
+  - <<: *SHOW_VRRP_INTERFACE
+
+table_joiners:
+  - <<: *DELL_RI_TABLE
 
 result_writer:
   <<: *RESULT_WRITER

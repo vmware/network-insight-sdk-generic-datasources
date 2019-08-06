@@ -10,17 +10,17 @@ class SimpleTableJoiner(object):
         pass
 
     def join_tables(self, source_table, destination_table, source_column, destination_column):
-        is_source_table_empty = True
-        is_destination_table_empty = True
+        is_source_table_empty = source_table is None or len(source_table) == 0
+        is_destination_table_empty = destination_table is None or len(destination_table) == 0
 
         if is_source_table_empty and is_destination_table_empty:
-            py_logger.warn('{} and {} table cannot be empty'.format(source_table, destination_table))
+            py_logger.warn('source and destination table cannot be empty')
             return None
         if is_source_table_empty:
-            py_logger.warn('{} table is empty. Returning {} table'.format(source_table, destination_table))
+            py_logger.warn('source table is empty. Returning destination table')
             return destination_table
         if is_destination_table_empty:
-            py_logger.warn('{} table is empty. Returning {} table'.format(destination_table, source_table))
+            py_logger.warn('destination table is empty. Returning source table')
             return source_table
 
         source_key_value_row = {}

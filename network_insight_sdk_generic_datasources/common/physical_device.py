@@ -34,13 +34,14 @@ class PhysicalDevice(object):
     output format. For example, CSV for Excel.
     """
 
-    def __init__(self, device, model,  workloads, credentials, table_joiners, result_writer):
+    def __init__(self, device, model,  workloads, credentials, table_joiners, result_writer, generation_dir):
         self.device = device
         self.model = model
         self.workloads = workloads
         self.credentials = credentials
         self.table_joiners = table_joiners
         self.result_writer = result_writer
+        self.generation_dir = generation_dir
         self.result_map = {}  # will be set only after executing commands
 
     def process(self):
@@ -51,7 +52,7 @@ class PhysicalDevice(object):
     def write_results(self):
         for table in self.result_writer[TABLE_ID_KEY]:
             csv_writer = CsvWriter()
-            csv_writer.write(self.result_writer[PATH_KEY], table, self.result_map[table])
+            csv_writer.write(self.generation_dir, table, self.result_map[table])
 
     def join_tables(self):
         if not self.table_joiners:

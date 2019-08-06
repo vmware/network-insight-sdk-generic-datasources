@@ -2,11 +2,10 @@
 vertical_table_parser: &VERTICAL_TABLE_PARSER network_insight_sdk_generic_datasources.parsers.common.vertical_table_parser.VerticalTableParser
 horizontal_table_parser: &HORIZONTAL_TABLE_PARSER network_insight_sdk_generic_datasources.parsers.common.horizontal_table_parser.HorizontalTableParser
 generic_text_parser: &GENERIC_TEXT_PARSER network_insight_sdk_generic_datasources.parsers.common.text_parser.GenericTextParser
+generation_directory: &GENERATION_DIRECTORY /tmp/uani
 
 package_handler: &PACKAGE_HANDLER
   name: ZipPackageHandler
-  arguments:
-    path: /tmp/uani
 
 # workloads added will be executed in sequence
 workloads: &WORKLOADS
@@ -120,7 +119,6 @@ workloads: &WORKLOADS
 
 result_writer: &RESULT_WRITER
   name: CsvWriter
-  path: /tmp/uani
   table_id:
     - switch
     - switch-ports

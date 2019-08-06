@@ -32,6 +32,7 @@ SOURCE_TABLE_KEY = 'source_table'
 JOINED_TABLE_ID_KEY = 'joined_table_id'
 RESULT_WRITER_KEY = 'result_writer'
 PATH_KEY = 'path'
+GENERATION_DIRECTORY_KEY = 'generation_directory'
 # ############ End of YAML Keys ################## #
 
 

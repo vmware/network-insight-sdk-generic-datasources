@@ -1,6 +1,8 @@
 # Copyright 2019 VMware, Inc.
 # SPDX-License-Identifier: BSD-2-Clause
 
+from network_insight_sdk_generic_datasources.common.log import py_logger
+
 
 class SimpleTableJoiner(object):
 
@@ -8,21 +10,18 @@ class SimpleTableJoiner(object):
         pass
 
     def join_tables(self, source_table, destination_table, source_column, destination_column):
-        is_source_table_empty = source_table is None or len(source_table) == 0
-        is_destination_table_empty = destination_table is None or len(destination_table) == 0
+        is_source_table_empty = True
+        is_destination_table_empty = True
 
         if is_source_table_empty and is_destination_table_empty:
+            py_logger.warn('{} and {} table cannot be empty'.format(source_table, destination_table))
             return None
         if is_source_table_empty:
+            py_logger.warn('{} table is empty. Returning {} table'.format(source_table, destination_table))
             return destination_table
         if is_destination_table_empty:
+            py_logger.warn('{} table is empty. Returning {} table'.format(destination_table, source_table))
             return source_table
-
-        if source_column is None:
-            raise ValueError('source_column can be None')
-
-        if destination_column is None:
-            raise ValueError('destination_column can be None')
 
         source_key_value_row = {}
         for source_row in source_table:

@@ -12,7 +12,7 @@ class CsvWriter(object):
     @staticmethod
     def write(path, filename, table):
         if table is None:
-            py_logger.warn('Table cannot be None. Will not write to csv.')
+            py_logger.warn('{} Table cannot be None. Will not write to csv.'.format(filename))
             return
         if type(table) != list:
             py_logger.warn('Table is a list of dictionaries. Will not write to csv.')

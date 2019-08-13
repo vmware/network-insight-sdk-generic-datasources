@@ -85,7 +85,7 @@ class CiscoRouterInterfacePrePostProcessor(PrePostProcessor):
         for d in data:
             if 'line protocol' in d['name']:
                 d['name'] = d['name'].split()[0]
-            if 'ipAddress' in d:
+            if 'ipAddress' in d and len(d['ipAddress']) > 0:
                 result = [d]
             if 'administrativeStatus' in d:
                 if d['administrativeStatus'] == 'up':
@@ -102,6 +102,13 @@ class CiscoRouterInterfacePrePostProcessor(PrePostProcessor):
                     d['connected'] = 'true'
                 else:
                     d['connected'] = 'false'
+            if 'duplex' in d:
+                if d['duplex'] == 'half':
+                    d['duplex'] = 'HALF'
+                elif d['duplex'] == 'full':
+                    d['duplex'] = 'FULL'
+                else:
+                    d['duplex'] = 'OTHER'
         return result
 
 
@@ -136,14 +143,12 @@ class CiscoSwitchPortPrePostProcessor(PrePostProcessor):
                     d['connected'] = 'true'
                 else:
                     d['connected'] = 'false'
-            if 'switchPortMode' not in d:
-                d['switchPortMode'] = 'OTHER'
             if 'switchPortMode' in d:
                 if d['switchPortMode'] == 'access':
                     d['switchPortMode'] = 'ACCESS'
                 elif d['switchPortMode'] == 'trunk':
                     d['switchPortMode'] = 'TRUNK'
-                elif d['switchPortMode'] == 'fex':
+                else:
                     d['switchPortMode'] = 'OTHER'
         return result
 

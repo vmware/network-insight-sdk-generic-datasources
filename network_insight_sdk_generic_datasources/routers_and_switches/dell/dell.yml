@@ -1,0 +1,164 @@
+
+vertical_table_parser: &VERTICAL_TABLE_PARSER network_insight_sdk_generic_datasources.parsers.common.vertical_table_parser.VerticalTableParser
+horizontal_table_parser: &HORIZONTAL_TABLE_PARSER network_insight_sdk_generic_datasources.parsers.common.horizontal_table_parser.HorizontalTableParser
+generic_text_parser: &GENERIC_TEXT_PARSER network_insight_sdk_generic_datasources.parsers.common.text_parser.GenericTextParser
+generation_directory: &GENERATION_DIRECTORY /tmp/uani
+
+package_handler: &PACKAGE_HANDLER
+  name: ZipPackageHandler
+
+# workloads added will be executed in sequence
+workloads: &WORKLOADS
+  - &SHOW_INTERFACE
+    table_id: switch-ports
+    command: show interfaces
+    block_parser:
+      name: GenericBlockParser
+      arguments:
+        line_pattern: 'Interface Name'
+    parser:
+      pre_post_processor: DellSwitchPortPrePostProcessor
+      name: *GENERIC_TEXT_PARSER
+      arguments:
+        rules:
+          name: "Interface Name\\.+ (.*)"
+          connected: ".* is.*(up|down).*"
+          accessVlan: "VLAN Membership\\.+ (.*)"
+          vlans: "VLAN Membership\\.+ (.*)"
+          administrativeStatus: "Link Status\\.+ (Up|Down).*"
+          operationalStatus: "Link Status\\.+ (Up|Down).*"
+          hardwareAddress: "Burned In MAC Address\\.+ (.*)"
+          interfaceSpeed: "Port Speed\\.+ (.*)"
+          operationalSpeed: "Port Speed\\.+ (.*)"
+          mtu: "MTU Size\\.+ (.*)"
+          duplex: "Port Mode \\[Duplex\\]\\.+ (.*)"
+          switchPortMode: "VLAN Membership Mode\\.+ (.*) Mode"
+
+  - &SHOW_MAC_TABLE
+    table_id: mac-address-table
+    command: show mac address-table
+    parser:
+      name: *HORIZONTAL_TABLE_PARSER
+      arguments:
+        skip_head: 5
+        skip_tail: 1
+        field_marker: '  +'
+        header_keys:
+          - vlan
+          - macAddress
+          - type
+          - port
+    select_columns:
+      macAddress: macAddress
+      port: switchPort
+      vlan: vlan
+
+  - &SHOW_IP_INTERFACES
+    table_id: showRouterInterfaces
+    command: show ip interface
+    parser:
+      pre_post_processor: DellIPInterfacesPrePostParser
+      name: *HORIZONTAL_TABLE_PARSER
+      arguments:
+        skip_head: 8
+        field_marker: '  +'
+        header_keys:
+          - interface
+          - state
+          - ipAddress
+          - ipMask
+          - method
+
+  - &SHOW_PORT_CHANNELS
+    table_id: port-channels
+    command: show interfaces port-channel
+    parser:
+      name: routers_and_switches.dell.dell_pre_post_processor.DellPortChannelPrePostParser
+
+  - &SHOW_IP_ROUTE_VRF
+    table_id: routes
+    command: show ip route
+    parser:
+      name: routers_and_switches.dell.dell_pre_post_processor.DellRoutesPrePostParser
+
+  - &SHOW_VERSION
+    table_id: switch
+    command: show version
+    parser:
+      pre_post_processor: DellSwitchPrePostProcessor
+      name: *GENERIC_TEXT_PARSER
+      arguments:
+        rules:
+          name: "Machine Description\\.* (.*)"
+          model: "System Model ID\\.* (.*)"
+          os: "Image File\\.* (.*)"
+          serial: "Serial Number\\.* (.*)"
+          hostname: "Machine Type\\.* (.*)"
+
+  - &SHOW_LLDP_REMOTE_DEVICE
+    table_id: neighbors
+    command: show lldp remote-device all
+    parser:
+      pre_post_processor: DellLLDPRemoteDevicePrePostParser
+      name: *HORIZONTAL_TABLE_PARSER
+      arguments:
+        skip_head: 6
+        field_marker: '  +'
+        header_keys:
+          - Interface
+          - RemID
+          - Chassis ID
+          - Port ID
+          - System Name
+
+  - &SHOW_VRF
+    table_id: vrfs
+    command: vrfs
+    parser:
+      name: routers_and_switches.dell.dell_pre_post_processor.DellVRFPrePostParser
+
+  - &SHOW_VRRP_INTERFACE
+    table_id: showVRRPInterface
+    command: show vrrp interface brief
+    parser:
+      pre_post_processor: DellVRRPPrePostProcessor
+      name: *HORIZONTAL_TABLE_PARSER
+      arguments:
+        skip_head: 2
+        field_marker: '  +'
+        header_keys:
+          - Interface
+          - VRID
+          - IP Address
+          - Mode
+          - State
+    select_columns:
+      Interface: interfaceName
+      IP Address: loadBalancedIpAddress
+      State: loadBalancedStatus
+      loadBalancedProtocol: loadBalancedProtocol
+
+table_joiners: &TABLE_JOINERS
+  - &DELL_RI_TABLE
+    name: routers_and_switches.dell.dell_pre_post_processor.DellRouterInterfaceUpdate
+    source_table: showVRRPInterface
+    destination_table: showRouterInterfaces
+    source_column: interfaceName
+    destination_column: name
+    joined_table_id: router-interfaces
+
+result_writer: &RESULT_WRITER
+  name: CsvWriter
+  table_id:
+    - switch
+    - switch-ports
+    - router-interfaces
+    - port-channels
+    - mac-address-table
+    - neighbors
+    - routes
+    - vrfs
+
+
+nseries: !include nseries.yml
+

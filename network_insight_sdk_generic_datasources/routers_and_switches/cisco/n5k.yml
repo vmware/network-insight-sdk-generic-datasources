@@ -3,7 +3,7 @@
 package_handler:
   <<: *PACKAGE_HANDLER
 
-command_list:
+workloads:
   - <<: *SHOW_VERSION
   - <<: *MAC_ADDRESS_TABLE
   - <<: *SHOW_CDP_NEIGHBORS
@@ -16,7 +16,10 @@ command_list:
   - <<: *SHOW_VLAN_BRIEF
 
 table_joiners:
-  <<: *TABLE_JOINERS
+  - <<: *N5K_RI_TABLE
+  - <<: *N5K_SP_TABLE
+  - <<: *N5K_PC_TABLE
+
 
 result_writer:
   <<: *RESULT_WRITER

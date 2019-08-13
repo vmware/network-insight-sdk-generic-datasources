@@ -1,0 +1,21 @@
+# device_type: DELL_OS6
+
+package_handler:
+  <<: *PACKAGE_HANDLER
+
+workloads:
+  - <<: *SHOW_VERSION
+  - <<: *SHOW_INTERFACE
+  - <<: *SHOW_MAC_TABLE
+  - <<: *SHOW_IP_INTERFACES
+  - <<: *SHOW_PORT_CHANNELS
+  - <<: *SHOW_LLDP_REMOTE_DEVICE
+  - <<: *SHOW_IP_ROUTE_VRF
+  - <<: *SHOW_VRF
+  - <<: *SHOW_VRRP_INTERFACE
+
+table_joiners:
+  - <<: *DELL_RI_TABLE
+
+result_writer:
+  <<: *RESULT_WRITER

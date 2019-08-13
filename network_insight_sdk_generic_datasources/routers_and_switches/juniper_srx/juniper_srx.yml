@@ -1,0 +1,137 @@
+
+vertical_table_parser: &VERTICAL_TABLE_PARSER network_insight_sdk_generic_datasources.parsers.common.vertical_table_parser.VerticalTableParser
+horizontal_table_parser: &HORIZONTAL_TABLE_PARSER network_insight_sdk_generic_datasources.parsers.common.horizontal_table_parser.HorizontalTableParser
+generic_text_parser: &GENERIC_TEXT_PARSER network_insight_sdk_generic_datasources.parsers.common.text_parser.GenericTextParser
+xml_parser: &XML_PARSER network_insight_sdk_generic_datasources.parsers.common.xml_parser.XmlParser
+generation_directory: &GENERATION_DIRECTORY /tmp/uani
+
+package_handler: &PACKAGE_HANDLER
+  name: ZipPackageHandler
+
+# workloads added will be executed in sequence
+workloads: &WORKLOADS
+  - &SHOW_VERSION
+    table_id: showVersion
+    command: show version
+    parser:
+      pre_post_processor: JuniperDevicePrePostProcessor
+      name: *VERTICAL_TABLE_PARSER
+
+  - &SHOW_CHASSIS_HARDWARE
+    table_id: showChassishardware
+    command: show chassis hardware | display xml | no-more
+    parser:
+      pre_post_processor: JuniperChassisHardwarePrePostProcessor
+      name: *XML_PARSER
+      arguments:
+        root_tag: rpc-reply
+
+  - &GET_SRX_DETAILS
+    table_id: switch
+    reuse_tables: showVersion,showChassishardware
+    reuse_table_processor: JuniperSRXDetails
+
+  - &SHOW_VRF
+    table_id: showVRFInterface
+    command: show route instance detail | no-more
+    block_parser:
+      name: parsers.common.block_parser.SimpleBlockParser
+    parser:
+      name: routers_and_switches.juniper_srx.juniper_srx_pre_post_processor.JuniperVRFParser
+
+  - &GET_VRF
+    table_id: vrfs
+    reuse_tables: showVRFInterface
+    reuse_table_processor: JuniperVRFTableProcessor
+
+  - &SHOW_CONFIGURATION_INTERFACES
+    table_id: showConfigInterface
+    command: show configuration interfaces | display set
+    block_parser:
+      name: GenericBlockParser
+      arguments:
+        line_pattern: 'set interfaces'
+    parser:
+      pre_post_processor: JuniperConfigInterfacesPrePostProcessor
+      name: *GENERIC_TEXT_PARSER
+      arguments:
+        rules:
+          unit: ".*unit (.*) vlan-id .*"
+          vlan: ".*unit .* vlan-id (.*)"
+          interface: "set interfaces (.*) unit .*"
+
+  - &SHOW_INTERFACE
+    table_id: showInterface
+    command: show interfaces detail | no-more
+    block_parser:
+      name: LineBasedBlockParser
+      arguments:
+        line_pattern: 'Physical interface:'
+    parser:
+      name: routers_and_switches.juniper_srx.juniper_srx_pre_post_processor.JuniperInterfaceParser
+
+  - &GET_SWTICH_PORT
+    table_id: switch-ports
+    reuse_tables: showInterface,showConfigInterface
+    reuse_table_processor: JuniperSwitchPortTableProcessor
+
+  - &GET_ROUTER_INTERFACES
+    table_id: router-interfaces
+    reuse_tables: showInterface,showVRFInterface,showConfigInterface
+    reuse_table_processor: JuniperRouterInterfaceTableProcessor
+
+  - &GET_PORT_CHANNELS
+    table_id: port-channels
+    reuse_tables: showInterface
+    reuse_table_processor: JuniperPortChannelTableProcessor
+
+  - &SHOW_ROUTE_DETAIL
+    table_id: routes
+    command: show route detail | no-more
+    block_parser:
+      name: LineBasedBlockParser
+      arguments:
+        line_pattern: '(.*): \d* destinations'
+    parser:
+      name: routers_and_switches.juniper_srx.juniper_srx_pre_post_processor.JuniperRoutesParser
+
+  - &SHOW_ARP_NO_RESOLVE
+    table_id: showMacTable
+    command: show arp no-resolve | no-more
+    parser:
+      name: *HORIZONTAL_TABLE_PARSER
+      arguments:
+        skip_head: 1
+        skip_tail: 1
+        header_keys:
+          - macAddress
+          - address
+          - switchPort
+          - Flags
+
+  - &GET_MAC_TABLE
+    table_id: mac-address-table
+    reuse_tables: showMacTable,showInterface
+    reuse_table_processor: JuniperMACTableTableProcessor
+
+  - &SHOW_LLDP_NEIGHBORS
+    table_id: neighbors
+    command: show lldp neighbors | no-more
+    parser:
+      name: routers_and_switches.juniper_srx.juniper_srx_pre_post_processor.JuniperNeighborsTableParser
+
+result_writer: &RESULT_WRITER
+  name: CsvWriter
+  table_id:
+    - switch
+    - routes
+    - neighbors
+    - router-interfaces
+    - port-channels
+    - mac-address-table
+    - switch-ports
+    - vrfs
+
+
+srx: !include srx.yml
+

@@ -34,13 +34,14 @@ class PhysicalDevice(object):
     output format. For example, CSV for Excel.
     """
 
-    def __init__(self, device, model,  command_list, credentials, table_joiners, result_writer):
+    def __init__(self, device, model,  workloads, credentials, table_joiners, result_writer, generation_dir):
         self.device = device
         self.model = model
-        self.command_list = command_list
+        self.workloads = workloads
         self.credentials = credentials
         self.table_joiners = table_joiners
         self.result_writer = result_writer
+        self.generation_dir = generation_dir
         self.result_map = {}  # will be set only after executing commands
 
     def process(self):
@@ -52,7 +53,24 @@ class PhysicalDevice(object):
     def write_results(self):
         for table in self.result_writer[TABLE_ID_KEY]:
             csv_writer = CsvWriter()
-            csv_writer.write(self.result_writer[PATH_KEY], table, self.result_map[table])
+            csv_writer.write(self.generation_dir, table, self.result_map[table])
+
+    def join_tables(self):
+        if not self.table_joiners:
+            return
+        try:
+            for joiner_config in self.table_joiners:
+                joiner_class = import_utilities.load_class(joiner_config[NAME_KEY])()
+                source_table = self.result_map[joiner_config[SOURCE_TABLE_KEY]]
+                destination_table = self.result_map[joiner_config[DESTINATION_TABLE_KEY]]
+                source_column = joiner_config[SOURCE_COLUMN_KEY]
+                destination_column = joiner_config[DESTINATION_COLUMN_KEY]
+                table = import_utilities.load_class_method(joiner_class, 'join_tables')(source_table, destination_table,
+                                                                                        source_column, destination_column)
+                self.result_map[joiner_config[JOINED_TABLE_ID_KEY]] = table
+        except KeyError as e:
+            py_logger.error("Failed to join tables: KeyError : {}".format(e))
+            raise e
 
     def update_ip_or_fqdn_in_switch_table(self):
         try:
@@ -85,30 +103,32 @@ class PhysicalDevice(object):
             ssh_connect_handler = SSHConnectHandler(ip=self.credentials.ip_or_fqdn,
                                                     username=self.credentials.username,
                                                     password=self.credentials.password,
-                                                    device_type=self.credentials.device_type,
-                                                    port=self.credentials.port)
+                                                    device_type=self.credentials.device_type)
             command_output_dict = {}
-            for cmd in self.command_list:
-                command_id = cmd[TABLE_ID_KEY]
-                if REUSE_TABLES_KEY in cmd:
-                    table = self.process_tables(cmd)
-                elif REUSE_COMMAND_KEY in cmd:
-                    command_result = command_output_dict[cmd[REUSE_COMMAND_KEY]]
-                    cmd[COMMAND_KEY] = cmd[REUSE_COMMAND_KEY]
-                    py_logger.info('Command %s Result %s' % (cmd[REUSE_COMMAND_KEY], command_result))
-                    table = self.parse_command_output(cmd, command_result)
+            for workload in self.workloads:
+                command_id = workload[TABLE_ID_KEY]
+                if REUSE_TABLES_KEY in workload:
+                    table = self.process_tables(workload)
+                elif REUSE_COMMAND_KEY in workload:
+                    command_result = command_output_dict[workload[REUSE_COMMAND_KEY]]
+                    workload[COMMAND_KEY] = workload[REUSE_COMMAND_KEY]
+                    py_logger.info('Command %s Result %s' % (workload[REUSE_COMMAND_KEY], command_result))
+                    table = self.parse_command_output(workload, command_result)
                 else:
-                    command_result = ssh_connect_handler.execute_command(cmd[COMMAND_KEY])
-                    command_output_dict[cmd[COMMAND_KEY]] = command_result
-                    py_logger.info('Command %s Result %s' % (cmd[COMMAND_KEY], command_result))
-                    table = self.parse_command_output(cmd, command_result)
-
+                    command_result = ssh_connect_handler.execute_command(workload[COMMAND_KEY])
+                    command_output_dict[workload[COMMAND_KEY]] = command_result
+                    py_logger.info('Command %s Result %s' % (workload[COMMAND_KEY], command_result))
+                    table = self.parse_command_output(workload, command_result)
+                if 'switch' == command_id:
+                    table[0]['ipAddress/fqdn'] = self.credentials.ip_or_fqdn
+                    table[0]['name'] = "{}-{}".format(table[0]['name'], self.credentials.ip_or_fqdn)
                 self.result_map[command_id] = table
         except Exception as e:
-            py_logger.error("Error occurred while executing command : {}".format(e))
+            py_logger.error("Error occurred while executing command")
             raise e
         finally:
             ssh_connect_handler.close_connection()
+        return result_map
 
     def parse_command_output(self, cmd, command_result):
         blocks = []

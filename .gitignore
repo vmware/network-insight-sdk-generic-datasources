@@ -1,2 +1,4 @@
 .idea/
 *.pyc
+network-insight-sdk-python
+*.zip

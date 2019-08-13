@@ -46,14 +46,22 @@ class PhysicalDevice(object):
 
     def process(self):
         self.execute_commands()
-        self.update_ip_or_fqdn_in_switch_table()
         self.join_tables()
+        self.update_ip_or_fqdn_in_switch_table()
         self.write_results()
 
     def write_results(self):
         for table in self.result_writer[TABLE_ID_KEY]:
             csv_writer = CsvWriter()
             csv_writer.write(self.generation_dir, table, self.result_map[table])
+
+    def update_ip_or_fqdn_in_switch_table(self):
+        try:
+            for table in self.result_map['switch']:
+                table.update({"ipAddress/fqdn": self.credentials.ip_or_fqdn})
+        except KeyError as e:
+            py_logger.error("Failed to get switch tables: KeyError : {}".format(e))
+            raise e
 
     def join_tables(self):
         if not self.table_joiners:
@@ -72,38 +80,14 @@ class PhysicalDevice(object):
             py_logger.error("Failed to join tables: KeyError : {}".format(e))
             raise e
 
-    def update_ip_or_fqdn_in_switch_table(self):
-        try:
-            for table in self.result_map['switch']:
-                table.update({"ipAddress/fqdn": self.credentials.ip_or_fqdn})
-        except KeyError as e:
-            py_logger.error("Failed to get switch tables: KeyError : {}".format(e))
-            raise e
-
-    def join_tables(self):
-        if not self.table_joiners:
-            return
-        try:
-            for joiner_config in self.table_joiners['table']:
-                joiner_class = import_utilities.load_class(joiner_config[NAME_KEY])()
-                source_table = self.result_map[joiner_config[SOURCE_TABLE_KEY]]
-                destination_table = self.result_map[joiner_config[DESTINATION_TABLE_KEY]]
-                source_column = joiner_config[SOURCE_COLUMN_KEY]
-                destination_column = joiner_config[DESTINATION_COLUMN_KEY]
-                table = import_utilities.load_class_method(joiner_class, 'join_tables')(source_table, destination_table,
-                                                                                        source_column, destination_column)
-                self.result_map[joiner_config[JOINED_TABLE_ID_KEY]] = table
-        except KeyError as e:
-            py_logger.error("Failed to join tables: KeyError : {}".format(e))
-            raise e
-
     def execute_commands(self):
         ssh_connect_handler = None
         try:
             ssh_connect_handler = SSHConnectHandler(ip=self.credentials.ip_or_fqdn,
                                                     username=self.credentials.username,
                                                     password=self.credentials.password,
-                                                    device_type=self.credentials.device_type)
+                                                    device_type=self.credentials.device_type,
+                                                    port=self.credentials.port)
             command_output_dict = {}
             for workload in self.workloads:
                 command_id = workload[TABLE_ID_KEY]
@@ -124,11 +108,10 @@ class PhysicalDevice(object):
                     table[0]['name'] = "{}-{}".format(table[0]['name'], self.credentials.ip_or_fqdn)
                 self.result_map[command_id] = table
         except Exception as e:
-            py_logger.error("Error occurred while executing command")
+            py_logger.error("Error occurred while executing command : {}".format(e))
             raise e
         finally:
             ssh_connect_handler.close_connection()
-        return result_map
 
     def parse_command_output(self, cmd, command_result):
         blocks = []

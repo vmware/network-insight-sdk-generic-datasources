@@ -41,7 +41,7 @@ pip install --src . -r requirements.txt
 <a name="launch-sdk"></a>
 ## 3. Launch SDK
 
-After cloning this project and project folder in PYTHONPATH. Then run following command to run SDK.
+After cloning this project and add project folder to PYTHONPATH. Then run following command to run SDK.
 ```shell
 $ python ./network_insight_sdk_generic_datasources/main.py -d <device> -m <model> -s <device_type> -i <ip-address> -u <username> -p <password> -o <output.zip>
 ```

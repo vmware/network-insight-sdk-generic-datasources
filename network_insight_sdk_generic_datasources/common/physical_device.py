@@ -47,7 +47,7 @@ class PhysicalDevice(object):
     def process(self):
         self.execute_commands()
         self.join_tables()
-        self.update_ip_or_fqdn_in_switch_table()
+        self.update_switch_table()
         self.write_results()
 
     def write_results(self):
@@ -55,13 +55,15 @@ class PhysicalDevice(object):
             csv_writer = CsvWriter()
             csv_writer.write(self.generation_dir, table, self.result_map[table])
 
-    def update_ip_or_fqdn_in_switch_table(self):
-        try:
-            for table in self.result_map['switch']:
-                table.update({"ipAddress/fqdn": self.credentials.ip_or_fqdn})
-        except KeyError as e:
-            py_logger.error("Failed to get switch tables: KeyError : {}".format(e))
-            raise e
+    def update_switch_table(self):
+        if 'switch' in self.result_map:
+            table = self.result_map['switch'][0]
+        else:
+            self.result_map.update({'switch': [{'name': '', 'ipAddress/fqdn': '', 'hostname': ''}]})
+            table = self.result_map['switch'][0]
+        table.update({"name": self.credentials.ip_or_fqdn})
+        table.update({"ipAddress/fqdn": self.credentials.ip_or_fqdn})
+        table.update({"hostname": self.credentials.ip_or_fqdn})
 
     def join_tables(self):
         if not self.table_joiners:

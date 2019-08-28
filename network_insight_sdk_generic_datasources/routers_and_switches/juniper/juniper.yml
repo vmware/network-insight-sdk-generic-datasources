@@ -26,7 +26,7 @@ workloads: &WORKLOADS
       arguments:
         root_tag: rpc-reply
 
-  - &GET_SRX_DETAILS
+  - &GET_DETAILS
     table_id: switch
     reuse_tables: showVersion,showChassishardware
     reuse_table_processor: JuniperSRXDetails

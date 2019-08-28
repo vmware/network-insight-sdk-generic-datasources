@@ -125,7 +125,7 @@ class JuniperInterfaceParser(object):
             if "Link:" in i:
                 lines = []
                 continue
-            if "Marker Statistics" in i or "LACP info:" in i:
+            if "Marker Statistics" in i or "LACP info:" in i or 'Aggregate member' in i:
                 got_members = True
                 break
             lines.append(i)

@@ -24,10 +24,14 @@ class JuniperDevicePrePostProcessor(PrePostProcessor):
         :return: list with dict containing Juniper SRX details
         """
         temp = dict()
-        temp['name'] = "Juniper-{}".format(data[2]['Model'])
-        temp['hostname'] = data[1]['Hostname']
-        temp['model'] = data[2]['Model']
-        temp['os'] = "JUNOS {}".format(data[3]['Junos'])
+        t = dict()
+        for d in data:
+            t.update(d)
+
+        temp['name'] = "Juniper-{}".format(t['Model'])
+        temp['hostname'] = t['Hostname']
+        temp['model'] = t['Model']
+        temp['os'] = "JUNOS {}".format(t['Junos'])
         temp['vendor'] = "Juniper"
         return [temp]
 
@@ -44,10 +48,15 @@ class JuniperChassisHardwarePrePostProcessor(PrePostProcessor):
         :return: list with dict containing Juniper SRX details
         """
         temp = {}
-        for i in data[0]['multi-routing-engine-results']['multi-routing-engine-item']:
-            if i['re-name'] == "node0":
-                temp["serial"] = i['chassis-inventory']['chassis']['serial-number']
-                break
+        if 'chassis-inventory' in data[0]:
+            temp["serial"] = data[0]['chassis-inventory']['chassis']['serial-number']
+        elif 'multi-routing-engine-results' in data[0]:
+            for i in data[0]['multi-routing-engine-results']['multi-routing-engine-item']:
+                if i['re-name'] == "node0":
+                    temp["serial"] = i['chassis-inventory']['chassis']['serial-number']
+                    break
+        else:
+            temp["serial"] = ''
         return [temp]
 
 
@@ -90,7 +99,7 @@ class JuniperInterfaceParser(object):
             physical.update({'operationalStatus': "UP" if physical['operationalStatus'] == "Up" else "DOWN"})
             physical.update({'administrativeStatus': "UP" if physical['administrativeStatus'] == "Enabled" else "DOWN"})
             physical.update({'hardwareAddress': "" if physical['hardwareAddress'].isalpha() else physical['hardwareAddress']})
-            if not physical['hardwareAddress']:
+            if not physical['name']:
                 return result
 
             parser = LineBasedBlockParser('Logical interface')

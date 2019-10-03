@@ -285,7 +285,7 @@ class JuniperRoutesParser(PrePostProcessor):
             vrf_name = generic_parser.parse(blocks[0], self.vrf_rule)[0]
             if "inet6.0" in vrf_name['name']:
                 return result
-            vrf = "master" if vrf_name['name'] == "inet.0" else vrf_name['name'].split('.inet.0')[0]
+            vrf = vrf_name['name']
 
             for block in blocks[1:]:
                 parser = LineBasedBlockParser("\*?(\w+)\s+Preference:.*")
@@ -346,15 +346,15 @@ class JuniperVRFParser(PrePostProcessor):
         :return: List of dict of vrf
         """
         result = []
-        temp = {}
         vrf_data = data.splitlines()
-        router_id = vrf_data[1].split(":")[1].lstrip()
-        if "0.0.0.0" == router_id:
-            return result
-        vrf_name = vrf_data[0].split(':')[0]
-        temp['name'] = "{}".format(vrf_name)
-        temp['interfaces'] = ",".join(self.get_interface(data))
-        result.append(temp)
+        if "Tables" in data:
+            for line in reversed(vrf_data):
+                if "Tables" in line:
+                    break
+                temp = dict()
+                temp['name'] = "{}".format(line.split(':')[0].strip())
+                temp['interfaces'] = ",".join(self.get_interface(data))
+                result.append(temp)
         return result
 
     @staticmethod

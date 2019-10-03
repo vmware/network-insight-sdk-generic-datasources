@@ -107,7 +107,7 @@ def ConvertXmlToDict(root, dictclass=XmlDictObject):
 
     # If a string is passed in, try to open it as a file
     if not isinstance(root, ElementTree.Element):
-        raise TypeError, 'Expected ElementTree.Element or file path string'
+        raise TypeError('Expected ElementTree.Element or file path string')
 
     return dictclass({root.tag: _ConvertXmlToDictRecurse(root, dictclass)})
 

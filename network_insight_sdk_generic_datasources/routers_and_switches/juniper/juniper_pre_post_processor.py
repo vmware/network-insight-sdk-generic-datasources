@@ -230,7 +230,7 @@ class JuniperRouterInterfaceTableProcessor(TableProcessor):
         :param tables: showVRFInterface table
         :return: vrf name
         """
-        vrf_name = "master"
+        vrf_name = "inet.0"
         for vrf in tables['showVRFInterface']:
             if port['name'] in vrf['interfaces']:
                 return vrf['name']

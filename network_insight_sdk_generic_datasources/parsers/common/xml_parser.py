@@ -72,7 +72,7 @@ def _ConvertXmlToDictRecurse(node, dictclass):
     for child in node:
         # recursively add the element's children
         newitem = _ConvertXmlToDictRecurse(child, dictclass)
-        if nodedict.has_key(child.tag):
+        if child.tag in nodedict:
             # found duplicate tag, force a list
             if type(nodedict[child.tag]) is type([]):
                 # append to existing list

@@ -114,6 +114,8 @@ class JuniperInterfaceParser(object):
                     physical.update({"ipAddress": ""})
                 physical.update({"members": "{}".format(self.get_members(block))})
                 physical.update({"name": "{}".format(logical['name'] if logical['name'] else physical['name'])})
+                if physical['mtu'] == 'Unlimited':
+                    physical.update({"mtu": "0"})
                 result.append(physical.copy())
         except Exception as e:
             py_logger.error("{}\n{}".format(e, traceback.format_exc()))

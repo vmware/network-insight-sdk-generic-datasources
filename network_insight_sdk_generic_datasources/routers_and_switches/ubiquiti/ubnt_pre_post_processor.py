@@ -4,7 +4,7 @@
 
 import re
 
-from network_insight_sdk_generic_datasources.parsers.text.pre_post_processor import PrePostProcessor
+from parsers.text.pre_post_processor import PrePostProcessor
 
 
 class UBNTVersionPrePostProcessor(PrePostProcessor):

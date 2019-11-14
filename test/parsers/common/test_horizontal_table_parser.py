@@ -1,5 +1,5 @@
 import unittest
-from network_insight_sdk_generic_datasources.parsers.common.horizontal_table_parser import HorizontalTableParser
+from parsers.common.horizontal_table_parser import HorizontalTableParser
 
 
 class HorizontalTableParserTestCase(unittest.TestCase):

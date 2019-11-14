@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: BSD-2-Clause
 import re
 from xml.etree import ElementTree
-from network_insight_sdk_generic_datasources.parsers.common.block_parser import PatternBasedBlockParser
+from parsers.common.block_parser import PatternBasedBlockParser
 
 
 class XmlParser(object):
@@ -14,7 +14,7 @@ class XmlParser(object):
             <model-number>SRX600-PWR-645AC-POE</model-number>\
     </chassis-module>
 
-    >>> from network_insight_sdk_generic_datasources.parsers.common.vertical_table_parser import VerticalTableParser
+    >>> from parsers.common.vertical_table_parser import VerticalTableParser
     >>> import pprint
     >>> text = '''<chassis-module>\
                     \\n<part-number>123-456</part-number>\

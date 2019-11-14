@@ -4,12 +4,12 @@
 
 import traceback
 import re
-from network_insight_sdk_generic_datasources.common.log import py_logger
+from common.log import py_logger
 from netaddr import IPAddress
-from network_insight_sdk_generic_datasources.parsers.text.pre_post_processor import PrePostProcessor
-from network_insight_sdk_generic_datasources.parsers.common.block_parser import LineBasedBlockParser
-from network_insight_sdk_generic_datasources.parsers.common.text_parser import GenericTextParser
-from network_insight_sdk_generic_datasources.joiner.table_joiner import SimpleTableJoiner
+from parsers.text.pre_post_processor import PrePostProcessor
+from parsers.common.block_parser import LineBasedBlockParser
+from parsers.common.text_parser import GenericTextParser
+from joiner.table_joiner import SimpleTableJoiner
 
 
 class DellPortChannelPrePostParser(PrePostProcessor):

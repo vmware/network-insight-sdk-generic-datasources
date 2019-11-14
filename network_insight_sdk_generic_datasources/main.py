@@ -3,14 +3,14 @@
 
 import argparse
 import os
-import network_insight_sdk_generic_datasources.common.yaml_utilities as yaml_utilities
-from network_insight_sdk_generic_datasources.archive.zip_archiver import ZipArchiver
+import common.yaml_utilities as yaml_utilities
+from archive.zip_archiver import ZipArchiver
 
-from network_insight_sdk_generic_datasources.common.constants import TABLE_JOINERS_KEY
-from network_insight_sdk_generic_datasources.common.constants import WORKLOADS_KEY
-from network_insight_sdk_generic_datasources.common.constants import PACKAGE_HANDLER_KEY
-from network_insight_sdk_generic_datasources.common.constants import RESULT_WRITER_KEY
-from network_insight_sdk_generic_datasources.common.constants import GENERATION_DIRECTORY_KEY
+from common.constants import TABLE_JOINERS_KEY
+from common.constants import WORKLOADS_KEY
+from common.constants import PACKAGE_HANDLER_KEY
+from common.constants import RESULT_WRITER_KEY
+from common.constants import GENERATION_DIRECTORY_KEY
 
 
 def parse_arguments():
@@ -21,6 +21,7 @@ def parse_arguments():
     parser.add_argument('-i', '--ip_or_fqdn', action='store', help='IP or FQDN')
     parser.add_argument('-u', '--username', action='store', help='Username for login')
     parser.add_argument('-p', '--password', action='store', help='Password for login')
+    parser.add_argument('-e', '--enablepwd', action='store', help='Password for enable',default=None)
     parser.add_argument('-z', '--self_zip', action='store', help='Self Zip the Project', default='false')
     parser.add_argument('-P', '--port', action='store', help='Specific port to connect', default='22')
     parser.add_argument('-o', '--output_zip', action='store', help='Output zip file to create with CSVs')

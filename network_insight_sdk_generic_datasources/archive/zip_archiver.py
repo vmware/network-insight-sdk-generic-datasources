@@ -4,7 +4,7 @@
 import os
 import zipfile
 from shutil import copyfile
-from network_insight_sdk_generic_datasources.common.log import py_logger
+from common.log import py_logger
 
 
 class ZipArchiver(object):

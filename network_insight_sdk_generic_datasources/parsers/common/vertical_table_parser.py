@@ -12,7 +12,7 @@ class VerticalTableParser(object):
         MTU: 1500
         DUPLEX: HALF
 
-    >>> from network_insight_sdk_generic_datasources.parsers.common.vertical_table_parser import VerticalTableParser
+    >>> from parsers.common.vertical_table_parser import VerticalTableParser
     >>> import pprint
     >>> text = '''Eth1:
     ...    MTU: 1500

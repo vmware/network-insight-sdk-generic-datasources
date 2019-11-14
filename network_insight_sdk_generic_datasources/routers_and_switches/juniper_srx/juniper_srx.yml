@@ -1,8 +1,8 @@
 
-vertical_table_parser: &VERTICAL_TABLE_PARSER network_insight_sdk_generic_datasources.parsers.common.vertical_table_parser.VerticalTableParser
-horizontal_table_parser: &HORIZONTAL_TABLE_PARSER network_insight_sdk_generic_datasources.parsers.common.horizontal_table_parser.HorizontalTableParser
-generic_text_parser: &GENERIC_TEXT_PARSER network_insight_sdk_generic_datasources.parsers.common.text_parser.GenericTextParser
-xml_parser: &XML_PARSER network_insight_sdk_generic_datasources.parsers.common.xml_parser.XmlParser
+vertical_table_parser: &VERTICAL_TABLE_PARSER parsers.common.vertical_table_parser.VerticalTableParser
+horizontal_table_parser: &HORIZONTAL_TABLE_PARSER parsers.common.horizontal_table_parser.HorizontalTableParser
+generic_text_parser: &GENERIC_TEXT_PARSER parsers.common.text_parser.GenericTextParser
+xml_parser: &XML_PARSER parsers.common.xml_parser.XmlParser
 generation_directory: &GENERATION_DIRECTORY /tmp/uani
 
 package_handler: &PACKAGE_HANDLER

@@ -1,9 +1,9 @@
 import unittest
-from network_insight_sdk_generic_datasources.parsers.common.text_parser import TextProcessor
-from network_insight_sdk_generic_datasources.parsers.common.text_parser import Rule
-from network_insight_sdk_generic_datasources.parsers.common.text_parser import GenericTextParser
-from network_insight_sdk_generic_datasources.parsers.common.block_parser import SimpleBlockParser
-from network_insight_sdk_generic_datasources.parsers.text.text_processor import rule_match_callback
+from parsers.common.text_parser import TextProcessor
+from parsers.common.text_parser import Rule
+from parsers.common.text_parser import GenericTextParser
+from parsers.common.block_parser import SimpleBlockParser
+from parsers.text.text_processor import rule_match_callback
 
 
 class GenericTextParserTestCase(unittest.TestCase):

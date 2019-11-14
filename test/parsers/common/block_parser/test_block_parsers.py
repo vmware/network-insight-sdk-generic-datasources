@@ -1,6 +1,6 @@
 import unittest
-from network_insight_sdk_generic_datasources.parsers.common.block_parser import SimpleBlockParser
-from network_insight_sdk_generic_datasources.parsers.common.block_parser import LineBasedBlockParser
+from parsers.common.block_parser import SimpleBlockParser
+from parsers.common.block_parser import LineBasedBlockParser
 
 
 class BlockParserTestCase(unittest.TestCase):

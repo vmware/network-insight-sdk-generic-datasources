@@ -1,7 +1,7 @@
 # Copyright 2019 VMware, Inc.
 # SPDX-License-Identifier: BSD-2-Clause
 
-from network_insight_sdk_generic_datasources.common.log import py_logger
+from common.log import py_logger
 
 
 class SimpleTableJoiner(object):

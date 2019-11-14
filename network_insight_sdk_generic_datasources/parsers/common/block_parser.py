@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: BSD-2-Clause
 
 import re
-from network_insight_sdk_generic_datasources.common.log import py_logger
+from common.log import py_logger
 
 
 class BlockParser(object):

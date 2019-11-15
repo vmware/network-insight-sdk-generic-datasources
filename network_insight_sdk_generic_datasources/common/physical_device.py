@@ -2,30 +2,30 @@
 # SPDX-License-Identifier: BSD-2-Clause
 
 
-import common.import_module_utilities as import_utilities
-from common.log import py_logger
-from connection.ssh_connect_handler import SSHConnectHandler
-from writers.csv_writer import CsvWriter
+import network_insight_sdk_generic_datasources.common.import_module_utilities as import_utilities
+from network_insight_sdk_generic_datasources.common.log import py_logger
+from network_insight_sdk_generic_datasources.connection.ssh_connect_handler import SSHConnectHandler
+from network_insight_sdk_generic_datasources.writers.csv_writer import CsvWriter
 
-from common.constants import COMMAND_KEY
-from common.constants import PARSER_KEY
-from common.constants import BLOCK_PARSER_KEY
-from common.constants import NAME_KEY
-from common.constants import ARGUMENTS_KEY
-from common.constants import PRE_POST_PROCESSOR_KEY
-from common.constants import SELECT_COLUMNS_KEY
-from common.constants import REUSE_COMMAND_KEY
-from common.constants import TABLE_ID_KEY
-from common.constants import REUSE_TABLES_KEY
-from common.constants import REUSE_TABLE_PROCESSOR_KEY
+from network_insight_sdk_generic_datasources.common.constants import COMMAND_KEY
+from network_insight_sdk_generic_datasources.common.constants import PARSER_KEY
+from network_insight_sdk_generic_datasources.common.constants import BLOCK_PARSER_KEY
+from network_insight_sdk_generic_datasources.common.constants import NAME_KEY
+from network_insight_sdk_generic_datasources.common.constants import ARGUMENTS_KEY
+from network_insight_sdk_generic_datasources.common.constants import PRE_POST_PROCESSOR_KEY
+from network_insight_sdk_generic_datasources.common.constants import SELECT_COLUMNS_KEY
+from network_insight_sdk_generic_datasources.common.constants import REUSE_COMMAND_KEY
+from network_insight_sdk_generic_datasources.common.constants import TABLE_ID_KEY
+from network_insight_sdk_generic_datasources.common.constants import REUSE_TABLES_KEY
+from network_insight_sdk_generic_datasources.common.constants import REUSE_TABLE_PROCESSOR_KEY
 
 
-from common.constants import DESTINATION_COLUMN_KEY
-from common.constants import SOURCE_COLUMN_KEY
-from common.constants import DESTINATION_TABLE_KEY
-from common.constants import SOURCE_TABLE_KEY
-from common.constants import JOINED_TABLE_ID_KEY
-from common.constants import PATH_KEY
+from network_insight_sdk_generic_datasources.common.constants import DESTINATION_COLUMN_KEY
+from network_insight_sdk_generic_datasources.common.constants import SOURCE_COLUMN_KEY
+from network_insight_sdk_generic_datasources.common.constants import DESTINATION_TABLE_KEY
+from network_insight_sdk_generic_datasources.common.constants import SOURCE_TABLE_KEY
+from network_insight_sdk_generic_datasources.common.constants import JOINED_TABLE_ID_KEY
+from network_insight_sdk_generic_datasources.common.constants import PATH_KEY
 
 
 class PhysicalDevice(object):
@@ -77,7 +77,7 @@ class PhysicalDevice(object):
             ssh_connect_handler = SSHConnectHandler(ip=self.credentials.ip_or_fqdn,
                                                     username=self.credentials.username,
                                                     password=self.credentials.password,
-                                                    enablepwd=self.credentials.enablepwd,
+                                                    enablemodepwd=self.credentials.enablemodepwd,
                                                     device_type=self.credentials.device_type,
                                                     port=self.credentials.port)
             command_output_dict = {}

@@ -185,21 +185,21 @@ workloads: &WORKLOADS
 
 table_joiners: &TABLE_JOINERS
   - &N5K_RI_TABLE
-    name: joiner.table_joiner.SimpleTableJoiner
+    name: network_insight_sdk_generic_datasources.joiner.table_joiner.SimpleTableJoiner
     source_table: showRIVrf
     destination_table: showRouterInterfaces
     source_column: interfaceName
     destination_column: name
     joined_table_id: router-interfaces
   - &N5K_SP_TABLE
-    name: joiner.table_joiner.SimpleTableJoiner
+    name: network_insight_sdk_generic_datasources.joiner.table_joiner.SimpleTableJoiner
     source_table: showVlan
     destination_table: showSwitchPorts
     source_column: port
     destination_column: name
     joined_table_id: switch-ports
   - &N5K_PC_TABLE
-    name: joiner.table_joiner.SimpleTableJoiner
+    name: network_insight_sdk_generic_datasources.joiner.table_joiner.SimpleTableJoiner
     source_table: showVlan
     destination_table: showPortChannels
     source_column: port

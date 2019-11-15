@@ -1,5 +1,5 @@
 import unittest
-from parsers.common.line_parser import LineTokenizer
+from network_insight_sdk_generic_datasources.parsers.common.line_parser import LineTokenizer
 
 
 class LineTokenizerTestCase(unittest.TestCase):

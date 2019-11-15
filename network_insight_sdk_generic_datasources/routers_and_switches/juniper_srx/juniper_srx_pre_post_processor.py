@@ -4,12 +4,12 @@
 
 import traceback
 
-from common.log import py_logger
-from parsers.text.pre_post_processor import PrePostProcessor
-from parsers.text.table_processor import TableProcessor
-from parsers.common.text_parser import GenericTextParser
-from parsers.common.block_parser import LineBasedBlockParser
-from parsers.common.line_parser import LineTokenizer
+from network_insight_sdk_generic_datasources.common.log import py_logger
+from network_insight_sdk_generic_datasources.parsers.text.pre_post_processor import PrePostProcessor
+from network_insight_sdk_generic_datasources.parsers.text.table_processor import TableProcessor
+from network_insight_sdk_generic_datasources.parsers.common.text_parser import GenericTextParser
+from network_insight_sdk_generic_datasources.parsers.common.block_parser import LineBasedBlockParser
+from network_insight_sdk_generic_datasources.parsers.common.line_parser import LineTokenizer
 
 
 class JuniperDevicePrePostProcessor(PrePostProcessor):

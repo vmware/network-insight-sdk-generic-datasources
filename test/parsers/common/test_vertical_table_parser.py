@@ -1,5 +1,5 @@
 import unittest
-from parsers.common.vertical_table_parser import VerticalTableParser
+from network_insight_sdk_generic_datasources.parsers.common.vertical_table_parser import VerticalTableParser
 
 
 class VerticalTableParserTestCase(unittest.TestCase):

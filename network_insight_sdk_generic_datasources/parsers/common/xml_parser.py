@@ -14,7 +14,7 @@ class XmlParser(object):
             <model-number>SRX600-PWR-645AC-POE</model-number>\
     </chassis-module>
 
-    >>> from parsers.common.vertical_table_parser import VerticalTableParser
+    >>> from network_insight_sdk_generic_datasources.parsers.common.vertical_table_parser import VerticalTableParser
     >>> import pprint
     >>> text = '''<chassis-module>\
                     \\n<part-number>123-456</part-number>\

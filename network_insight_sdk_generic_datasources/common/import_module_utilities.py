@@ -22,14 +22,14 @@ def load_block_parser(class_name):
 
 
 def load_class_for_pre_post_parser(device, class_name):
-    module_path = "{0}.{1}.{1}_{2}".format("routers_and_switches", device,
+    module_path = "{0}.{1}.{1}_{2}".format("network_insight_sdk_generic_datasources.routers_and_switches", device,
                                            "pre_post_processor")
     module = importlib.import_module(module_path)
     return getattr(module, class_name)
 
 
 def load_class_for_process_table(device, class_name):
-    module_path = "{0}.{1}.{1}_{2}".format("routers_and_switches", device,
+    module_path = "{0}.{1}.{1}_{2}".format("network_insight_sdk_generic_datasources.routers_and_switches", device,
                                            "pre_post_processor")
     module = importlib.import_module(module_path)
     return getattr(module, class_name)

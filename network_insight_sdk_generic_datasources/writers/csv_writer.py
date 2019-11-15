@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: BSD-2-Clause
 
 import csv
-from common.log import py_logger
+from network_insight_sdk_generic_datasources.common.log import py_logger
 import os
 
 

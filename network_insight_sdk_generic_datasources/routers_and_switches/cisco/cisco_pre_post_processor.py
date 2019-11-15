@@ -3,9 +3,9 @@
 
 import re
 
-from common.utilities import merge_dictionaries
-from parsers.text.pre_post_processor import PrePostProcessor
-from parsers.common.block_parser import SimpleBlockParser
+from network_insight_sdk_generic_datasources.common.utilities import merge_dictionaries
+from network_insight_sdk_generic_datasources.parsers.text.pre_post_processor import PrePostProcessor
+from network_insight_sdk_generic_datasources.parsers.common.block_parser import SimpleBlockParser
 
 
 class CiscoDevicePrePostProcessor(PrePostProcessor):

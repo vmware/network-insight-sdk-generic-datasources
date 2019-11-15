@@ -4,8 +4,8 @@
 import re
 from functools import partial
 
-from parsers.common.line_parser import LineTokenizer
-from parsers.common.block_parser import BlockParser
+from network_insight_sdk_generic_datasources.parsers.common.line_parser import LineTokenizer
+from network_insight_sdk_generic_datasources.parsers.common.block_parser import BlockParser
 
 
 class TextProcessor(object):

@@ -287,7 +287,7 @@ class JuniperRoutesParser(PrePostProcessor):
                 return result
             vrf = vrf_name['name']
 
-            for block in blocks[1:]:
+            for v_idx, block in enumerate(blocks[1:]):
                 parser = LineBasedBlockParser("\*?(\w+)\s+Preference:.*")
                 line_blocks = parser.parse(block)
                 network_name = generic_parser.parse(line_blocks[0], self.network_name_rule)[0]
@@ -299,7 +299,7 @@ class JuniperRoutesParser(PrePostProcessor):
                     if not routes['interfaceName'] and not routes['network_interface']: continue
                     routes.update({"vrf": vrf})
                     routes.update({"network": "{}".format(network_name['name'])})
-                    routes.update({"name": "{}_{}".format(network_name['name'], idx)})
+                    routes.update({"name": "{}_{}_{}".format(network_name['name'], v_idx, idx)})
                     routes.update({"interfaceName": routes['interfaceName'] if routes['interfaceName']
                                                                             else routes['network_interface']})
                     routes.pop('network_interface')

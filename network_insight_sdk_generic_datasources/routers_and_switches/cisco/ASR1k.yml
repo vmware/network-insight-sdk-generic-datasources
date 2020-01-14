@@ -1,0 +1,16 @@
+# device_type: CISCO_IOS
+
+package_handler:
+  <<: *PACKAGE_HANDLER
+
+workloads:
+  - <<: *SHOW_VERSION_ASR
+
+table_joiners:
+  - <<: *N5K_RI_TABLE
+  - <<: *N5K_SP_TABLE
+  - <<: *N5K_PC_TABLE
+
+
+result_writer:
+  <<: *RESULT_WRITER

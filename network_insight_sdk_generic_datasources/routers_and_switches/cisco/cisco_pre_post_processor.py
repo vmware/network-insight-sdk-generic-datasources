@@ -15,6 +15,7 @@ class CiscoASRDevicePrePostProcessor(PrePostProcessor):
         output_lines = []
         lines = data.splitlines()
         for line in lines:
+            print("parsing line {}".format(line))
             if 'board' in line:
                 output_lines.append('serial: ' + line.split(' ')[-1])
             if 'uptime' == line:

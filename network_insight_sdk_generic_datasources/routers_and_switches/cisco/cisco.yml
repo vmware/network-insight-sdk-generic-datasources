@@ -11,7 +11,7 @@ package_handler: &PACKAGE_HANDLER
 workloads: &WORKLOADS
   - &SHOW_VERSION_ASR
     table_id: switch
-    command: show version | include ASR|uptime|board
+    command: show version | include ^cisco ASR|uptime|board
     parser:
       pre_post_processor: CiscoASRDevicePrePostProcessor
       name: *VERTICAL_TABLE_PARSER

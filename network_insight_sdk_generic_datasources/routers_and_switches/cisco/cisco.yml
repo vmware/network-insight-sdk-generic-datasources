@@ -9,6 +9,12 @@ package_handler: &PACKAGE_HANDLER
 
 # workloads added will be executed in sequence
 workloads: &WORKLOADS
+  - &SHOW_VERSION_ASR
+    table_id: switch
+    command: show version | include ASR|uptime|board
+    parser:
+      pre_post_processor: CiscoASRDevicePrePostProcessor
+      name: *VERTICAL_TABLE_PARSER
   - &SHOW_VERSION
     table_id: switch
     command: show version

@@ -8,6 +8,37 @@ from network_insight_sdk_generic_datasources.parsers.text.pre_post_processor imp
 from network_insight_sdk_generic_datasources.parsers.common.block_parser import SimpleBlockParser
 
 
+class CiscoASRDevicePrePostProcessor(PrePostProcessor):
+
+    def pre_process(self, data):
+        output_lines = []
+        lines = data.splitlines()
+        for line in lines:
+            if 'board' in line:
+                output_lines.append('serial: ' + line.split(' ')[-1])
+            if 'uptime' == line:
+                output_lines.append('name: {}'.format(line.split(' ')[0]))
+                output_lines.append('hostname: {}'.format(line.split(' ')[0]))
+            if 'ASR' in line:
+                output_lines.append('model: ' + line.split(' ')[1])
+        output_lines.append('os: NXOS')
+        output_lines.append('vendor: Cisco')
+        output_lines.append('haState: ACTIVE')
+
+        return '\n'.join(output_lines)
+
+    def post_process(self, data):
+        return [merge_dictionaries(data)]
+
+    @staticmethod
+    def parse_hardware_block(output_lines, lines):
+        for i in range(len(lines)):
+            if i == 1:
+                output_lines.append('model: ' + lines[i].split(' ')[1])
+            if 'Processor Board ID' in lines[i]:
+                output_lines.append('serial: {}'.format(lines[i].split(' ')[-1]))
+
+
 class CiscoDevicePrePostProcessor(PrePostProcessor):
 
     def pre_process(self, data):

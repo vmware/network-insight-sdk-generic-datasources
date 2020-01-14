@@ -11,6 +11,7 @@ from network_insight_sdk_generic_datasources.parsers.common.block_parser import 
 class CiscoASRDevicePrePostProcessor(PrePostProcessor):
 
     def pre_process(self, data):
+        print("################################ \n {}".format(data))
         output_lines = []
         lines = data.splitlines()
         for line in lines:

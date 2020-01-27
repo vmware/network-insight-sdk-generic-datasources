@@ -199,13 +199,13 @@ workloads: &WORKLOADS
     table_id: showIpRouteVrf
       command: show ip route vrf *
       parser:
-        name: routers_and_switches.cisco.cisco_pre_post_processor.CiscoASRXERoutePrePostProcessor
+        name: routers_and_switches.cisco.cisco_pre_post_processor.CiscoASR1KXERoutePrePostProcessor
 
   - &SHOW_ASR_XE_INTERFACES
     table_id: showInterfacesAll
       command: show interfaces
       parser:
-        name: routers_and_switches.cisco.cisco_pre_post_processor.CiscoASRXEInterfacesPrePostProcessor
+        name: routers_and_switches.cisco.cisco_pre_post_processor.CiscoASR1KXEInterfacesPrePostProcessor
 
 table_joiners: &TABLE_JOINERS
   - &N5K_RI_TABLE

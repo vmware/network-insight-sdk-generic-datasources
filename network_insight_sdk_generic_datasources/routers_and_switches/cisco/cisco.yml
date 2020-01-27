@@ -190,13 +190,13 @@ workloads: &WORKLOADS
           - ports
 
   - &SHOW_ASR1K_XE_VERSION
-    table_id: showVersion
+    table_id: switch
       command: show version | include board|cisco ASR|uptime| IOS Software
       parser:
         name: routers_and_switches.cisco.cisco_pre_post_processor.CiscoASR1KXEDeviceInfoPrePostProcessor
 
   - &SHOW_ASR_XE_IP_ROUTE
-    table_id: showIpRouteVrf
+    table_id: routes
       command: show ip route vrf *
       parser:
         name: routers_and_switches.cisco.cisco_pre_post_processor.CiscoASR1KXERoutePrePostProcessor

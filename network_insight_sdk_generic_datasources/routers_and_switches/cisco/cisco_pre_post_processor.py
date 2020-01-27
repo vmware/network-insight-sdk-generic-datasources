@@ -66,14 +66,43 @@ class CiscoASRXERoutePrePostProcessor(PrePostProcessor):
 
 
 class CiscoASR1KXEVRFPrePostProcessor(PrePostProcessor):
-    def parse(self, data):
-        output_lines = [dict(vrf='default')]
+
+    def reformat_lines(self, data):
+        output_lines = []
         lines = data.splitlines()
+        name_key = "Name"
+        rd_key = "Default RD"
+        protocols_key = "Protocols"
+        interfaces_key = "Interfaces"
+        headers = {name_key: lines[0].find(name_key),
+                   rd_key: lines[0].find(rd_key),
+                   protocols_key: lines[0].find(protocols_key), interfaces_key: lines[0].find(interfaces_key)}
         for line in lines[1:]:
-            if line[:30].strip().split(' ')[0] != '':
-                d = dict()
-                d['vrf'] = line[:30].strip().split(' ')[0]
-                output_lines.append(d)
+            if line[headers['Name']] != ' ':
+                output_lines.append(line.strip())
+            else:
+                output_lines[-1] = output_lines[-1] + ',' + line.strip()
+        return output_lines
+
+    def convert_interface_names(self, int_names):
+        result = []
+        for int_name in int_names:
+            if int_name.startswith('Gi', 0):
+                result.append('GigabitEthernet' + int_name[2:])
+            if int_name.startswith('Te', 0):
+                result.append('TenGigabitEthernet' + int_name[2:])
+        return result
+
+    def parse(self, data):
+        lines = self.reformat_lines(data)
+        output_lines = [dict(vrf='default')]
+        for line in lines:
+            d = dict()
+            fields = re.split('\\s+', line)
+            d['vrf'] = fields[0]
+            int_names = re.split(',', fields[-1])
+            d['interfaces'] = self.convert_interface_names(int_names)
+            output_lines.append(d)
         return output_lines
 
 

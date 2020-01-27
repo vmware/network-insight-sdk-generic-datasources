@@ -1,5 +1,3 @@
-# device_type: CISCO_IOS
-
 package_handler:
   <<: *PACKAGE_HANDLER
 

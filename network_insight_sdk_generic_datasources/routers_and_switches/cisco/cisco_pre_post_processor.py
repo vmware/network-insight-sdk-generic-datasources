@@ -65,7 +65,7 @@ class CiscoASRXERoutePrePostProcessor(PrePostProcessor):
         return output_lines
 
 
-class CiscoASRXEVRFPrePostProcessor(PrePostProcessor):
+class CiscoASR1KXEVRFPrePostProcessor(PrePostProcessor):
     def parse(self, data):
         output_lines = [dict(vrf='default')]
         lines = data.splitlines()
@@ -77,7 +77,7 @@ class CiscoASRXEVRFPrePostProcessor(PrePostProcessor):
         return output_lines
 
 
-class CiscoASRXEInterfacesPrePostProcessor(PrePostProcessor):
+class CiscoASR1KXEInterfacesPrePostProcessor(PrePostProcessor):
     def parse(self, data):
 
         name_regex = "(.*) is (administratively )?(up|down), .*"

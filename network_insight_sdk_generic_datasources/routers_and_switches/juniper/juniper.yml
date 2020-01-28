@@ -26,7 +26,7 @@ workloads: &WORKLOADS
       arguments:
         root_tag: rpc-reply
 
-  - &GET_SRX_DETAILS
+  - &GET_DETAILS
     table_id: switch
     reuse_tables: showVersion,showChassishardware
     reuse_table_processor: JuniperSRXDetails
@@ -37,7 +37,7 @@ workloads: &WORKLOADS
     block_parser:
       name: parsers.common.block_parser.SimpleBlockParser
     parser:
-      name: routers_and_switches.juniper_srx.juniper_srx_pre_post_processor.JuniperVRFParser
+      name: routers_and_switches.juniper.juniper_pre_post_processor.JuniperVRFParser
 
   - &GET_VRF
     table_id: vrfs
@@ -68,7 +68,7 @@ workloads: &WORKLOADS
       arguments:
         line_pattern: 'Physical interface:'
     parser:
-      name: routers_and_switches.juniper_srx.juniper_srx_pre_post_processor.JuniperInterfaceParser
+      name: routers_and_switches.juniper.juniper_pre_post_processor.JuniperInterfaceParser
 
   - &GET_SWTICH_PORT
     table_id: switch-ports
@@ -93,7 +93,7 @@ workloads: &WORKLOADS
       arguments:
         line_pattern: '(.*): \d* destinations'
     parser:
-      name: routers_and_switches.juniper_srx.juniper_srx_pre_post_processor.JuniperRoutesParser
+      name: routers_and_switches.juniper.juniper_pre_post_processor.JuniperRoutesParser
 
   - &SHOW_ARP_NO_RESOLVE
     table_id: showMacTable
@@ -118,7 +118,7 @@ workloads: &WORKLOADS
     table_id: neighbors
     command: show lldp neighbors | no-more
     parser:
-      name: routers_and_switches.juniper_srx.juniper_srx_pre_post_processor.JuniperNeighborsTableParser
+      name: routers_and_switches.juniper.juniper_pre_post_processor.JuniperNeighborsTableParser
 
 result_writer: &RESULT_WRITER
   name: CsvWriter
@@ -134,4 +134,5 @@ result_writer: &RESULT_WRITER
 
 
 srx: !include srx.yml
+mx: !include mx.yml
 

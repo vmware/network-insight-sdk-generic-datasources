@@ -72,7 +72,7 @@ def _ConvertXmlToDictRecurse(node, dictclass):
     for child in node:
         # recursively add the element's children
         newitem = _ConvertXmlToDictRecurse(child, dictclass)
-        if nodedict.has_key(child.tag):
+        if child.tag in nodedict:
             # found duplicate tag, force a list
             if type(nodedict[child.tag]) is type([]):
                 # append to existing list
@@ -107,7 +107,7 @@ def ConvertXmlToDict(root, dictclass=XmlDictObject):
 
     # If a string is passed in, try to open it as a file
     if not isinstance(root, ElementTree.Element):
-        raise TypeError, 'Expected ElementTree.Element or file path string'
+        raise TypeError('Expected ElementTree.Element or file path string')
 
     return dictclass({root.tag: _ConvertXmlToDictRecurse(root, dictclass)})
 

@@ -24,10 +24,14 @@ class JuniperDevicePrePostProcessor(PrePostProcessor):
         :return: list with dict containing Juniper SRX details
         """
         temp = dict()
-        temp['name'] = "Juniper-{}".format(data[2]['Model'])
-        temp['hostname'] = data[1]['Hostname']
-        temp['model'] = data[2]['Model']
-        temp['os'] = "JUNOS {}".format(data[3]['Junos'])
+        t = dict()
+        for d in data:
+            t.update(d)
+
+        temp['name'] = "Juniper-{}".format(t['Model'])
+        temp['hostname'] = t['Hostname']
+        temp['model'] = t['Model']
+        temp['os'] = "JUNOS {}".format(t['Junos'])
         temp['vendor'] = "Juniper"
         return [temp]
 
@@ -44,10 +48,15 @@ class JuniperChassisHardwarePrePostProcessor(PrePostProcessor):
         :return: list with dict containing Juniper SRX details
         """
         temp = {}
-        for i in data[0]['multi-routing-engine-results']['multi-routing-engine-item']:
-            if i['re-name'] == "node0":
-                temp["serial"] = i['chassis-inventory']['chassis']['serial-number']
-                break
+        if 'chassis-inventory' in data[0]:
+            temp["serial"] = data[0]['chassis-inventory']['chassis']['serial-number']
+        elif 'multi-routing-engine-results' in data[0]:
+            for i in data[0]['multi-routing-engine-results']['multi-routing-engine-item']:
+                if i['re-name'] == "node0":
+                    temp["serial"] = i['chassis-inventory']['chassis']['serial-number']
+                    break
+        else:
+            temp["serial"] = ''
         return [temp]
 
 
@@ -90,7 +99,7 @@ class JuniperInterfaceParser(object):
             physical.update({'operationalStatus': "UP" if physical['operationalStatus'] == "Up" else "DOWN"})
             physical.update({'administrativeStatus': "UP" if physical['administrativeStatus'] == "Enabled" else "DOWN"})
             physical.update({'hardwareAddress': "" if physical['hardwareAddress'].isalpha() else physical['hardwareAddress']})
-            if not physical['hardwareAddress']:
+            if not physical['name']:
                 return result
 
             parser = LineBasedBlockParser('Logical interface')
@@ -105,6 +114,8 @@ class JuniperInterfaceParser(object):
                     physical.update({"ipAddress": ""})
                 physical.update({"members": "{}".format(self.get_members(block))})
                 physical.update({"name": "{}".format(logical['name'] if logical['name'] else physical['name'])})
+                if physical['mtu'] == 'Unlimited':
+                    physical.update({"mtu": "0"})
                 result.append(physical.copy())
         except Exception as e:
             py_logger.error("{}\n{}".format(e, traceback.format_exc()))
@@ -125,7 +136,7 @@ class JuniperInterfaceParser(object):
             if "Link:" in i:
                 lines = []
                 continue
-            if "Marker Statistics" in i or "LACP info:" in i:
+            if "Marker Statistics" in i or "LACP info:" in i or 'Aggregate member' in i:
                 got_members = True
                 break
             lines.append(i)
@@ -219,7 +230,7 @@ class JuniperRouterInterfaceTableProcessor(TableProcessor):
         :param tables: showVRFInterface table
         :return: vrf name
         """
-        vrf_name = "master"
+        vrf_name = "inet.0"
         for vrf in tables['showVRFInterface']:
             if port['name'] in vrf['interfaces']:
                 return vrf['name']
@@ -274,9 +285,9 @@ class JuniperRoutesParser(PrePostProcessor):
             vrf_name = generic_parser.parse(blocks[0], self.vrf_rule)[0]
             if "inet6.0" in vrf_name['name']:
                 return result
-            vrf = "master" if vrf_name['name'] == "inet.0" else vrf_name['name'].split('.inet.0')[0]
+            vrf = vrf_name['name']
 
-            for block in blocks[1:]:
+            for v_idx, block in enumerate(blocks[1:]):
                 parser = LineBasedBlockParser("\*?(\w+)\s+Preference:.*")
                 line_blocks = parser.parse(block)
                 network_name = generic_parser.parse(line_blocks[0], self.network_name_rule)[0]
@@ -288,7 +299,7 @@ class JuniperRoutesParser(PrePostProcessor):
                     if not routes['interfaceName'] and not routes['network_interface']: continue
                     routes.update({"vrf": vrf})
                     routes.update({"network": "{}".format(network_name['name'])})
-                    routes.update({"name": "{}_{}".format(network_name['name'], idx)})
+                    routes.update({"name": "{}_{}_{}".format(network_name['name'], v_idx, idx)})
                     routes.update({"interfaceName": routes['interfaceName'] if routes['interfaceName']
                                                                             else routes['network_interface']})
                     routes.pop('network_interface')
@@ -335,15 +346,15 @@ class JuniperVRFParser(PrePostProcessor):
         :return: List of dict of vrf
         """
         result = []
-        temp = {}
         vrf_data = data.splitlines()
-        router_id = vrf_data[1].split(":")[1].lstrip()
-        if "0.0.0.0" == router_id:
-            return result
-        vrf_name = vrf_data[0].split(':')[0]
-        temp['name'] = "{}".format(vrf_name)
-        temp['interfaces'] = ",".join(self.get_interface(data))
-        result.append(temp)
+        if "Tables" in data:
+            for line in reversed(vrf_data):
+                if "Tables" in line:
+                    break
+                temp = dict()
+                temp['name'] = "{}".format(line.split(':')[0].strip())
+                temp['interfaces'] = ",".join(self.get_interface(data))
+                result.append(temp)
         return result
 
     @staticmethod

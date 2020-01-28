@@ -6,7 +6,7 @@ package_handler:
 workloads:
   - <<: *SHOW_VERSION
   - <<: *SHOW_CHASSIS_HARDWARE
-  - <<: *GET_SRX_DETAILS
+  - <<: *GET_DETAILS
   - <<: *SHOW_VRF
   - <<: *GET_VRF
   - <<: *SHOW_CONFIGURATION_INTERFACES

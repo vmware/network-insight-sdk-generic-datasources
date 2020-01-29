@@ -12,11 +12,5 @@ workloads:
   - <<: *SHOW_ASR_XE_PORT_CHANNELS
   - <<: *SHOW_ASR_XE_MAC_TABLE
 
-table_joiners:
-  - <<: *N5K_RI_TABLE
-  - <<: *N5K_SP_TABLE
-  - <<: *N5K_PC_TABLE
-
-
 result_writer:
   <<: *RESULT_WRITER

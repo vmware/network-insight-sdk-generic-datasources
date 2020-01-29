@@ -3,8 +3,14 @@ package_handler:
 
 workloads:
   - <<: *SHOW_ASR1K_XE_VERSION
+  - <<: *SHOW_ASR_XE_VRF_RI
+  - <<: *SHOW_ASR_XE_VRFS
   - <<: *SHOW_ASR_XE_IP_ROUTE
   - <<: *SHOW_ASR_XE_INTERFACES
+  - <<: *SHOW_ASR_XE_ROUTER_INTERFACES
+  - <<: *SHOW_ASR_XE_SWITCH_PORTS
+  - <<: *SHOW_ASR_XE_PORT_CHANNELS
+  - <<: *SHOW_ASR_XE_MAC_TABLE
 
 table_joiners:
   - <<: *N5K_RI_TABLE

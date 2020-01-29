@@ -3,6 +3,7 @@
 
 import re
 
+from network_insight_sdk_generic_datasources.common.log import py_logger
 from network_insight_sdk_generic_datasources.common.utilities import merge_dictionaries
 from network_insight_sdk_generic_datasources.parsers.text.pre_post_processor import PrePostProcessor
 from network_insight_sdk_generic_datasources.parsers.common.block_parser import SimpleBlockParser
@@ -10,11 +11,14 @@ from network_insight_sdk_generic_datasources.parsers.common.block_parser import 
 from network_insight_sdk_generic_datasources.parsers.text.text_processor import TextProcessor
 from network_insight_sdk_generic_datasources.parsers.text.text_processor import Rule
 from network_insight_sdk_generic_datasources.parsers.text.text_processor import rule_match_callback
+from network_insight_sdk_generic_datasources.parsers.common.line_parser import LineTokenizer
+from network_insight_sdk_generic_datasources.parsers.text.table_processor import TableProcessor
 
 
 class CiscoASR1KXEDeviceInfoPrePostProcessor(PrePostProcessor):
 
     def parse(self, data):
+        py_logger.info("Parsing output \n{}".format(data))
         output_lines = []
         d = dict()
         lines = data.splitlines()
@@ -35,6 +39,7 @@ class CiscoASR1KXEDeviceInfoPrePostProcessor(PrePostProcessor):
 
 class CiscoASRXERoutePrePostProcessor(PrePostProcessor):
     def parse(self, data):
+        py_logger.info("Parsing output \n{}".format(data))
         output_lines = []
         if 'Gateway of last resort' not in data:
             return output_lines
@@ -65,8 +70,7 @@ class CiscoASRXERoutePrePostProcessor(PrePostProcessor):
         return output_lines
 
 
-class CiscoASR1KXEVRFPrePostProcessor(PrePostProcessor):
-
+class CiscoASR1KXEVRFRIPrePostProcessor(PrePostProcessor):
     def reformat_lines(self, data):
         output_lines = []
         lines = data.splitlines()
@@ -94,8 +98,9 @@ class CiscoASR1KXEVRFPrePostProcessor(PrePostProcessor):
         return result
 
     def parse(self, data):
+        py_logger.info("Parsing output \n{}".format(data))
         lines = self.reformat_lines(data)
-        output_lines = [dict(vrf='default')]
+        output_lines = []
         for line in lines:
             d = dict()
             fields = re.split('\\s+', line)
@@ -103,6 +108,19 @@ class CiscoASR1KXEVRFPrePostProcessor(PrePostProcessor):
             int_names = re.split(',', fields[-1])
             d['interfaces'] = self.convert_interface_names(int_names)
             output_lines.append(d)
+        return output_lines
+
+
+class CiscoASR1KXEVRFPrePostProcessor(TableProcessor):
+    """
+    Get get details of juniper srx from showVersion,showChassishardware
+    """
+
+    def process_tables(self, tables):
+        py_logger.info("Processing tables {}".format(tables))
+        output_lines = [dict(vrf='default')]
+        for line in tables['showVRFRI']:
+            output_lines.append(line)
         return output_lines
 
 
@@ -118,6 +136,8 @@ class CiscoASR1KXEInterfacesPrePostProcessor(PrePostProcessor):
         operational_status_regex = ".* line protocol is (up|down)"
         hardware_address_regex = ".* address is (\\w+\\.\\w+\\.\\w+) .*"
         duplex_regex = "(.*) Duplex.*"
+        vlan_regex = "Encapsulation 802\\.1Q Virtual LAN, Vlan ID\\s+(\\d+).*"
+        active_regex = 'Member.*:\\s+(.*)\\s*,.*'
         # connected_regex = ""
         # switch_port_mode_regex = ""
 
@@ -131,6 +151,8 @@ class CiscoASR1KXEInterfacesPrePostProcessor(PrePostProcessor):
         parser.add_rule(Rule('operationalStatus', operational_status_regex, rule_match_callback))
         parser.add_rule(Rule('hardwareAddress', hardware_address_regex, rule_match_callback))
         parser.add_rule(Rule('duplex', duplex_regex, rule_match_callback))
+        parser.add_rule(Rule('vlan', vlan_regex, rule_match_callback))
+        parser.add_rule(Rule('activePorts', active_regex, rule_match_callback))
         output_lines = parser.process(data)
         if not bool(output_lines):
             return []
@@ -138,13 +160,134 @@ class CiscoASR1KXEInterfacesPrePostProcessor(PrePostProcessor):
         for r in output_lines:
             r.update(duplex=r['duplex'].upper())
             r.update(interfaceSpeed=int(r['interfaceSpeed']) * 1000)
-            r.update(operationalSpeed=int(r['interfaceSpeed']) * 1000)
+            r.update(operationalSpeed=int(r['interfaceSpeed']))
             r.update(administrativeStatus=r["administrativeStatus"].upper())
             r.update(operationalStatus=r["operationalStatus"].upper())
             r.update(connected="TRUE" if r['administrativeStatus'] == 'UP' else "FALSE")
             r.update(switchPortMode="ACCESS")
-            print(r)
+            value = r['vlan']
+            # if len(r['ipAddress']) == 0:
+            #     # This is switch port
+            #     r.update(vlans=[value])
+            #     r.update(accessVlan=value)
+            # if not r['name'].startswith('Port-channel'):
+            #     # This is swtich port
+            #     r.pop('activePorts')
+            # if 'activePorts' in r:
+            #     # this is port channel
+            #     r.update(vlans=[value])
+            #     r.update(passivePorts='')
+            # if r['name'].startswith('Port-channel') and '.' in r['name']:
+            #     r.update(vlans=[r['name'][r['name'].find('.') + 1:]])
+            # if 'vlans' in r:
+            #     r.pop('vlan')
+        return output_lines
 
+
+class CiscoASR1KXEMacTablePrePostProcessor(PrePostProcessor):
+    def parse(self, data):
+        lines = data.splitlines()
+        output_lines = []
+        for line in lines[1:]:
+            d = {}
+            tokenizer = LineTokenizer()
+            fields = tokenizer.tokenize(line)
+            d.update(macAddress=fields[3])
+            d.update(vlan='1' if fields[-1].find('.') == -1 else fields[-1][fields[-1].find('.') + 1:])
+            d.update(switchPort=fields[-1])
+            output_lines.append(d)
+        return output_lines
+
+
+class CiscoASR1KXERouterInterfacesPrePostProcessor(TableProcessor):
+    def process_tables(self, tables):
+        py_logger.info("Processing tables {}".format(tables))
+        interfaces_all = tables['showInterfacesAll']
+        vrf_ri = tables['showVRFRI']
+        output_lines = []
+        for r in interfaces_all:
+            if len(r['ipAddress']) == 0:
+                continue
+            d = {}
+            for v in vrf_ri:
+                if r['name'] in v['interfaces']:
+                    d.update(vrf=v['vrf'])
+            if 'vrf' not in d:
+                print('Ignoring {}'.format(r['name']))
+                continue
+            d.update(name=r['name'])
+            d.update(ipAddress=r['ipAddress'])
+            d.update(vlan=r['vlan'])
+            d.update(administrativeStatus=r['administrativeStatus'])
+            d.update(operationalStatus=r['operationalStatus'])
+            d.update(hardwareAddress=r['hardwareAddress'])
+            d.update(mtu=str(r['mtu']))
+            d.update(interfaceSpeed=str(r['interfaceSpeed']))
+            d.update(operationalSpeed=str(r['operationalSpeed']))
+            d.update(duplex=r['duplex'])
+            d.update(connected=r['connected'])
+            d.update(switchPortMode=r['switchPortMode'])
+            output_lines.append(d)
+        return output_lines
+
+
+class CiscoASR1KXESwitchPortsPrePostProcessor(TableProcessor):
+    def process_tables(self, tables):
+        py_logger.info("Processing tables {}".format(tables))
+        interfaces_all = tables['showInterfacesAll']
+        output_lines = []
+        for r in interfaces_all:
+            if len(r['ipAddress']) > 0:
+                continue
+            if r['name'].startswith('Port-channel') and r['name'].find('.') == -1:
+                continue
+            value = r['vlan']
+            d = {}
+            d.update(name=r['name'])
+            d.update(accessVlan=value)
+            d.update(vlans='' if value.strip() == '' else ','.join([value]))
+            d.update(administrativeStatus=r['administrativeStatus'])
+            d.update(operationalStatus=r['operationalStatus'])
+            d.update(hardwareAddress=r['hardwareAddress'])
+            d.update(mtu=str(r['mtu']))
+            d.update(interfaceSpeed=str(r['interfaceSpeed']))
+            d.update(operationalSpeed=str(r['operationalSpeed']))
+            d.update(duplex=r['duplex'])
+            d.update(connected=r['connected'])
+            d.update(switchPortMode=r['switchPortMode'])
+            output_lines.append(d)
+        return output_lines
+
+
+class CiscoASR1KXEPortChannelsPrePostProcessor(TableProcessor):
+    def process_tables(self, tables):
+        py_logger.info("Processing tables {}".format(tables))
+        interfaces_all = tables['showInterfacesAll']
+        output_lines = []
+        for r in interfaces_all:
+            if not r['name'].startswith('Port-channel'):
+                continue
+            if r['name'].startswith('Port-channel') and r['name'].find('.') != -1:
+                continue
+            value = r['vlan']
+            d = {}
+            d.update(name=r['name'])
+            if value == '':
+                d.update(vlans='' if value.strip() == '' else str(value))
+            else:
+                d.update(vlans='1' if r['name'].find('.') == -1 else r['name'][r['name'].find('.') + 1:])
+            d.update(administrativeStatus=r['administrativeStatus'])
+            d.update(operationalStatus=r['operationalStatus'])
+            d.update(hardwareAddress=r['hardwareAddress'])
+            d.update(mtu=str(r['mtu']))
+            d.update(interfaceSpeed=str(r['interfaceSpeed']))
+            d.update(operationalSpeed=str(r['operationalSpeed']))
+            d.update(duplex=r['duplex'])
+            d.update(connected=r['connected'])
+            d.update(switchPortMode=r['switchPortMode'])
+            d.update(activePorts=r['activePorts'])
+            d.update(passivePorts='')
+            output_lines.append(d)
         return output_lines
 
 

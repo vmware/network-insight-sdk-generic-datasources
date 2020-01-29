@@ -226,7 +226,7 @@ workloads: &WORKLOADS
 
   - &SHOW_ASR_XE_ROUTER_INTERFACES
     table_id: router-interfaces
-    reuse_tables: showInterfacesAll, showVRFRI
+    reuse_tables: showInterfacesAll,showVRFRI
     reuse_table_processor: CiscoASR1KXERouterInterfacesPrePostProcessor
 
   - &SHOW_ASR_XE_SWITCH_PORTS

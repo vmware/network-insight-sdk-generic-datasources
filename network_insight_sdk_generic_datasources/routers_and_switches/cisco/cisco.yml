@@ -210,7 +210,7 @@ workloads: &WORKLOADS
   - &SHOW_ASR_XE_VRFS
     table_id: vrfs
     reuse_tables: showVRFRI
-    reuse_table_processor: routers_and_switches.cisco.cisco_pre_post_processor.CiscoASR1KXEVRFPrePostProcessor
+    reuse_table_processor: CiscoASR1KXEVRFPrePostProcessor
 
   - &SHOW_ASR_XE_IP_ROUTE
     table_id: routes

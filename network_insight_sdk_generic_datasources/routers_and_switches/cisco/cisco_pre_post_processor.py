@@ -37,7 +37,7 @@ class CiscoASR1KXEDeviceInfoPrePostProcessor(PrePostProcessor):
         return output_lines
 
 
-class CiscoASRXERoutePrePostProcessor(PrePostProcessor):
+class CiscoASR1KXERoutePrePostProcessor(PrePostProcessor):
     def parse(self, data):
         py_logger.info("Parsing output \n{}".format(data))
         output_lines = []

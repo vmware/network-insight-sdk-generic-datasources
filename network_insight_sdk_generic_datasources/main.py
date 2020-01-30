@@ -29,7 +29,7 @@ def parse_arguments():
 
 
 def main():
-    import common.physical_device as physical_device
+    import network_insight_sdk_generic_datasources.common.physical_device as physical_device
     args = parse_arguments()
     dir_path = "routers_and_switches/{}".format(args.device)
     # yaml_definition_file_name = "{}_{}_command_map.yml".format(args.device, args.model)

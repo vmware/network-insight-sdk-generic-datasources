@@ -35,7 +35,7 @@ class SimpleTableJoiner(object):
         for key in destination_key_value_row:
             pydict = destination_key_value_row[key]
             if key not in source_key_value_row:
-                self.fill_with_empty_values(pydict, source_key_value_row.values()[0], source_column)
+                self.fill_with_empty_values(pydict, list(source_key_value_row.values())[0], source_column)
             else:
                 srow = source_key_value_row[key]
                 for k in srow:

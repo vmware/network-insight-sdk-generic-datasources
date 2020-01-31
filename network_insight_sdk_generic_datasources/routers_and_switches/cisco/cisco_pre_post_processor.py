@@ -29,7 +29,7 @@ class CiscoASR1KXEDeviceInfoPrePostProcessor(PrePostProcessor):
                 d['name'] = line.split(' ')[0]
                 d['hostname'] = line.split(' ')[0]
             if 'IOS Software' in line:
-                d['model'] = '{} {}'.format(line.split(',')[1].strip(), line.split(',')[2].strip())
+                d['model'] = 'ASR1000'
         d['os'] = 'IOS'
         d['vendor'] = 'Cisco'
         d['haState'] = 'ACTIVE'
@@ -137,9 +137,7 @@ class CiscoASR1KXEInterfacesPrePostProcessor(PrePostProcessor):
         hardware_address_regex = ".* address is (\\w+\\.\\w+\\.\\w+) .*"
         duplex_regex = "(.*) Duplex.*"
         vlan_regex = "Encapsulation 802\\.1Q Virtual LAN, Vlan ID\\s+(\\d+).*"
-        active_regex = 'Member.*:\\s+(.*)\\s*,.*'
-        # connected_regex = ""
-        # switch_port_mode_regex = ""
+        active_regex = 'Member.*:\\s+(.*)\\s+,.*'
 
         parser = TextProcessor(LineBasedBlockParser('line protocol'))
         parser.add_rule(Rule('name', name_regex, rule_match_callback))
@@ -165,22 +163,6 @@ class CiscoASR1KXEInterfacesPrePostProcessor(PrePostProcessor):
             r.update(operationalStatus=r["operationalStatus"].upper())
             r.update(connected="TRUE" if r['administrativeStatus'] == 'UP' else "FALSE")
             r.update(switchPortMode="ACCESS")
-            value = r['vlan']
-            # if len(r['ipAddress']) == 0:
-            #     # This is switch port
-            #     r.update(vlans=[value])
-            #     r.update(accessVlan=value)
-            # if not r['name'].startswith('Port-channel'):
-            #     # This is swtich port
-            #     r.pop('activePorts')
-            # if 'activePorts' in r:
-            #     # this is port channel
-            #     r.update(vlans=[value])
-            #     r.update(passivePorts='')
-            # if r['name'].startswith('Port-channel') and '.' in r['name']:
-            #     r.update(vlans=[r['name'][r['name'].find('.') + 1:]])
-            # if 'vlans' in r:
-            #     r.pop('vlan')
         return output_lines
 
 
@@ -224,7 +206,7 @@ class CiscoASR1KXERouterInterfacesPrePostProcessor(TableProcessor):
             d.update(mtu=str(r['mtu']))
             d.update(interfaceSpeed=str(r['interfaceSpeed']))
             d.update(operationalSpeed=str(r['operationalSpeed']))
-            d.update(duplex=r['duplex'])
+            d.update(duplex=r['duplex'].upper())
             d.update(connected=r['connected'])
             d.update(switchPortMode=r['switchPortMode'])
             output_lines.append(d)
@@ -252,7 +234,7 @@ class CiscoASR1KXESwitchPortsPrePostProcessor(TableProcessor):
             d.update(mtu=str(r['mtu']))
             d.update(interfaceSpeed=str(r['interfaceSpeed']))
             d.update(operationalSpeed=str(r['operationalSpeed']))
-            d.update(duplex=r['duplex'])
+            d.update(duplex=r['duplex'].upper())
             d.update(connected=r['connected'])
             d.update(switchPortMode=r['switchPortMode'])
             output_lines.append(d)
@@ -282,7 +264,7 @@ class CiscoASR1KXEPortChannelsPrePostProcessor(TableProcessor):
             d.update(mtu=str(r['mtu']))
             d.update(interfaceSpeed=str(r['interfaceSpeed']))
             d.update(operationalSpeed=str(r['operationalSpeed']))
-            d.update(duplex=r['duplex'])
+            d.update(duplex=r['duplex'].upper())
             d.update(connected=r['connected'])
             d.update(switchPortMode=r['switchPortMode'])
             d.update(activePorts=r['activePorts'])

@@ -11,6 +11,7 @@ workloads:
   - <<: *SHOW_ASR_XE_SWITCH_PORTS
   - <<: *SHOW_ASR_XE_PORT_CHANNELS
   - <<: *SHOW_ASR_XE_MAC_TABLE
+  - <<: *SHOW_ASR_XE_NEIGHBORS
 
 result_writer:
   <<: *RESULT_WRITER

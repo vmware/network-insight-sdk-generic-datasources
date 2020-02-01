@@ -201,6 +201,12 @@ workloads: &WORKLOADS
     parser:
       name: routers_and_switches.cisco.cisco_pre_post_processor.CiscoASR1KXEMacTablePrePostProcessor
 
+  - &SHOW_ASR_XE_NEIGHBORS
+    table_id: neighbors
+    command: show cdp neighbors
+    parser:
+      name: routers_and_switches.cisco.cisco_pre_post_processor.CiscoASR1KXENeighborsPrePostProcessor
+
   - &SHOW_ASR_XE_VRF_RI
     table_id: showVRFRI
     command: show vrf

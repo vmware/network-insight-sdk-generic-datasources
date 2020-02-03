@@ -87,6 +87,8 @@ class CiscoASR1KXENeighborsPrePostProcessor(PrePostProcessor):
         is_header_found = False
         for line in lines:
             py_logger.info("Parsing line {}".format(line))
+            if len(line.strip()) == 0 or 'Total cdp entries' in line:
+                continue
             if re.match(header_regex, line):
                 headers = {deviceid_key: line.find(deviceid_key), localinft_key: line.find(localinft_key),
                            localinft_key: line.find(localinft_key), holdtme_key: line.find(holdtme_key),

@@ -206,6 +206,11 @@ workloads: &WORKLOADS
     reuse_tables: showInterfacesAll,showVRFRI
     reuse_table_processor: CiscoASRXRRouterInterfacesPrePostProcessor
 
+  - &SHOW_ASRXR_SWITCHPORTS_INTERFACES
+    table_id: switch-ports
+    reuse_tables: showInterfacesAll
+    reuse_table_processor: CiscoASRXRSwitchPortsPrePostProcessor
+
 table_joiners: &TABLE_JOINERS
   - &N5K_RI_TABLE
     name: network_insight_sdk_generic_datasources.joiner.table_joiner.SimpleTableJoiner

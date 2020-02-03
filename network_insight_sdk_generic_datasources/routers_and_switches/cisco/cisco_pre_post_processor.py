@@ -79,7 +79,8 @@ class CiscoASRXRInterfacesPrePostProcessor(PrePostProcessor):
         hardware_address_regex = ".* address is (\\w+\\.\\w+\\.\\w+) .*"
         duplex_regex = "(.*)-(d|D)uplex.*"
         vlan_regex = "Encapsulation 802\\.1Q Virtual LAN, Vlan Id\\s+(\\d+).*"
-        active_regex = 'Member.*:\\s+(.*)\\s+,.*'
+        active_regex = '(.*).*Active'
+        passive_regex = '(.*).*Passive'
 
         parser = TextProcessor(LineBasedBlockParser('line protocol'))
         parser.add_rule(Rule('name', name_regex, rule_match_callback))
@@ -93,6 +94,7 @@ class CiscoASRXRInterfacesPrePostProcessor(PrePostProcessor):
         parser.add_rule(Rule('duplex', duplex_regex, rule_match_callback))
         parser.add_rule(Rule('vlan', vlan_regex, rule_match_callback))
         parser.add_rule(Rule('activePorts', active_regex, rule_match_callback))
+        parser.add_rule(Rule('passivePorts', passive_regex, rule_match_callback))
         output_lines = parser.process(data)
         if not bool(output_lines):
             return []
@@ -146,6 +148,35 @@ class CiscoASRXRRouterInterfacesPrePostProcessor(PrePostProcessor):
             d.update(name=r['name'])
             d.update(ipAddress=r['ipAddress'])
             d.update(vlan=r['vlan'])
+            d.update(administrativeStatus=r['administrativeStatus'])
+            d.update(operationalStatus=r['operationalStatus'])
+            d.update(hardwareAddress=r['hardwareAddress'])
+            d.update(mtu=str(r['mtu']))
+            d.update(interfaceSpeed=str(r['interfaceSpeed']))
+            d.update(operationalSpeed=str(r['operationalSpeed']))
+            d.update(duplex=r['duplex'].upper())
+            d.update(connected=r['connected'])
+            d.update(switchPortMode=r['switchPortMode'])
+            output_lines.append(d)
+        return output_lines
+
+class CiscoASRXRSwitchPortsPrePostProcessor(PrePostProcessor):
+    def process_tables(self, tables):
+        interfaces_all = tables['showInterfacesAll']
+        output_lines = []
+        for r in interfaces_all:
+            py_logger.info("Processing row {}".format(r))
+            if len(r['ipAddress']) > 0:
+                py_logger.warn('Ignoring row {}'.format(r))
+                continue
+            if len(r['activePorts']) > 0 or len(r['passivePorts']) > 0:
+                py_logger.warn('Ignoring row {}'.format(r))
+                continue
+            value = r['vlan']
+            d = {}
+            d.update(name=r['name'])
+            d.update(accessVlan=value)
+            d.update(vlans='' if value.strip() == '' else ','.join([value]))
             d.update(administrativeStatus=r['administrativeStatus'])
             d.update(operationalStatus=r['operationalStatus'])
             d.update(hardwareAddress=r['hardwareAddress'])

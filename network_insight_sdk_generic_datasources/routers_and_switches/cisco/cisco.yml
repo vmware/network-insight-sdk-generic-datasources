@@ -16,6 +16,12 @@ workloads: &WORKLOADS
       pre_post_processor: CiscoDevicePrePostProcessor
       name: *VERTICAL_TABLE_PARSER
 
+  - &SHOW_ASRXR_VERSION
+    table_id: switch
+    command: show version | include "uptime|Software"
+    parser:
+      name: routers_and_switches.cisco.cisco_pre_post_processor.CiscoASRXRDeviceInfoPrePostProcessor
+
   - &MAC_ADDRESS_TABLE
     table_id: mac-address-table
     command: show mac address-table | xml | exclude disp_vdc | exclude disp_is_static | exclude disp_is_secure | exclude disp_is_ntfy | exclude disp_type | exclude disp_swid | exclude disp_age | exclude disp_sswid | exclude disp_lid
@@ -220,4 +226,5 @@ result_writer: &RESULT_WRITER
 
 
 n5k: !include n5k.yml
+asrxr: !include asrxr.yml
 

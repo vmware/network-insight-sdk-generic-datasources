@@ -3,6 +3,7 @@
 
 import re
 
+from network_insight_sdk_generic_datasources.common.log import py_logger
 from network_insight_sdk_generic_datasources.common.utilities import merge_dictionaries
 from network_insight_sdk_generic_datasources.parsers.text.pre_post_processor import PrePostProcessor
 from network_insight_sdk_generic_datasources.parsers.common.block_parser import SimpleBlockParser
@@ -40,6 +41,26 @@ class CiscoDevicePrePostProcessor(PrePostProcessor):
             if 'Processor Board ID' in lines[i]:
                 output_lines.append('serial: {}'.format(lines[i].split(' ')[-1]))
 
+class CiscoASRXRDeviceInfoPrePostProcessor(PrePostProcessor):
+
+    def parse(self, data):
+        py_logger.info("Parsing output \n{}".format(data))
+        output_lines = []
+        d = dict()
+        lines = data.splitlines()
+        for line in lines:
+            if 'board' in line:
+                d['serial'] = line.split(' ')[-1]
+            if 'uptime' in line:
+                d['name'] = line.split(' ')[0]
+                d['hostname'] = line.split(' ')[0]
+            if 'Software' in line:
+                d['model'] = 'ASR9000'
+        d['os'] = 'IOS'
+        d['vendor'] = 'Cisco'
+        d['haState'] = 'ACTIVE'
+        output_lines.append(d)
+        return output_lines
 
 class CiscoRoutePrePostProcessor(PrePostProcessor):
 

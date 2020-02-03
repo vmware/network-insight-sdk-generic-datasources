@@ -1,0 +1,8 @@
+package_handler:
+  <<: *PACKAGE_HANDLER
+
+workloads:
+  - <<: *SHOW_ASRXR_VERSION
+
+result_writer:
+  <<: *RESULT_WRITER

@@ -3,6 +3,9 @@ package_handler:
 
 workloads:
   - <<: *SHOW_ASRXR_VERSION
+  - <<: *SHOW_ASRXR_INTERFACES
+  - <<: *SHOW_ASRXR_VRF_RI
+  - <<: *SHOW_ASRXR_ROUTER_INTERFACES
 
 result_writer:
   <<: *RESULT_WRITER

@@ -16,12 +16,6 @@ workloads: &WORKLOADS
       pre_post_processor: CiscoDevicePrePostProcessor
       name: *VERTICAL_TABLE_PARSER
 
-  - &SHOW_ASRXR_VERSION
-    table_id: switch
-    command: show version | include "uptime|Software"
-    parser:
-      name: routers_and_switches.cisco.cisco_pre_post_processor.CiscoASRXRDeviceInfoPrePostProcessor
-
   - &MAC_ADDRESS_TABLE
     table_id: mac-address-table
     command: show mac address-table | xml | exclude disp_vdc | exclude disp_is_static | exclude disp_is_secure | exclude disp_is_ntfy | exclude disp_type | exclude disp_swid | exclude disp_age | exclude disp_sswid | exclude disp_lid
@@ -188,6 +182,29 @@ workloads: &WORKLOADS
           - name
           - status
           - ports
+
+  - &SHOW_ASRXR_VERSION
+    table_id: switch
+    command: show version | include "uptime|Software"
+    parser:
+      name: routers_and_switches.cisco.cisco_pre_post_processor.CiscoASRXRDeviceInfoPrePostProcessor
+
+  - &SHOW_ASRXR_INTERFACES
+    table_id: showInterfacesAll
+    command: show interfaces
+    parser:
+      name: routers_and_switches.cisco.cisco_pre_post_processor.CiscoASRXRInterfacesPrePostProcessor
+
+  - &SHOW_ASRXR_VRF_RI
+    table_id: showVRFRI
+    command: show ipv4 interface brief
+    parser:
+      name: routers_and_switches.cisco.cisco_pre_post_processor.CiscoASRXRVRFRIPrePostProcessor
+
+  - &SHOW_ASRXR_ROUTER_INTERFACES
+    table_id: router-interfaces
+    reuse_tables: showInterfacesAll,showVRFRI
+    reuse_table_processor: CiscoASRXRRouterInterfacesPrePostProcessor
 
 table_joiners: &TABLE_JOINERS
   - &N5K_RI_TABLE

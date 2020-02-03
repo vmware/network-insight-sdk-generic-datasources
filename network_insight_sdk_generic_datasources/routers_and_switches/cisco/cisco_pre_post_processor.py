@@ -30,7 +30,7 @@ class CiscoASR1KXEDeviceInfoPrePostProcessor(PrePostProcessor):
                 d['name'] = line.split(' ')[0]
                 d['hostname'] = line.split(' ')[0]
             if 'IOS Software' in line:
-                d['model'] = re.sub('[^\w+|\\s|\\.]', '', line)
+                d['model'] = re.sub('[^\\w+|\\s|\\.]', '', line)
         d['os'] = 'IOS'
         d['vendor'] = 'Cisco'
         d['haState'] = 'ACTIVE'
@@ -54,7 +54,7 @@ class CiscoASR1KXERoutePrePostProcessor(PrePostProcessor):
                 d['name'] = fields[1]
                 d['network'] = fields[1]
                 d['nextHop'] = fields[4].rstrip(',')
-                d['routeType'] = fields[0]
+                d['routeType'] = re.sub('[^\\w+|\\s|\\.]', '', fields[0])
                 d['interfaceName'] = fields[-1]
             if 'Routing Table' in line:
                 vrf = fields[-1]

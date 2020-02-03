@@ -166,13 +166,9 @@ class CiscoASR1KXEVRFRIPrePostProcessor(PrePostProcessor):
 
 
 class CiscoASR1KXEVRFPrePostProcessor(TableProcessor):
-    """
-    Get get details of juniper srx from showVersion,showChassishardware
-    """
-
     def process_tables(self, tables):
         py_logger.info("Processing tables {}".format(tables))
-        output_lines = [dict(vrf='default')]
+        output_lines = [dict(name='default')]
         for line in tables['showVRFRI']:
             output_lines.append(line)
         return output_lines

@@ -170,7 +170,7 @@ class CiscoASR1KXEVRFPrePostProcessor(TableProcessor):
         py_logger.info("Processing tables {}".format(tables))
         output_lines = [dict(name='default')]
         for line in tables['showVRFRI']:
-            output_lines.append(line)
+            output_lines.append(dict(name=line['vrf']))
         return output_lines
 
 

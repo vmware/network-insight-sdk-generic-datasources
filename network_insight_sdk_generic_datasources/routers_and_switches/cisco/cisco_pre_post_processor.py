@@ -75,7 +75,7 @@ class CiscoASRXRDeviceInfoPrePostProcessor(PrePostProcessor):
                 d['hostname'] = line.split(' ')[0]
             if 'Software' in line:
                 d['model'] = 'ASR9000'
-        d['os'] = 'IOS'
+        d['os'] = 'IOS XR'
         d['vendor'] = 'Cisco'
         d['haState'] = 'ACTIVE'
         output_lines.append(d)
@@ -230,6 +230,18 @@ class CiscoASRRXRPortChannelsPrePostProcessor(PrePostProcessor):
             d.update(activePorts=r[ACTIVE_PORTS_KEY])
             d.update(passivePorts=r[PASSIVE_PORTS_KEY])
             output_lines.append(d)
+        return output_lines
+
+class CiscoASRXRVRFPrePostProcessor(PrePostProcessor):
+    def parse(self, data):
+        output_lines = [dict(name='default')]
+        lines = data.splitlines()
+        for i in range(2, len(lines)):
+            fields = lines[i].split()
+            vrf = fields[0]
+            if len(vrf) == 0:
+                continue
+            output_lines.append(dict(name=vrf))
         return output_lines
 
 class CiscoRoutePrePostProcessor(PrePostProcessor):

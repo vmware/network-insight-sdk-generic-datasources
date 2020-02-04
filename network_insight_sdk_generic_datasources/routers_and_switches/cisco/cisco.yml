@@ -216,6 +216,12 @@ workloads: &WORKLOADS
     reuse_tables: showInterfacesAll
     reuse_table_processor: CiscoASRRXRPortChannelsPrePostProcessor
 
+  - &SHOW_ASRXR_VRF
+    table_id: vrfs
+    command: show vrf all
+    parser:
+      name: routers_and_switches.cisco.cisco_pre_post_processor.CiscoASRXRVRFPrePostProcessor
+
 table_joiners: &TABLE_JOINERS
   - &N5K_RI_TABLE
     name: network_insight_sdk_generic_datasources.joiner.table_joiner.SimpleTableJoiner

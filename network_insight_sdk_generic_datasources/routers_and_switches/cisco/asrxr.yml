@@ -8,6 +8,7 @@ workloads:
   - <<: *SHOW_ASRXR_ROUTER_INTERFACES
   - <<: *SHOW_ASRXR_SWITCHPORTS_INTERFACES
   - <<: *SHOW_ASRXR_PORT_CHANNELS
+  - <<: *SHOW_ASRXR_VRF
 
 result_writer:
   <<: *RESULT_WRITER

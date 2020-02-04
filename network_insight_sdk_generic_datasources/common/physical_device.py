@@ -50,7 +50,8 @@ class PhysicalDevice(object):
         self.write_results()
 
     def write_results(self):
-        self.result_writer[TABLE_ID_KEY] = ['switch', 'router-interfaces', 'switch-ports']
+        #['switch', 'mac-address-table', 'neighbors', 'routes', 'vrfs', 'router-interfaces', 'switch-ports', 'port-channels']
+        self.result_writer[TABLE_ID_KEY] = ['switch', 'router-interfaces', 'switch-ports', 'port-channels']
         for table in self.result_writer[TABLE_ID_KEY]:
             csv_writer = CsvWriter()
             csv_writer.write(self.generation_dir, table, self.result_map[table])

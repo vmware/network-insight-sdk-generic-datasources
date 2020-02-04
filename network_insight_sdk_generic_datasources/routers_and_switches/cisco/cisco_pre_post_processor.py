@@ -28,6 +28,7 @@ CONNECTED_KEY = 'connected'
 SW_PORT_KEY = 'switchPortMode'
 VRF_KEY = 'vrf'
 
+
 class CiscoDevicePrePostProcessor(PrePostProcessor):
 
     def pre_process(self, data):
@@ -60,6 +61,7 @@ class CiscoDevicePrePostProcessor(PrePostProcessor):
             if 'Processor Board ID' in lines[i]:
                 output_lines.append('serial: {}'.format(lines[i].split(' ')[-1]))
 
+
 class CiscoASRXRDeviceInfoPrePostProcessor(PrePostProcessor):
 
     def parse(self, data):
@@ -80,6 +82,7 @@ class CiscoASRXRDeviceInfoPrePostProcessor(PrePostProcessor):
         d['haState'] = 'ACTIVE'
         output_lines.append(d)
         return output_lines
+
 
 class CiscoASRXRInterfacesPrePostProcessor(PrePostProcessor):
     def parse(self, data):
@@ -243,16 +246,47 @@ class CiscoASRRXRPortChannelsPrePostProcessor(PrePostProcessor):
 class CiscoASRXRVRFPrePostProcessor(PrePostProcessor):
 
     def parse(self, data):
-        output_lines = [dict(name='default')]
+        output_lines = [dict(name='default'), dict(name='**nVSatellite')]
         lines = data.splitlines()
         for i in range(2, len(lines)):
+            line = lines[i]
+            if line[0] == ' ':
+                continue
             fields = lines[i].split()
             vrf = fields[0]
-            if len(vrf) == 0:
-                continue
             output_lines.append(dict(name=vrf))
         return output_lines
 
+
+class CiscoASRXRRoutePrePostProcessor(PrePostProcessor):
+
+    def parse(self, data):
+        parser = LineBasedBlockParser('VRF: ')
+        output_lines = []
+        block_data = parser.parse(data)
+
+        for i in range(1, len(block_data)):
+            lines = block_data[i].splitlines()
+            vrf = lines[0].split()[1]
+            for j in range(15, len(lines)):
+                line = lines[j]
+                d = dict()
+                d['vrf'] = vrf
+                fields = re.split('\\s+', line)
+                if 'via' in line:
+                    d['name'] = fields[1]
+                    d['network'] = fields[1]
+                    d['nextHop'] = fields[4].rstrip(',')
+                    d['routeType'] = re.sub('[^\\w+|\\s|\\.]', '', fields[0])
+                if 'directly connected' in line:
+                    d['name'] = fields[1]
+                    d['network'] = fields[1]
+                    d['nextHop'] = 'DIRECT'
+                    d['routeType'] = 'DIRECT'
+                    d['interfaceName'] = fields[6]
+                if bool(d):
+                    output_lines.append(d)
+        return output_lines
 
 class CiscoRoutePrePostProcessor(PrePostProcessor):
 

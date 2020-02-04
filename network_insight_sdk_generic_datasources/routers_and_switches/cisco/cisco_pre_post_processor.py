@@ -94,7 +94,7 @@ class CiscoASR1KXENeighborsPrePostProcessor(PrePostProcessor):
                            localinft_key: line.find(localinft_key), holdtme_key: line.find(holdtme_key),
                            capability_key: line.find(capability_key), platform_key: line.find(platform_key),
                            portid_key: line.find(portid_key)}
-                py_logger.info("########### Found header {}".format(headers))
+                py_logger.info("Found header {}".format(headers))
                 is_header_found = True
                 continue
             if is_header_found:

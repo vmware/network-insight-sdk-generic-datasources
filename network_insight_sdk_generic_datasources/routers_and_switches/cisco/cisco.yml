@@ -9,6 +9,12 @@ package_handler: &PACKAGE_HANDLER
 
 # workloads added will be executed in sequence
 workloads: &WORKLOADS
+  - &SHOW_VERSION_ASR
+    table_id: switch
+    command: show version | include ^cisco ASR|uptime|board
+    parser:
+      pre_post_processor: CiscoASRDevicePrePostProcessor
+      name: *VERTICAL_TABLE_PARSER
   - &SHOW_VERSION
     table_id: switch
     command: show version
@@ -183,6 +189,62 @@ workloads: &WORKLOADS
           - status
           - ports
 
+  - &SHOW_ASR1K_XE_VERSION
+    table_id: switch
+    command: show version | include board|cisco ASR|uptime| IOS Software
+    parser:
+      name: routers_and_switches.cisco.cisco_pre_post_processor.CiscoASR1KXEDeviceInfoPrePostProcessor
+
+  - &SHOW_ASR_XE_MAC_TABLE
+    table_id: mac-address-table
+    command: show ip arp
+    parser:
+      name: routers_and_switches.cisco.cisco_pre_post_processor.CiscoASR1KXEMacTablePrePostProcessor
+
+  - &SHOW_ASR_XE_NEIGHBORS
+    table_id: neighbors
+    command: show cdp neighbors
+    parser:
+      name: routers_and_switches.cisco.cisco_pre_post_processor.CiscoASR1KXENeighborsPrePostProcessor
+
+  - &SHOW_ASR_XE_VRF_RI
+    table_id: showVRFRI
+    command: show vrf
+    parser:
+      name: routers_and_switches.cisco.cisco_pre_post_processor.CiscoASR1KXEVRFRIPrePostProcessor
+
+  - &SHOW_ASR_XE_VRFS
+    table_id: vrfs
+    reuse_tables: showVRFRI
+    reuse_table_processor: CiscoASR1KXEVRFPrePostProcessor
+
+  - &SHOW_ASR_XE_IP_ROUTE
+    table_id: routes
+    command: show ip route vrf *
+    parser:
+      name: routers_and_switches.cisco.cisco_pre_post_processor.CiscoASR1KXERoutePrePostProcessor
+
+  - &SHOW_ASR_XE_INTERFACES
+    table_id: showInterfacesAll
+    command: show interfaces
+    parser:
+      name: routers_and_switches.cisco.cisco_pre_post_processor.CiscoASR1KXEInterfacesPrePostProcessor
+
+  - &SHOW_ASR_XE_ROUTER_INTERFACES
+    table_id: router-interfaces
+    reuse_tables: showInterfacesAll,showVRFRI
+    reuse_table_processor: CiscoASR1KXERouterInterfacesPrePostProcessor
+
+  - &SHOW_ASR_XE_SWITCH_PORTS
+    table_id: switch-ports
+    reuse_tables: showInterfacesAll
+    reuse_table_processor: CiscoASR1KXESwitchPortsPrePostProcessor
+
+  - &SHOW_ASR_XE_PORT_CHANNELS
+    table_id: port-channels
+    reuse_tables: showInterfacesAll
+    reuse_table_processor: CiscoASR1KXEPortChannelsPrePostProcessor
+
 table_joiners: &TABLE_JOINERS
   - &N5K_RI_TABLE
     name: network_insight_sdk_generic_datasources.joiner.table_joiner.SimpleTableJoiner
@@ -220,4 +282,5 @@ result_writer: &RESULT_WRITER
 
 
 n5k: !include n5k.yml
+ASR1k: !include ASR1k.yml
 

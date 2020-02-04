@@ -97,7 +97,7 @@ class CiscoASRXRInterfacesPrePostProcessor(PrePostProcessor):
         active_regex = '(.*).*Active'
         passive_regex = '(.*).*Passive'
 
-        parser = TextProcessor(LineBasedBlockParser('line protocol'))
+        parser = TextProcessor(SimpleBlockParser())
         parser.add_rule(Rule(NAME_KEY, name_regex, rule_match_callback))
         parser.add_rule(Rule(MTU_KEY, mtu_regex, rule_match_callback))
         parser.add_rule(Rule(IP_KEY, ip_regex, rule_match_callback))
@@ -133,6 +133,7 @@ class CiscoASRXRInterfacesPrePostProcessor(PrePostProcessor):
 
 
 class CiscoASRXRVRFRIPrePostProcessor(PrePostProcessor):
+
     def parse(self, data):
         output_lines = []
         lines = data.splitlines()
@@ -143,7 +144,9 @@ class CiscoASRXRVRFRIPrePostProcessor(PrePostProcessor):
             output_lines.append(dict({NAME_KEY: interfaceName, VRF_KEY: vrf}))
         return output_lines
 
+
 class CiscoASRXRRouterInterfacesPrePostProcessor(PrePostProcessor):
+
     def process_tables(self, tables):
         interfaces_all = tables['showInterfacesAll']
         vrf_ri = tables['showVRFRI']
@@ -174,7 +177,9 @@ class CiscoASRXRRouterInterfacesPrePostProcessor(PrePostProcessor):
             output_lines.append(d)
         return output_lines
 
+
 class CiscoASRXRSwitchPortsPrePostProcessor(PrePostProcessor):
+
     def process_tables(self, tables):
         interfaces_all = tables['showInterfacesAll']
         output_lines = []
@@ -203,7 +208,9 @@ class CiscoASRXRSwitchPortsPrePostProcessor(PrePostProcessor):
             output_lines.append(d)
         return output_lines
 
+
 class CiscoASRRXRPortChannelsPrePostProcessor(PrePostProcessor):
+
     def process_tables(self, tables):
         interfaces_all = tables['showInterfacesAll']
         output_lines = []
@@ -232,7 +239,9 @@ class CiscoASRRXRPortChannelsPrePostProcessor(PrePostProcessor):
             output_lines.append(d)
         return output_lines
 
+
 class CiscoASRXRVRFPrePostProcessor(PrePostProcessor):
+
     def parse(self, data):
         output_lines = [dict(name='default')]
         lines = data.splitlines()
@@ -243,6 +252,7 @@ class CiscoASRXRVRFPrePostProcessor(PrePostProcessor):
                 continue
             output_lines.append(dict(name=vrf))
         return output_lines
+
 
 class CiscoRoutePrePostProcessor(PrePostProcessor):
 

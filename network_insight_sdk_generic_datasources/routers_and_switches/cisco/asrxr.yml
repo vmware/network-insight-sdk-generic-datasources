@@ -11,4 +11,10 @@ workloads:
   - <<: *SHOW_ASRXR_VRF
 
 result_writer:
-  <<: *RESULT_WRITER
+  name: CsvWriter
+  table_id:
+    - switch
+    - vrfs
+    - router-interfaces
+    - switch-ports
+    - port-channels

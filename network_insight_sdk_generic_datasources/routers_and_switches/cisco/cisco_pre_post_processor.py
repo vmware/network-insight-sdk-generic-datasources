@@ -288,6 +288,63 @@ class CiscoASRXRRoutePrePostProcessor(PrePostProcessor):
                     output_lines.append(d)
         return output_lines
 
+
+class CiscoASRXRNeighborsPrePostProcessor(PrePostProcessor):
+    @staticmethod
+    def reformat_lines(data):
+        output_lines = []
+        lines = data.splitlines()
+        deviceid_key = "Device ID"
+        localinft_key = "Local Intrfce"
+        holdtme_key = "Holdtme"
+        capability_key = "Capability"
+        platform_key = "Platform"
+        portid_key = "Port ID"
+        header_regex = '{}\\s+{}\\s+{}\\s+{}\\s+{}\\s+{}'.format(deviceid_key, localinft_key, holdtme_key,
+                                                                 capability_key, platform_key, portid_key)
+        is_header_found = False
+        for line in lines:
+            py_logger.info("Parsing line {}".format(line))
+            if len(line.strip()) == 0 or 'Total cdp entries' in line:
+                continue
+            if re.match(header_regex, line):
+                headers = {deviceid_key: line.find(deviceid_key), localinft_key: line.find(localinft_key),
+                           localinft_key: line.find(localinft_key), holdtme_key: line.find(holdtme_key),
+                           capability_key: line.find(capability_key), platform_key: line.find(platform_key),
+                           portid_key: line.find(portid_key)}
+                py_logger.info("Found header {}".format(headers))
+                is_header_found = True
+                continue
+            if is_header_found:
+                if line[headers[deviceid_key]] != ' ':
+                    output_lines.append(line.strip())
+                else:
+                    output_lines[-1] = output_lines[-1] + ' ' + line.strip()
+        return output_lines
+
+    @staticmethod
+    def convert_interface_names(int_name):
+        if int_name.startswith('Gi', 0):
+            return 'GigabitEthernet'
+        if int_name.startswith('Te', 0):
+            return 'TenGigabitEthernet'
+        if int_name.startswith('Et', 0):
+            return 'Ethernet'
+
+    def parse(self, data):
+        py_logger.info("Parsing output \n{}".format(data))
+        lines = self.reformat_lines(data)
+        output_lines = []
+        for line in lines:
+            d = dict()
+            fields = re.split('\\s+', line)
+            d['localInterface'] = '{}{}'.format(self.convert_interface_names(fields[1]), fields[2])
+            d['remoteDevice'] = fields[0]
+            d['remoteInterface'] = '{}{}'.format(self.convert_interface_names(fields[-2]), fields[-1])
+            output_lines.append(d)
+        return output_lines
+
+
 class CiscoRoutePrePostProcessor(PrePostProcessor):
 
     def pre_process(self, data):

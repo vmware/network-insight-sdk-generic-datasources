@@ -228,6 +228,12 @@ workloads: &WORKLOADS
     parser:
       name: routers_and_switches.cisco.cisco_pre_post_processor.CiscoASRXRRoutePrePostProcessor
 
+  - &SHOW_ASRXR_NEIGHBORS
+    table_id: neighbors
+    command: show cdp neighbors
+    parser:
+      name: routers_and_switches.cisco.cisco_pre_post_processor.CiscoASRXRNeighborsPrePostProcessor
+
 table_joiners: &TABLE_JOINERS
   - &N5K_RI_TABLE
     name: network_insight_sdk_generic_datasources.joiner.table_joiner.SimpleTableJoiner

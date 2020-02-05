@@ -10,6 +10,7 @@ workloads:
   - <<: *SHOW_ASRXR_ROUTE_VRF
   - <<: *SHOW_ASRXR_SWITCHPORTS_INTERFACES
   - <<: *SHOW_ASRXR_PORT_CHANNELS
+  - <<: *SHOW_ASRXR_NEIGHBORS
 
 
 
@@ -17,6 +18,7 @@ result_writer:
   name: CsvWriter
   table_id:
     - switch
+    - neighbors
     - routes
     - vrfs
     - router-interfaces

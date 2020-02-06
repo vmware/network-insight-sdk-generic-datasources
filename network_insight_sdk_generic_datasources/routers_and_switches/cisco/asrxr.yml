@@ -12,8 +12,6 @@ workloads:
   - <<: *SHOW_ASRXR_PORT_CHANNELS
   - <<: *SHOW_ASRXR_NEIGHBORS
 
-
-
 result_writer:
   name: CsvWriter
   table_id:

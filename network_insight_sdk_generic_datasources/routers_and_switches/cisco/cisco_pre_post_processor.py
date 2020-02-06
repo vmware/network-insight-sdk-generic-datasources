@@ -338,9 +338,9 @@ class CiscoASRXRNeighborsPrePostProcessor(PrePostProcessor):
         for line in lines:
             d = dict()
             fields = re.split('\\s+', line)
-            d['localInterface'] = '{}{}'.format(self.convert_interface_names(fields[1]), fields[2])
+            d['localInterface'] = '{}{}'.format(self.convert_interface_names(fields[1]), fields[1][2:])
             d['remoteDevice'] = fields[0]
-            d['remoteInterface'] = '{}{}'.format(self.convert_interface_names(fields[-2]), fields[-1])
+            d['remoteInterface'] = '{}{}'.format(self.convert_interface_names(fields[-1]), fields[-1][2:])
             output_lines.append(d)
         return output_lines
 

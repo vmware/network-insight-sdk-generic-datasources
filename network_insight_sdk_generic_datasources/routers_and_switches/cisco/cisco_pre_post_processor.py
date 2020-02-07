@@ -9,6 +9,7 @@ from network_insight_sdk_generic_datasources.parsers.text.pre_post_processor imp
 from network_insight_sdk_generic_datasources.parsers.common.block_parser import SimpleBlockParser
 from network_insight_sdk_generic_datasources.parsers.text.text_processor import rule_match_callback
 from network_insight_sdk_generic_datasources.parsers.text.text_processor import Rule
+from network_insight_sdk_generic_datasources.parsers.text.text_processor import BlockRule
 from network_insight_sdk_generic_datasources.parsers.text.text_processor import TextProcessor
 from network_insight_sdk_generic_datasources.parsers.common.block_parser import LineBasedBlockParser
 
@@ -86,7 +87,6 @@ class CiscoASRXRDeviceInfoPrePostProcessor(PrePostProcessor):
 
 class CiscoASRXRInterfacesPrePostProcessor(PrePostProcessor):
     def parse(self, data):
-
         name_regex = "(.*) is (administratively )?(up|down), .*"
         mtu_regex = "MTU (\\d+) bytes.*"
         ip_regex = "Internet address is (.*)"
@@ -95,25 +95,27 @@ class CiscoASRXRInterfacesPrePostProcessor(PrePostProcessor):
         administrative_status_regex = ".* is (?:administratively )?(up|down), .*"
         operational_status_regex = ".* line protocol is (up|down)"
         hardware_address_regex = ".* address is (\\w+\\.\\w+\\.\\w+) .*"
-        duplex_regex = "(.*)-(d|D)uplex.*"
+        duplex_regex = "(\\w+)-(d|D)uplex.*"
         vlan_regex = "Encapsulation 802\\.1Q Virtual LAN, Vlan Id\\s+(\\d+).*"
-        active_regex = '(.*).*Active'
-        passive_regex = '(.*).*Passive'
+        ports_count_regex = "No. of members in this.*(\\d+)"
 
-        parser = TextProcessor(SimpleBlockParser())
-        parser.add_rule(Rule(NAME_KEY, name_regex, rule_match_callback))
-        parser.add_rule(Rule(MTU_KEY, mtu_regex, rule_match_callback))
-        parser.add_rule(Rule(IP_KEY, ip_regex, rule_match_callback))
-        parser.add_rule(Rule(IF_SPEED_KEY, interface_speed_regex, rule_match_callback))
-        parser.add_rule(Rule(OP_SPEED_KEY, operational_speed_regex, rule_match_callback))
-        parser.add_rule(Rule(ADMIN_ST_KEY, administrative_status_regex, rule_match_callback))
-        parser.add_rule(Rule(OP_ST_KEY, operational_status_regex, rule_match_callback))
-        parser.add_rule(Rule(HW_KEY, hardware_address_regex, rule_match_callback))
-        parser.add_rule(Rule(DUPLEX_KEY, duplex_regex, rule_match_callback))
-        parser.add_rule(Rule(VLAN_KEY, vlan_regex, rule_match_callback))
-        parser.add_rule(Rule(ACTIVE_PORTS_KEY, active_regex, rule_match_callback))
-        parser.add_rule(Rule(PASSIVE_PORTS_KEY, passive_regex, rule_match_callback))
-        output_lines = parser.process(data)
+        block_parser = SimpleBlockParser()
+        blocks = block_parser.parse(data)
+        output_lines = []
+        for block in blocks:
+            parser = TextProcessor()
+            parser.add_rule(Rule(NAME_KEY, name_regex, rule_match_callback))
+            parser.add_rule(Rule(MTU_KEY, mtu_regex, rule_match_callback))
+            parser.add_rule(Rule(IP_KEY, ip_regex, rule_match_callback))
+            parser.add_rule(Rule(IF_SPEED_KEY, interface_speed_regex, rule_match_callback))
+            parser.add_rule(Rule(OP_SPEED_KEY, operational_speed_regex, rule_match_callback))
+            parser.add_rule(Rule(ADMIN_ST_KEY, administrative_status_regex, rule_match_callback))
+            parser.add_rule(Rule(OP_ST_KEY, operational_status_regex, rule_match_callback))
+            parser.add_rule(Rule(HW_KEY, hardware_address_regex, rule_match_callback))
+            parser.add_rule(Rule(DUPLEX_KEY, duplex_regex, rule_match_callback))
+            parser.add_rule(Rule(VLAN_KEY, vlan_regex, rule_match_callback))
+            parser.add_rule(BlockRule(ACTIVE_PORTS_KEY, ports_count_regex, rule_match_callback))
+            output_lines.append(parser.process(block)[0])
         if not bool(output_lines):
             return []
 
@@ -127,6 +129,18 @@ class CiscoASRXRInterfacesPrePostProcessor(PrePostProcessor):
                 r[OP_SPEED_KEY] = '0'
             if r[IP_KEY].lower() == 'unknown':
                 r[IP_KEY] = ''
+            active_ports = ''
+            passive_ports = ''
+            if r[ACTIVE_PORTS_KEY] != '':
+                ports_lines = r[ACTIVE_PORTS_KEY].splitlines()
+                for line in ports_lines:
+                    port_fields = line.split()
+                    if port_fields[3] == 'Active':
+                        active_ports += port_fields[0] + ' '
+                    else:
+                        passive_ports += port_fields[0] + ' '
+            r.update(activePorts=active_ports)
+            r[PASSIVE_PORTS_KEY] = passive_ports
             r.update(operationalSpeed=int(r[OP_SPEED_KEY]))
             r.update(administrativeStatus=r[ADMIN_ST_KEY].upper())
             r.update(operationalStatus=r[OP_ST_KEY].upper())

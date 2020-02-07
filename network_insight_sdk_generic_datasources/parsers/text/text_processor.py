@@ -48,12 +48,31 @@ class TextProcessor(object):
             while current_line_number < total_lines:
                 current_line = lines[current_line_number]
                 for rule in self.rules:
-                    match = rule.get_pattern_match(current_line)
-                    if match is not None:
-                        parsed_key_values = {}
-                        fields = self.line_tokenizer.tokenize(current_line)
-                        rule.apply(current_line_number, current_line, fields, match.groups(), parsed_key_values)
-                        row.update(parsed_key_values)
+                    if type(rule) == BlockRule:
+                        # Find N from regular expression, and then return next N lines
+                        match = rule.get_pattern_match(current_line)
+                        if match is not None:
+                            parsed_key_values = {}
+                            fields = self.line_tokenizer.tokenize(current_line)
+                            rule.apply(current_line_number, current_line, fields, match.groups(), parsed_key_values)
+                            retrieve_line_count = int(list(parsed_key_values.values())[0])
+                            cnt = 1
+                            retrieve_val = ''
+                            while current_line_number + cnt < total_lines and cnt <= retrieve_line_count:
+                                retrieve_val += lines[current_line_number + cnt]
+                                if cnt != retrieve_line_count:
+                                    retrieve_val += '\n'
+                                cnt += 1
+                            parsed_key_values.update({list(parsed_key_values.keys())[0]: retrieve_val})
+                            row.update(parsed_key_values)
+                    else:
+                        # Find the matching expression
+                        match = rule.get_pattern_match(current_line)
+                        if match is not None:
+                            parsed_key_values = {}
+                            fields = self.line_tokenizer.tokenize(current_line)
+                            rule.apply(current_line_number, current_line, fields, match.groups(), parsed_key_values)
+                            row.update(parsed_key_values)
                 # End of for loop
                 current_line_number += 1
             # Adding field_name with empty string if value not found
@@ -92,3 +111,7 @@ def rule_match_callback(**kwargs):
     field_name = kwargs['field_name']
     if groups is not None and len(groups) > 0:
         keyval[field_name] = groups[0]
+
+
+class BlockRule(Rule):
+    pass

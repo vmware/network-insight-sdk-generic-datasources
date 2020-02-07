@@ -7,11 +7,14 @@ from network_insight_sdk_generic_datasources.common.log import py_logger
 from network_insight_sdk_generic_datasources.common.utilities import merge_dictionaries
 from network_insight_sdk_generic_datasources.parsers.text.pre_post_processor import PrePostProcessor
 from network_insight_sdk_generic_datasources.parsers.common.block_parser import SimpleBlockParser
-from network_insight_sdk_generic_datasources.parsers.text.text_processor import rule_match_callback
-from network_insight_sdk_generic_datasources.parsers.text.text_processor import Rule
-from network_insight_sdk_generic_datasources.parsers.text.text_processor import BlockRule
-from network_insight_sdk_generic_datasources.parsers.text.text_processor import TextProcessor
 from network_insight_sdk_generic_datasources.parsers.common.block_parser import LineBasedBlockParser
+from network_insight_sdk_generic_datasources.parsers.text.text_processor import TextProcessor
+from network_insight_sdk_generic_datasources.parsers.text.text_processor import BlockRule
+from network_insight_sdk_generic_datasources.parsers.text.text_processor import Rule
+from network_insight_sdk_generic_datasources.parsers.text.text_processor import rule_match_callback
+from network_insight_sdk_generic_datasources.parsers.common.line_parser import LineTokenizer
+from network_insight_sdk_generic_datasources.parsers.text.table_processor import TableProcessor
+
 
 NAME_KEY = 'name'
 MTU_KEY = 'mtu'
@@ -29,6 +32,321 @@ CONNECTED_KEY = 'connected'
 SW_PORT_KEY = 'switchPortMode'
 VRF_KEY = 'vrf'
 
+
+class CiscoASR1KXEDeviceInfoPrePostProcessor(PrePostProcessor):
+
+    def parse(self, data):
+        py_logger.info("Parsing output \n{}".format(data))
+        output_lines = []
+        d = dict()
+        lines = data.splitlines()
+        for line in lines:
+            py_logger.info("Processing row {}".format(line))
+            if 'board' in line:
+                d['serial'] = line.split(' ')[-1]
+            if 'uptime' in line:
+                d['name'] = line.split(' ')[0]
+                d['hostname'] = line.split(' ')[0]
+            if 'IOS Software' in line:
+                d['model'] = re.sub('[^\\w+|\\s|\\.]', '', line)
+        d['os'] = 'IOS'
+        d['vendor'] = 'Cisco'
+        d['haState'] = 'ACTIVE'
+        output_lines.append(d)
+        return output_lines
+
+
+class CiscoASR1KXERoutePrePostProcessor(PrePostProcessor):
+    def parse(self, data):
+        py_logger.info("Parsing output \n{}".format(data))
+        output_lines = []
+        if 'Gateway of last resort' not in data:
+            return output_lines
+
+        vrf = 'default'
+        lines = data.splitlines()
+        for line in lines:
+            d = dict()
+            fields = re.split('\\s+', line)
+            if 'via' in line:
+                d['name'] = fields[1]
+                d['network'] = fields[1]
+                d['nextHop'] = fields[4].rstrip(',')
+                d['routeType'] = re.sub('[^\\w+|\\s|\\.]', '', fields[0])
+                d['interfaceName'] = fields[-1]
+            if 'Routing Table' in line:
+                vrf = fields[-1]
+            if 'directly connected' in line:
+                d['name'] = fields[1]
+                d['network'] = fields[1]
+                d['nextHop'] = 'DIRECT'
+                d['routeType'] = 'DIRECT'
+                d['interfaceName'] = fields[-1]
+            if bool(d):
+                output_lines.append(d)
+        for i in output_lines:
+            i.update(vrf=vrf)
+        return output_lines
+
+
+class CiscoASR1KXENeighborsPrePostProcessor(PrePostProcessor):
+    @staticmethod
+    def reformat_lines(data):
+        output_lines = []
+        lines = data.splitlines()
+        deviceid_key = "Device ID"
+        localinft_key = "Local Intrfce"
+        holdtme_key = "Holdtme"
+        capability_key = "Capability"
+        platform_key = "Platform"
+        portid_key = "Port ID"
+        header_regex = '{}\\s+{}\\s+{}\\s+{}\\s+{}\\s+{}'.format(deviceid_key, localinft_key, holdtme_key,
+                                                                 capability_key, platform_key, portid_key)
+        is_header_found = False
+        for line in lines:
+            py_logger.info("Parsing line {}".format(line))
+            if len(line.strip()) == 0 or 'Total cdp entries' in line:
+                continue
+            if re.match(header_regex, line):
+                headers = {deviceid_key: line.find(deviceid_key), localinft_key: line.find(localinft_key),
+                           localinft_key: line.find(localinft_key), holdtme_key: line.find(holdtme_key),
+                           capability_key: line.find(capability_key), platform_key: line.find(platform_key),
+                           portid_key: line.find(portid_key)}
+                py_logger.info("Found header {}".format(headers))
+                is_header_found = True
+                continue
+            if is_header_found:
+                if line[headers[deviceid_key]] != ' ':
+                    output_lines.append(line.strip())
+                else:
+                    output_lines[-1] = output_lines[-1] + ' ' + line.strip()
+        return output_lines
+
+    @staticmethod
+    def convert_interface_names(int_name):
+        if int_name.startswith('Gig', 0):
+            return 'GigabitEthernet'
+        if int_name.startswith('Ten', 0):
+            return 'TenGigabitEthernet'
+
+    def parse(self, data):
+        py_logger.info("Parsing output \n{}".format(data))
+        lines = self.reformat_lines(data)
+        output_lines = []
+        for line in lines:
+            d = dict()
+            fields = re.split('\\s+', line)
+            d['localInterface'] = '{}{}'.format(self.convert_interface_names(fields[1]), fields[2])
+            d['remoteDevice'] = fields[0]
+            d['remoteInterface'] = '{}{}'.format(self.convert_interface_names(fields[-2]), fields[-1])
+            output_lines.append(d)
+        return output_lines
+
+
+class CiscoASR1KXEVRFRIPrePostProcessor(PrePostProcessor):
+
+    @staticmethod
+    def reformat_lines(data):
+        output_lines = []
+        lines = data.splitlines()
+        name_key = "Name"
+        rd_key = "Default RD"
+        protocols_key = "Protocols"
+        interfaces_key = "Interfaces"
+        headers = {name_key: lines[0].find(name_key),
+                   rd_key: lines[0].find(rd_key),
+                   protocols_key: lines[0].find(protocols_key), interfaces_key: lines[0].find(interfaces_key)}
+        for line in lines[1:]:
+            if line[headers[name_key]] != ' ':
+                output_lines.append(line.strip())
+            else:
+                output_lines[-1] = output_lines[-1] + ',' + line.strip()
+        return output_lines
+
+    @staticmethod
+    def convert_interface_names(int_names):
+        result = []
+        for int_name in int_names:
+            if int_name.startswith('Gi', 0):
+                result.append('GigabitEthernet' + int_name[2:])
+            if int_name.startswith('Te', 0):
+                result.append('TenGigabitEthernet' + int_name[2:])
+        return result
+
+    def parse(self, data):
+        py_logger.info("Parsing output \n{}".format(data))
+        lines = self.reformat_lines(data)
+        output_lines = []
+        for line in lines:
+            d = dict()
+            fields = re.split('\\s+', line)
+            d['vrf'] = fields[0]
+            int_names = re.split(',', fields[-1])
+            d['interfaces'] = self.convert_interface_names(int_names)
+            output_lines.append(d)
+        return output_lines
+
+
+class CiscoASR1KXEVRFPrePostProcessor(TableProcessor):
+    def process_tables(self, tables):
+        py_logger.info("Processing tables {}".format(tables))
+        output_lines = [dict(name='default')]
+        for line in tables['showVRFRI']:
+            output_lines.append(dict(name=line['vrf']))
+        return output_lines
+
+
+class CiscoASR1KXEInterfacesPrePostProcessor(PrePostProcessor):
+    def parse(self, data):
+
+        name_regex = "(.*) is (administratively )?(up|down), .*"
+        mtu_regex = "MTU (\\d+) bytes.*"
+        ip_regex = "Internet address is (.*)"
+        interface_speed_regex = ".* BW (\\d+) .*"
+        operational_speed_regex = interface_speed_regex
+        administrative_status_regex = ".* is (?:administratively )?(up|down), .*"
+        operational_status_regex = ".* line protocol is (up|down)"
+        hardware_address_regex = ".* address is (\\w+\\.\\w+\\.\\w+) .*"
+        duplex_regex = "(.*) Duplex.*"
+        vlan_regex = "Encapsulation 802\\.1Q Virtual LAN, Vlan ID\\s+(\\d+).*"
+        active_regex = 'Member.*:\\s+(.*)\\s+,.*'
+
+        parser = TextProcessor(LineBasedBlockParser('line protocol'))
+        parser.add_rule(Rule('name', name_regex, rule_match_callback))
+        parser.add_rule(Rule('mtu', mtu_regex, rule_match_callback))
+        parser.add_rule(Rule('ipAddress', ip_regex, rule_match_callback))
+        parser.add_rule(Rule('interfaceSpeed', interface_speed_regex, rule_match_callback))
+        parser.add_rule(Rule('operationalSpeed', operational_speed_regex, rule_match_callback))
+        parser.add_rule(Rule('administrativeStatus', administrative_status_regex, rule_match_callback))
+        parser.add_rule(Rule('operationalStatus', operational_status_regex, rule_match_callback))
+        parser.add_rule(Rule('hardwareAddress', hardware_address_regex, rule_match_callback))
+        parser.add_rule(Rule('duplex', duplex_regex, rule_match_callback))
+        parser.add_rule(Rule('vlan', vlan_regex, rule_match_callback))
+        parser.add_rule(Rule('activePorts', active_regex, rule_match_callback))
+        output_lines = parser.process(data)
+        if not bool(output_lines):
+            return []
+
+        for r in output_lines:
+            py_logger.info("Processing row {}".format(r))
+            r.update(duplex=r['duplex'].upper())
+            r.update(interfaceSpeed=int(r['interfaceSpeed']) * 1000)
+            r.update(operationalSpeed=int(r['interfaceSpeed']))
+            r.update(administrativeStatus=r["administrativeStatus"].upper())
+            r.update(operationalStatus=r["operationalStatus"].upper())
+            r.update(connected="TRUE" if r['administrativeStatus'] == 'UP' else "FALSE")
+            r.update(switchPortMode="ACCESS")
+        return output_lines
+
+
+class CiscoASR1KXEMacTablePrePostProcessor(PrePostProcessor):
+    def parse(self, data):
+        lines = data.splitlines()
+        output_lines = []
+        for line in lines[1:]:
+            py_logger.info("Processing row {}".format(line))
+            d = {}
+            tokenizer = LineTokenizer()
+            fields = tokenizer.tokenize(line)
+            d.update(macAddress=fields[3])
+            d.update(vlan='1' if fields[-1].find('.') == -1 else fields[-1][fields[-1].find('.') + 1:])
+            d.update(switchPort=fields[-1])
+            output_lines.append(d)
+        return output_lines
+
+
+class CiscoASR1KXERouterInterfacesPrePostProcessor(TableProcessor):
+    def process_tables(self, tables):
+        interfaces_all = tables['showInterfacesAll']
+        vrf_ri = tables['showVRFRI']
+        output_lines = []
+        for r in interfaces_all:
+            py_logger.info("Processing row {}".format(r))
+            if len(r['ipAddress']) == 0:
+                continue
+            d = {}
+            for v in vrf_ri:
+                if r['name'] in v['interfaces']:
+                    d.update(vrf=v['vrf'])
+            if 'vrf' not in d:
+                py_logger.warn('Ignoring row {}'.format(r))
+                continue
+            d.update(name=r['name'])
+            d.update(ipAddress=r['ipAddress'])
+            d.update(vlan=r['vlan'])
+            d.update(administrativeStatus=r['administrativeStatus'])
+            d.update(operationalStatus=r['operationalStatus'])
+            d.update(hardwareAddress=r['hardwareAddress'])
+            d.update(mtu=str(r['mtu']))
+            d.update(interfaceSpeed=str(r['interfaceSpeed']))
+            d.update(operationalSpeed=str(r['operationalSpeed']))
+            d.update(duplex=r['duplex'].upper())
+            d.update(connected=r['connected'])
+            d.update(switchPortMode=r['switchPortMode'])
+            output_lines.append(d)
+        return output_lines
+
+
+class CiscoASR1KXESwitchPortsPrePostProcessor(TableProcessor):
+    def process_tables(self, tables):
+        interfaces_all = tables['showInterfacesAll']
+        output_lines = []
+        for r in interfaces_all:
+            py_logger.info("Processing row {}".format(r))
+            if len(r['ipAddress']) > 0:
+                py_logger.warn('Ignoring row {}'.format(r))
+                continue
+            if r['name'].startswith('Port-channel') and r['name'].find('.') == -1:
+                py_logger.warn('Ignoring row {}'.format(r))
+                continue
+            value = r['vlan']
+            d = {}
+            d.update(name=r['name'])
+            d.update(accessVlan=value)
+            d.update(vlans='' if value.strip() == '' else ','.join([value]))
+            d.update(administrativeStatus=r['administrativeStatus'])
+            d.update(operationalStatus=r['operationalStatus'])
+            d.update(hardwareAddress=r['hardwareAddress'])
+            d.update(mtu=str(r['mtu']))
+            d.update(interfaceSpeed=str(r['interfaceSpeed']))
+            d.update(operationalSpeed=str(r['operationalSpeed']))
+            d.update(duplex=r['duplex'].upper())
+            d.update(connected=r['connected'])
+            d.update(switchPortMode=r['switchPortMode'])
+            output_lines.append(d)
+        return output_lines
+
+
+class CiscoASR1KXEPortChannelsPrePostProcessor(TableProcessor):
+    def process_tables(self, tables):
+        interfaces_all = tables['showInterfacesAll']
+        output_lines = []
+        for r in interfaces_all:
+            py_logger.info("Processing row {}".format(r))
+            if not r['name'].startswith('Port-channel'):
+                continue
+            if r['name'].startswith('Port-channel') and r['name'].find('.') != -1:
+                continue
+            value = r['vlan']
+            d = {}
+            d.update(name=r['name'])
+            if value == '':
+                d.update(vlans='' if value.strip() == '' else str(value))
+            else:
+                d.update(vlans='1' if r['name'].find('.') == -1 else r['name'][r['name'].find('.') + 1:])
+            d.update(administrativeStatus=r['administrativeStatus'])
+            d.update(operationalStatus=r['operationalStatus'])
+            d.update(hardwareAddress=r['hardwareAddress'])
+            d.update(mtu=str(r['mtu']))
+            d.update(interfaceSpeed=str(r['interfaceSpeed']))
+            d.update(operationalSpeed=str(r['operationalSpeed']))
+            d.update(duplex=r['duplex'].upper())
+            d.update(connected=r['connected'])
+            d.update(switchPortMode=r['switchPortMode'])
+            d.update(activePorts=r['activePorts'])
+            d.update(passivePorts='')
+            output_lines.append(d)
+        return output_lines
 
 class CiscoDevicePrePostProcessor(PrePostProcessor):
 

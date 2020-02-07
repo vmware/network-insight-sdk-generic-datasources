@@ -82,6 +82,7 @@ class PhysicalDevice(object):
             command_output_dict = {}
             for workload in self.workloads:
                 command_id = workload[TABLE_ID_KEY]
+                py_logger.info("Processing workload {}".format(workload))
                 if REUSE_TABLES_KEY in workload:
                     table = self.process_tables(workload)
                 elif REUSE_COMMAND_KEY in workload:

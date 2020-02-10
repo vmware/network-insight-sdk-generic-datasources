@@ -590,7 +590,32 @@ class CiscoASRXRVRFPrePostProcessor(PrePostProcessor):
         return output_lines
 
 
-class CiscoASRXRRoutePrePostProcessor(PrePostProcessor):
+class CiscoASRXRRouteLookupPrePostProcessor(PrePostProcessor):
+
+    def parse(self, data):
+        output_lines = []
+        lines = data.splitlines()
+        last_network = ''
+        for i in range(14, len(lines)):
+            if 'via' in lines[i]:
+                fields = lines[i].split()
+                d = dict()
+                if fields[1] == 'via':
+                    d['network'] = last_network
+                    d['nextHop'] = fields[2].rstrip(',')
+                else:
+                    d['network'] = fields[1]
+                    d['nextHop'] = fields[4].rstrip(',')
+                    last_network = fields[1]
+                d['vrf'] = 'default'
+                d['nextVrf'] = ''
+                d['routeType'] = fields[0]
+                d['interfaceName'] = fields[-1]
+                output_lines.append(d)
+        return output_lines
+
+
+class CiscoASRXRRoutesVrfPrePostProcessor(PrePostProcessor):
 
     def parse(self, data):
         parser = LineBasedBlockParser('VRF: ')
@@ -606,19 +631,88 @@ class CiscoASRXRRoutePrePostProcessor(PrePostProcessor):
                 d['vrf'] = vrf
                 fields = re.split('\\s+', line)
                 if 'via' in line:
-                    d['name'] = fields[1]
                     d['network'] = fields[1]
                     d['nextHop'] = fields[4].rstrip(',')
-                    d['routeType'] = re.sub('[^\\w+|\\s|\\.]', '', fields[0])
+                    d['routeType'] = fields[0]
+                    if fields[5] == '(nexthop':
+                        d['nextVrf'] = fields[8].rstrip('),')
+                        d['interfaceName'] = ''
+                    elif len(fields) == 7:
+                        d['nextVrf'] = ''
+                        d['interfaceName'] = fields[-1]
+                    else:
+                        d['nextVrf'] = ''
+                        d['interfaceName'] = ''
+                    output_lines.append(d)
                 if 'directly connected' in line:
-                    d['name'] = fields[1]
                     d['network'] = fields[1]
                     d['nextHop'] = 'DIRECT'
                     d['routeType'] = 'DIRECT'
+                    d['nextVrf'] = ''
                     d['interfaceName'] = fields[6]
-                if bool(d):
                     output_lines.append(d)
+
         return output_lines
+
+
+class CiscoASRXRRoutesPrePostProcessor(PrePostProcessor):
+
+    def process_tables(self, tables):
+        show_routes = tables['showRoutes']
+        show_routes_vrf = tables['showRoutesVrf']
+        output_lines = []
+        for v in show_routes_vrf:
+            if v['routeType'] == 'DIRECT':
+                d = dict()
+                d['name'] = v['network']
+                d['network'] = v['network']
+                d['nextHop'] = 'DIRECT'
+                d['routeType'] = 'DIRECT'
+                d['nextVrf'] = ''
+                d['interfaceName'] = v['interfaceName']
+                output_lines.append(d)
+
+            else:
+                d = self.get_dest_entry(v, show_routes, show_routes_vrf)
+                if d is not None:
+                    output_lines.append(d)
+
+        return output_lines
+
+    @staticmethod
+    def get_dest_entry(v, show_routes, show_routes_vrf):
+
+        if v['nextVrf'] == '':
+            d = dict()
+            d['vrf'] = v['vrf']
+            d['name'] = v['network']
+            d['network'] = v['network']
+            d['nextHop'] = v['nextHop']
+            d['routeType'] = v['routeType']
+            d['interfaceName'] = v['interfaceName']
+            return d
+
+        if v['nextVrf'] == 'default':
+            search_table = show_routes
+        else:
+            search_table = show_routes_vrf
+
+        for sr in search_table:
+            if sr['network'] == v['nextHop'] + "/32":
+                if sr['nextVrf'] == '':
+                    d = dict()
+                    d['vrf'] = v['vrf']
+                    d['name'] = v['network']
+                    d['network'] = v['network']
+                    d['routeType'] = v['routeType']
+                    d['nextHop'] = sr['nextHop']
+                    d['interfaceName'] = sr['interfaceName']
+                    return d
+                else:
+                    t = v
+                    t['nextHop'] = sr['nextHop']
+                    t['nextVrf'] = sr['nextVrf']
+                    return v.get_dest_entry(t, show_routes, show_routes_vrf)
 
 
 class CiscoASRXRNeighborsPrePostProcessor(PrePostProcessor):

@@ -284,11 +284,22 @@ workloads: &WORKLOADS
     parser:
       name: routers_and_switches.cisco.cisco_pre_post_processor.CiscoASRXRVRFPrePostProcessor
 
+  - &SHOW_ASRXR_DEFAULT_ROUTE
+    table_id: showRoutes
+    command: show route
+    parser:
+      name: routers_and_switches.cisco.cisco_pre_post_processor.CiscoASRXRRouteLookupPrePostProcessor
+
   - &SHOW_ASRXR_ROUTE_VRF
-    table_id: routes
+    table_id: showRoutesVrf
     command: show route vrf all
     parser:
-      name: routers_and_switches.cisco.cisco_pre_post_processor.CiscoASRXRRoutePrePostProcessor
+      name: routers_and_switches.cisco.cisco_pre_post_processor.CiscoASRXRRoutesVrfPrePostProcessor
+
+  - &SHOW_ASRXR_ROUTES
+    table_id: routes
+    reuse_tables: showRoutes,showRoutesVrf
+    reuse_table_processor: CiscoASRXRRoutesPrePostProcessor
 
   - &SHOW_ASRXR_NEIGHBORS
     table_id: neighbors

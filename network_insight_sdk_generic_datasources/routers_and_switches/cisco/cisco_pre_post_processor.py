@@ -662,20 +662,22 @@ class CiscoASRXRRoutesPrePostProcessor(PrePostProcessor):
         show_routes_vrf = tables['showRoutesVrf']
         output_lines = []
         for v in show_routes_vrf:
+            d = dict()
             if v['routeType'] == 'DIRECT':
-                d = dict()
                 d['vrf'] = v['vrf']
                 d['name'] = v['network']
                 d['network'] = v['network']
                 d['nextHop'] = 'DIRECT'
                 d['routeType'] = 'DIRECT'
                 d['interfaceName'] = v['interfaceName']
-                output_lines.append(d)
-
             else:
                 d = self.get_dest_entry(v, show_routes, show_routes_vrf)
-                if d is not None:
+
+            if d is not None:
+                if d['interfaceName'] != '':
                     output_lines.append(d)
+                else:
+                    py_logger.info("Ignoring Route Entry {}".format(d))
 
         return output_lines
 

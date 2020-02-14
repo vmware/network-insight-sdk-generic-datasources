@@ -411,7 +411,7 @@ class CiscoASRXRInterfacesPrePostProcessor(PrePostProcessor):
         interface_speed_regex = ".* BW (\\d+) .*"
         operational_speed_regex = ".*uplex.*, (.*)Mb/s"
         administrative_status_regex = ".* is (?:administratively )?(up|down), .*"
-        operational_status_regex = ".* line protocol is (up|down)"
+        operational_status_regex = ".* line protocol is (?:administratively )?(up|down)"
         hardware_address_regex = ".* address is (\\w+\\.\\w+\\.\\w+) .*"
         duplex_regex = "(\\w+)-(d|D)uplex.*"
         vlan_regex = "Encapsulation 802\\.1Q Virtual LAN, Vlan Id\\s+(\\d+).*"
@@ -454,9 +454,11 @@ class CiscoASRXRInterfacesPrePostProcessor(PrePostProcessor):
                 for line in ports_lines:
                     port_fields = line.split()
                     if port_fields[3] == 'Active':
-                        active_ports += port_fields[0] + ' '
+                        active_ports += port_fields[0] + ','
                     else:
-                        passive_ports += port_fields[0] + ' '
+                        passive_ports += port_fields[0] + ','
+                active_ports = active_ports.rstrip(',')
+                passive_ports = passive_ports.rstrip(',')
             r.update(activePorts=active_ports)
             r[PASSIVE_PORTS_KEY] = passive_ports
             r.update(operationalSpeed=int(r[OP_SPEED_KEY]))
@@ -744,7 +746,7 @@ class CiscoASRXRNeighborsPrePostProcessor(PrePostProcessor):
         if int_name.startswith('Gi', 0):
             return 'GigabitEthernet'
         if int_name.startswith('Te', 0):
-            return 'TenGigabitEthernet'
+            return 'TenGigE'
         if int_name.startswith('Et', 0):
             return 'Ethernet'
 

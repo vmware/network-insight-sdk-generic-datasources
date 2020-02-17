@@ -379,7 +379,7 @@ class CiscoASRXRDeviceInfoPrePostProcessor(PrePostProcessor):
                 d['name'] = line.split(' ')[0]
                 d['hostname'] = line.split(' ')[0]
             if 'Software' in line:
-                d['model'] = 'ASR9000'
+                d['model'] = line.split('[')[0]
         d['os'] = 'IOS XR'
         d['vendor'] = 'Cisco'
         d['haState'] = 'ACTIVE'

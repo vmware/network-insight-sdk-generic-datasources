@@ -564,7 +564,7 @@ class CiscoASRRXRPortChannelsPrePostProcessor(PrePostProcessor):
 class CiscoASRXRVRFPrePostProcessor(PrePostProcessor):
 
     def parse(self, data):
-        output_lines = [dict(name='default'), dict(name='nVSatellite')]
+        output_lines = [dict(name='default')]
         lines = data.splitlines()
         for i in range(2, len(lines)):
             line = lines[i]
@@ -573,6 +573,21 @@ class CiscoASRXRVRFPrePostProcessor(PrePostProcessor):
             fields = lines[i].split()
             vrf = fields[0]
             output_lines.append(dict(name=vrf))
+        return output_lines
+
+class CiscoASRXRVRFFinalPrePostProcessor(PrePostProcessor):
+
+    def process_tables(self, tables):
+        vrf_all = tables['showVrfs']
+        vrf_routes = tables['showRoutesVrf']
+        vrf_set = set([])
+        for v in vrf_routes:
+            vrf_set.add(v[constants.VRF_KEY])
+        for v in vrf_all:
+            vrf_set.add(v[constants.NAME_KEY])
+        output_lines = []
+        for r in vrf_set:
+            output_lines.append(dict(name=r))
         return output_lines
 
 

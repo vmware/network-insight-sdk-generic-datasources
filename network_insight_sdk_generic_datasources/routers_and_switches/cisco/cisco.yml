@@ -279,10 +279,15 @@ workloads: &WORKLOADS
     reuse_table_processor: CiscoASRRXRPortChannelsPrePostProcessor
 
   - &SHOW_ASRXR_VRF
-    table_id: vrfs
+    table_id: showVrfs
     command: show vrf all
     parser:
       name: routers_and_switches.cisco.cisco_pre_post_processor.CiscoASRXRVRFPrePostProcessor
+
+  - &SHOW_ASRXR_VRF_FINAL
+    table_id: vrfs
+    reuse_tables: showVrfs,showRoutesVrf
+    reuse_table_processor: CiscoASRXRVRFFinalPrePostProcessor
 
   - &SHOW_ASRXR_DEFAULT_ROUTE
     table_id: showRoutes

@@ -3,6 +3,7 @@
 
 import re
 
+from network_insight_sdk_generic_datasources.common import constants
 from network_insight_sdk_generic_datasources.common.log import py_logger
 from network_insight_sdk_generic_datasources.common.utilities import merge_dictionaries
 from network_insight_sdk_generic_datasources.parsers.text.pre_post_processor import PrePostProcessor
@@ -14,23 +15,6 @@ from network_insight_sdk_generic_datasources.parsers.text.text_processor import 
 from network_insight_sdk_generic_datasources.parsers.text.text_processor import rule_match_callback
 from network_insight_sdk_generic_datasources.parsers.common.line_parser import LineTokenizer
 from network_insight_sdk_generic_datasources.parsers.text.table_processor import TableProcessor
-
-
-NAME_KEY = 'name'
-MTU_KEY = 'mtu'
-IP_KEY = 'ipAddress'
-IF_SPEED_KEY = 'interfaceSpeed'
-ADMIN_ST_KEY = 'administrativeStatus'
-OP_ST_KEY = 'operationalStatus'
-HW_KEY = 'hardwareAddress'
-DUPLEX_KEY = 'duplex'
-OP_SPEED_KEY = 'operationalSpeed'
-ACTIVE_PORTS_KEY = 'activePorts'
-PASSIVE_PORTS_KEY = 'passivePorts'
-VLAN_KEY = 'vlan'
-CONNECTED_KEY = 'connected'
-SW_PORT_KEY = 'switchPortMode'
-VRF_KEY = 'vrf'
 
 
 class CiscoASR1KXEDeviceInfoPrePostProcessor(PrePostProcessor):
@@ -422,35 +406,35 @@ class CiscoASRXRInterfacesPrePostProcessor(PrePostProcessor):
         output_lines = []
         for block in blocks:
             parser = TextProcessor()
-            parser.add_rule(Rule(NAME_KEY, name_regex, rule_match_callback))
-            parser.add_rule(Rule(MTU_KEY, mtu_regex, rule_match_callback))
-            parser.add_rule(Rule(IP_KEY, ip_regex, rule_match_callback))
-            parser.add_rule(Rule(IF_SPEED_KEY, interface_speed_regex, rule_match_callback))
-            parser.add_rule(Rule(OP_SPEED_KEY, operational_speed_regex, rule_match_callback))
-            parser.add_rule(Rule(ADMIN_ST_KEY, administrative_status_regex, rule_match_callback))
-            parser.add_rule(Rule(OP_ST_KEY, operational_status_regex, rule_match_callback))
-            parser.add_rule(Rule(HW_KEY, hardware_address_regex, rule_match_callback))
-            parser.add_rule(Rule(DUPLEX_KEY, duplex_regex, rule_match_callback))
-            parser.add_rule(Rule(VLAN_KEY, vlan_regex, rule_match_callback))
-            parser.add_rule(BlockRule(ACTIVE_PORTS_KEY, ports_count_regex, rule_match_callback))
+            parser.add_rule(Rule(constants.NAME_KEY, name_regex, rule_match_callback))
+            parser.add_rule(Rule(constants.MTU_KEY, mtu_regex, rule_match_callback))
+            parser.add_rule(Rule(constants.IP_KEY, ip_regex, rule_match_callback))
+            parser.add_rule(Rule(constants.IF_SPEED_KEY, interface_speed_regex, rule_match_callback))
+            parser.add_rule(Rule(constants.OP_SPEED_KEY, operational_speed_regex, rule_match_callback))
+            parser.add_rule(Rule(constants.ADMIN_ST_KEY, administrative_status_regex, rule_match_callback))
+            parser.add_rule(Rule(constants.OP_ST_KEY, operational_status_regex, rule_match_callback))
+            parser.add_rule(Rule(constants.HW_KEY, hardware_address_regex, rule_match_callback))
+            parser.add_rule(Rule(constants.DUPLEX_KEY, duplex_regex, rule_match_callback))
+            parser.add_rule(Rule(constants.VLAN_KEY, vlan_regex, rule_match_callback))
+            parser.add_rule(BlockRule(constants.ACTIVE_PORTS_KEY, ports_count_regex, rule_match_callback))
             output_lines.append(parser.process(block)[0])
         if not bool(output_lines):
             return []
 
         for r in output_lines:
             py_logger.info("Processing row {}".format(r))
-            r.update(duplex=r[DUPLEX_KEY].upper())
-            if r[IF_SPEED_KEY] == '':
-                r[IF_SPEED_KEY] = '0'
-            r.update(interfaceSpeed=int(r[IF_SPEED_KEY]) * 1024)
-            if r[OP_SPEED_KEY] == '':
-                r[OP_SPEED_KEY] = '0'
-            if r[IP_KEY].lower() == 'unknown':
-                r[IP_KEY] = ''
+            r.update(duplex=r[constants.DUPLEX_KEY].upper())
+            if r[constants.IF_SPEED_KEY] == '':
+                r[constants.IF_SPEED_KEY] = '0'
+            r.update(interfaceSpeed=int(r[constants.IF_SPEED_KEY]) * 1024)
+            if r[constants.OP_SPEED_KEY] == '':
+                r[constants.OP_SPEED_KEY] = '0'
+            if r[constants.IP_KEY].lower() == 'unknown':
+                r[constants.IP_KEY] = ''
             active_ports = ''
             passive_ports = ''
-            if r[ACTIVE_PORTS_KEY] != '':
-                ports_lines = r[ACTIVE_PORTS_KEY].splitlines()
+            if r[constants.ACTIVE_PORTS_KEY] != '':
+                ports_lines = r[constants.ACTIVE_PORTS_KEY].splitlines()
                 for line in ports_lines:
                     port_fields = line.split()
                     if port_fields[3] == 'Active':
@@ -460,11 +444,11 @@ class CiscoASRXRInterfacesPrePostProcessor(PrePostProcessor):
                 active_ports = active_ports.rstrip(',')
                 passive_ports = passive_ports.rstrip(',')
             r.update(activePorts=active_ports)
-            r[PASSIVE_PORTS_KEY] = passive_ports
-            r.update(operationalSpeed=int(r[OP_SPEED_KEY]))
-            r.update(administrativeStatus=r[ADMIN_ST_KEY].upper())
-            r.update(operationalStatus=r[OP_ST_KEY].upper())
-            r.update(connected="TRUE" if r[ADMIN_ST_KEY] == 'UP' else "FALSE")
+            r[constants.PASSIVE_PORTS_KEY] = passive_ports
+            r.update(operationalSpeed=int(r[constants.OP_SPEED_KEY]))
+            r.update(administrativeStatus=r[constants.ADMIN_ST_KEY].upper())
+            r.update(operationalStatus=r[constants.OP_ST_KEY].upper())
+            r.update(connected="TRUE" if r[constants.ADMIN_ST_KEY] == 'UP' else "FALSE")
             r.update(switchPortMode="ACCESS")
         return output_lines
 
@@ -478,7 +462,7 @@ class CiscoASRXRVRFRIPrePostProcessor(PrePostProcessor):
             fields = lines[i].split()
             interfaceName = fields[0]
             vrf = fields[4]
-            output_lines.append(dict({NAME_KEY: interfaceName, VRF_KEY: vrf}))
+            output_lines.append(dict({constants.NAME_KEY: interfaceName, constants.VRF_KEY: vrf}))
         return output_lines
 
 
@@ -490,27 +474,27 @@ class CiscoASRXRRouterInterfacesPrePostProcessor(PrePostProcessor):
         output_lines = []
         for r in interfaces_all:
             py_logger.info("Processing row {}".format(r))
-            if len(r[IP_KEY]) == 0:
+            if len(r[constants.IP_KEY]) == 0:
                 continue
             d = {}
             for v in vrf_ri:
-                if r[NAME_KEY] in v[NAME_KEY]:
-                    d.update(vrf=v[VRF_KEY])
-            if VRF_KEY not in d:
+                if r[constants.NAME_KEY] in v[constants.NAME_KEY]:
+                    d.update(vrf=v[constants.VRF_KEY])
+            if constants.VRF_KEY not in d:
                 py_logger.warn('Ignoring row {}'.format(r))
                 continue
-            d.update(name=r[NAME_KEY])
-            d.update(ipAddress=r[IP_KEY])
-            d.update(vlan=r[VLAN_KEY])
-            d.update(administrativeStatus=r[ADMIN_ST_KEY])
-            d.update(operationalStatus=r[OP_ST_KEY])
-            d.update(hardwareAddress=r[HW_KEY])
-            d.update(mtu=str(r[MTU_KEY]))
-            d.update(interfaceSpeed=str(r[IF_SPEED_KEY]))
-            d.update(operationalSpeed=str(r[OP_SPEED_KEY]))
-            d.update(duplex=r[DUPLEX_KEY].upper())
-            d.update(connected=r[CONNECTED_KEY])
-            d.update(switchPortMode=r[SW_PORT_KEY])
+            d.update(name=r[constants.NAME_KEY])
+            d.update(ipAddress=r[constants.IP_KEY])
+            d.update(vlan=r[constants.VLAN_KEY])
+            d.update(administrativeStatus=r[constants.ADMIN_ST_KEY])
+            d.update(operationalStatus=r[constants.OP_ST_KEY])
+            d.update(hardwareAddress=r[constants.HW_KEY])
+            d.update(mtu=str(r[constants.MTU_KEY]))
+            d.update(interfaceSpeed=str(r[constants.IF_SPEED_KEY]))
+            d.update(operationalSpeed=str(r[constants.OP_SPEED_KEY]))
+            d.update(duplex=r[constants.DUPLEX_KEY].upper())
+            d.update(connected=r[constants.CONNECTED_KEY])
+            d.update(switchPortMode=r[constants.SP_MODE_KEY])
             output_lines.append(d)
         return output_lines
 
@@ -522,26 +506,26 @@ class CiscoASRXRSwitchPortsPrePostProcessor(PrePostProcessor):
         output_lines = []
         for r in interfaces_all:
             py_logger.info("Processing row {}".format(r))
-            if len(r[IP_KEY]) > 0:
+            if len(r[constants.IP_KEY]) > 0:
                 py_logger.warn('Ignoring row {}'.format(r))
                 continue
-            if len(r[ACTIVE_PORTS_KEY]) > 0 or len(r[PASSIVE_PORTS_KEY]) > 0:
+            if len(r[constants.ACTIVE_PORTS_KEY]) > 0 or len(r[constants.PASSIVE_PORTS_KEY]) > 0:
                 py_logger.warn('Ignoring row {}'.format(r))
                 continue
-            value = r[VLAN_KEY]
+            value = r[constants.VLAN_KEY]
             d = {}
-            d.update(name=r[NAME_KEY])
+            d.update(name=r[constants.NAME_KEY])
             d.update(accessVlan=value)
             d.update(vlans='' if value.strip() == '' else ','.join([value]))
-            d.update(administrativeStatus=r[ADMIN_ST_KEY])
-            d.update(operationalStatus=r[OP_ST_KEY])
-            d.update(hardwareAddress=r[HW_KEY])
-            d.update(mtu=str(r[MTU_KEY]))
-            d.update(interfaceSpeed=str(r[IF_SPEED_KEY]))
-            d.update(operationalSpeed=str(r[OP_SPEED_KEY]))
-            d.update(duplex=r[DUPLEX_KEY].upper())
-            d.update(connected=r[CONNECTED_KEY])
-            d.update(switchPortMode=r[SW_PORT_KEY])
+            d.update(administrativeStatus=r[constants.ADMIN_ST_KEY])
+            d.update(operationalStatus=r[constants.OP_ST_KEY])
+            d.update(hardwareAddress=r[constants.HW_KEY])
+            d.update(mtu=str(r[constants.MTU_KEY]))
+            d.update(interfaceSpeed=str(r[constants.IF_SPEED_KEY]))
+            d.update(operationalSpeed=str(r[constants.OP_SPEED_KEY]))
+            d.update(duplex=r[constants.DUPLEX_KEY].upper())
+            d.update(connected=r[constants.CONNECTED_KEY])
+            d.update(switchPortMode=r[constants.SP_MODE_KEY])
             output_lines.append(d)
         return output_lines
 
@@ -553,26 +537,26 @@ class CiscoASRRXRPortChannelsPrePostProcessor(PrePostProcessor):
         output_lines = []
         for r in interfaces_all:
             py_logger.info("Processing row {}".format(r))
-            if len(r[ACTIVE_PORTS_KEY]) == 0 and len(r[PASSIVE_PORTS_KEY]) == 0:
+            if len(r[constants.ACTIVE_PORTS_KEY]) == 0 and len(r[constants.PASSIVE_PORTS_KEY]) == 0:
                 continue
-            value = r[VLAN_KEY]
+            value = r[constants.VLAN_KEY]
             d = {}
-            d.update(name=r[NAME_KEY])
+            d.update(name=r[constants.NAME_KEY])
             if value == '':
                 d.update(vlans='' if value.strip() == '' else str(value))
             else:
-                d.update(vlans='1' if r[NAME_KEY].find('.') == -1 else r[NAME_KEY][r[NAME_KEY].find('.') + 1:])
-            d.update(administrativeStatus=r[ADMIN_ST_KEY])
-            d.update(operationalStatus=r[OP_ST_KEY])
-            d.update(hardwareAddress=r[HW_KEY])
-            d.update(mtu=str(r[MTU_KEY]))
-            d.update(interfaceSpeed=str(r[IF_SPEED_KEY]))
-            d.update(operationalSpeed=str(r[OP_SPEED_KEY]))
-            d.update(duplex=r[DUPLEX_KEY].upper())
-            d.update(connected=r[CONNECTED_KEY])
-            d.update(switchPortMode=r[SW_PORT_KEY])
-            d.update(activePorts=r[ACTIVE_PORTS_KEY])
-            d.update(passivePorts=r[PASSIVE_PORTS_KEY])
+                d.update(vlans='1' if r[constants.NAME_KEY].find('.') == -1 else r[constants.NAME_KEY][r[constants.NAME_KEY].find('.') + 1:])
+            d.update(administrativeStatus=r[constants.ADMIN_ST_KEY])
+            d.update(operationalStatus=r[constants.OP_ST_KEY])
+            d.update(hardwareAddress=r[constants.HW_KEY])
+            d.update(mtu=str(r[constants.MTU_KEY]))
+            d.update(interfaceSpeed=str(r[constants.IF_SPEED_KEY]))
+            d.update(operationalSpeed=str(r[constants.OP_SPEED_KEY]))
+            d.update(duplex=r[constants.DUPLEX_KEY].upper())
+            d.update(connected=r[constants.CONNECTED_KEY])
+            d.update(switchPortMode=r[constants.SP_MODE_KEY])
+            d.update(activePorts=r[constants.ACTIVE_PORTS_KEY])
+            d.update(passivePorts=r[constants.PASSIVE_PORTS_KEY])
             output_lines.append(d)
         return output_lines
 

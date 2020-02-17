@@ -345,5 +345,5 @@ result_writer: &RESULT_WRITER
 
 n5k: !include n5k.yml
 ASR1k: !include ASR1k.yml
-asrxr: !include asrxr.yml
+ASR9k: !include ASR9k.yml
 

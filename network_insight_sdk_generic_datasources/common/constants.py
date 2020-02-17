@@ -48,3 +48,20 @@ PEER_DEVICES_CSV_FILENAME = 'peer-devices.csv'
 PORT_CHANNELS_CSV_FILENAME = 'port-channels.csv'
 L2_BRIDGES_CSV_FILENAME = 'l2bridges.csv'
 # ############## End of CSV Filenames ########### #
+
+# ############ Keys for Interfaces ############ #
+MTU_KEY = 'mtu'
+IP_KEY = 'ipAddress'
+IF_SPEED_KEY = 'interfaceSpeed'
+ADMIN_ST_KEY = 'administrativeStatus'
+OP_ST_KEY = 'operationalStatus'
+HW_KEY = 'hardwareAddress'
+DUPLEX_KEY = 'duplex'
+OP_SPEED_KEY = 'operationalSpeed'
+ACTIVE_PORTS_KEY = 'activePorts'
+PASSIVE_PORTS_KEY = 'passivePorts'
+VLAN_KEY = 'vlan'
+CONNECTED_KEY = 'connected'
+SP_MODE_KEY = 'switchPortMode'
+VRF_KEY = 'vrf'
+# ############ End for Interfaces Keys ############ #

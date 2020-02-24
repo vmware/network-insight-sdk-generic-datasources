@@ -52,10 +52,8 @@ class TextProcessor(object):
                     if match is not None:
                         parsed_key_values = {}
                         fields = self.line_tokenizer.tokenize(current_line)
-                        if type(rule) == BlockRule:
-                            rule.block_apply(current_line_number, lines, fields, match.groups(), parsed_key_values)
-                        else:
-                            rule.apply(current_line_number, current_line, fields, match.groups(), parsed_key_values)
+                        input_lines = lines if type(rule) == BlockRule else current_line
+                        rule.apply(current_line_number, input_lines, fields, match.groups(), parsed_key_values)
                         row.update(parsed_key_values)
                 # End of for loop
                 current_line_number += 1
@@ -101,13 +99,13 @@ class BlockRule(Rule):
     """
     Find N from regular expression for current line, and then return next N lines
     line_number: Current line number
+    lines: All set of lines for extracting the next N lines based on match
     fields: Fields tokenized from current line
     groups: Pattern match for current line based on regular expression
     keyval: Key value pair which is ultimately returned
-    lines: All set of lines for extracting the next N lines based on match
     """
-    def block_apply(self, line_number, lines, fields, groups, keyval):
-        self.apply(line_number, lines[line_number], fields, groups, keyval)
+    def apply(self, line_number, lines, fields, groups, keyval):
+        super().apply(line_number, lines[line_number], fields, groups, keyval)
         retrieve_line_count = int(list(keyval.values())[0])
         count = 1
         retrieve_val = ''

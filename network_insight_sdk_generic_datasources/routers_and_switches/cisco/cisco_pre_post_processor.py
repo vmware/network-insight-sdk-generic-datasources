@@ -566,7 +566,7 @@ class CiscoASRXRVRFPrePostProcessor(PrePostProcessor):
     def parse(self, data):
         output_lines = [dict(name='default')]
         lines = data.splitlines()
-        for i in range(2, len(lines) - 1):
+        for i in range(2, len(lines)):
             line = lines[i]
             if line[0] == ' ':
                 continue
@@ -574,7 +574,6 @@ class CiscoASRXRVRFPrePostProcessor(PrePostProcessor):
             vrf = fields[0]
             output_lines.append(dict(name=vrf))
         return output_lines
-
 
 class CiscoASRXRVRFFinalPrePostProcessor(PrePostProcessor):
 

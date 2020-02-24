@@ -3,7 +3,6 @@ vertical_table_parser: &VERTICAL_TABLE_PARSER network_insight_sdk_generic_dataso
 horizontal_table_parser: &HORIZONTAL_TABLE_PARSER network_insight_sdk_generic_datasources.parsers.common.horizontal_table_parser.HorizontalTableParser
 generic_text_parser: &GENERIC_TEXT_PARSER network_insight_sdk_generic_datasources.parsers.common.text_parser.GenericTextParser
 generation_directory: &GENERATION_DIRECTORY /tmp/uani
-file_input_directory: &FILE_INPUT_DIRECTORY /tmp/uani_input
 
 package_handler: &PACKAGE_HANDLER
   name: ZipPackageHandler

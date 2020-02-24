@@ -11,7 +11,6 @@ from network_insight_sdk_generic_datasources.common.constants import WORKLOADS_K
 from network_insight_sdk_generic_datasources.common.constants import PACKAGE_HANDLER_KEY
 from network_insight_sdk_generic_datasources.common.constants import RESULT_WRITER_KEY
 from network_insight_sdk_generic_datasources.common.constants import GENERATION_DIRECTORY_KEY
-from network_insight_sdk_generic_datasources.common.constants import FILE_INPUT_DIRECTORY_KEY
 
 
 def parse_arguments():
@@ -25,7 +24,6 @@ def parse_arguments():
     parser.add_argument('-z', '--self_zip', action='store', help='Self Zip the Project', default='false')
     parser.add_argument('-P', '--port', action='store', help='Specific port to connect', default='22')
     parser.add_argument('-o', '--output_zip', action='store', help='Output zip file to create with CSVs')
-    parser.add_argument('-f', '--file_input', action='store', help='Take the input from file', default='false')
     args = parser.parse_args()
     return args
 
@@ -45,16 +43,12 @@ def main():
         table_joiner = configuration[args.model][TABLE_JOINERS_KEY] if TABLE_JOINERS_KEY in configuration[
             args.model] else None
         generation_directory = configuration[GENERATION_DIRECTORY_KEY] + '/' + args.ip_or_fqdn
-        file_input = True if args.file_input.lower() == 'true' else False
-        file_input_directory = configuration[FILE_INPUT_DIRECTORY_KEY] if file_input else ''
         physical_device = physical_device.PhysicalDevice(args.device, args.model,
                                                          configuration[args.model][WORKLOADS_KEY],
                                                          args,
                                                          table_joiner,
                                                          configuration[args.model][RESULT_WRITER_KEY],
-                                                         generation_directory,
-                                                         file_input,
-                                                         file_input_directory)
+                                                         generation_directory)
         physical_device.process()
         if PACKAGE_HANDLER_KEY in configuration:
             zipper = ZipArchiver(self_zip, args.output_zip, generation_directory)

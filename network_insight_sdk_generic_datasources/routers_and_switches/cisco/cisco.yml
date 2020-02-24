@@ -245,6 +245,73 @@ workloads: &WORKLOADS
     reuse_tables: showInterfacesAll
     reuse_table_processor: CiscoASR1KXEPortChannelsPrePostProcessor
 
+  - &SHOW_ASRXR_VERSION
+    table_id: switch
+    command: show version | include "uptime|Software"
+    parser:
+      name: routers_and_switches.cisco.cisco_pre_post_processor.CiscoASRXRDeviceInfoPrePostProcessor
+
+  - &SHOW_ASRXR_INTERFACES
+    table_id: showInterfacesAll
+    command: show interfaces
+    parser:
+      name: routers_and_switches.cisco.cisco_pre_post_processor.CiscoASRXRInterfacesPrePostProcessor
+
+  - &SHOW_ASRXR_VRF_RI
+    table_id: showVRFRI
+    command: show ipv4 interface brief
+    parser:
+      name: routers_and_switches.cisco.cisco_pre_post_processor.CiscoASRXRVRFRIPrePostProcessor
+
+  - &SHOW_ASRXR_ROUTER_INTERFACES
+    table_id: router-interfaces
+    reuse_tables: showInterfacesAll,showVRFRI
+    reuse_table_processor: CiscoASRXRRouterInterfacesPrePostProcessor
+
+  - &SHOW_ASRXR_SWITCHPORTS_INTERFACES
+    table_id: switch-ports
+    reuse_tables: showInterfacesAll
+    reuse_table_processor: CiscoASRXRSwitchPortsPrePostProcessor
+
+  - &SHOW_ASRXR_PORT_CHANNELS
+    table_id: port-channels
+    reuse_tables: showInterfacesAll
+    reuse_table_processor: CiscoASRRXRPortChannelsPrePostProcessor
+
+  - &SHOW_ASRXR_VRF
+    table_id: showVrfs
+    command: show vrf all
+    parser:
+      name: routers_and_switches.cisco.cisco_pre_post_processor.CiscoASRXRVRFPrePostProcessor
+
+  - &SHOW_ASRXR_VRF_FINAL
+    table_id: vrfs
+    reuse_tables: showVrfs,showRoutesVrf
+    reuse_table_processor: CiscoASRXRVRFFinalPrePostProcessor
+
+  - &SHOW_ASRXR_DEFAULT_ROUTE
+    table_id: showRoutes
+    command: show route
+    parser:
+      name: routers_and_switches.cisco.cisco_pre_post_processor.CiscoASRXRRouteLookupPrePostProcessor
+
+  - &SHOW_ASRXR_ROUTE_VRF
+    table_id: showRoutesVrf
+    command: show route vrf all
+    parser:
+      name: routers_and_switches.cisco.cisco_pre_post_processor.CiscoASRXRRoutesVrfPrePostProcessor
+
+  - &SHOW_ASRXR_ROUTES
+    table_id: routes
+    reuse_tables: showRoutes,showRoutesVrf
+    reuse_table_processor: CiscoASRXRRoutesPrePostProcessor
+
+  - &SHOW_ASRXR_NEIGHBORS
+    table_id: neighbors
+    command: show cdp neighbors
+    parser:
+      name: routers_and_switches.cisco.cisco_pre_post_processor.CiscoASRXRNeighborsPrePostProcessor
+
 table_joiners: &TABLE_JOINERS
   - &N5K_RI_TABLE
     name: network_insight_sdk_generic_datasources.joiner.table_joiner.SimpleTableJoiner
@@ -283,4 +350,5 @@ result_writer: &RESULT_WRITER
 
 n5k: !include n5k.yml
 ASR1k: !include ASR1k.yml
+ASR9k: !include ASR9k.yml
 

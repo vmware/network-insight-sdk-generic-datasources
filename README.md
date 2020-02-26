@@ -8,7 +8,7 @@ Routes, etc. SDK can connect to physical device and execute commands. Output of 
 files in specific format (eg. CSV). Files generated are then bundled in ZIP format which can then be
 fed into vRNI. SDK generates files compatible to vRNI version 4.2.0 onwards. Driver in SDK is governed by YAML configuration file.
 
-1. [ Envirnoment Requirements ](#envirnoment)
+1. [ Environment Requirements ](#envirnoment)
 2. [ Dependencies ](#dependencies)
 3. [ Launch SDK ](#launch-sdk)
 4. [ Device Configuration File ](#zipfile)
@@ -24,7 +24,7 @@ fed into vRNI. SDK generates files compatible to vRNI version 4.2.0 onwards. Dri
 * Linux distributions like Ubuntu, CentOS, Fedora, etc.
 * Pre-requisite packages/tools should be installed:
     * git
-    * python2.7.13 onwards
+    * python 3.5 onwards
 
 <a name="dependencies"></a>
 ## 2. Dependencies

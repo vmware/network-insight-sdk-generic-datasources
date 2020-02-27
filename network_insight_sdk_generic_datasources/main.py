@@ -11,7 +11,7 @@ from network_insight_sdk_generic_datasources.common.constants import WORKLOADS_K
 from network_insight_sdk_generic_datasources.common.constants import PACKAGE_HANDLER_KEY
 from network_insight_sdk_generic_datasources.common.constants import RESULT_WRITER_KEY
 from network_insight_sdk_generic_datasources.common.constants import GENERATION_DIRECTORY_KEY
-from network_insight_sdk_generic_datasources.common.constants import FILE_INPUT_DIRECTORY_KEY
+from network_insight_sdk_generic_datasources.common.constants import OFFLINE_COMMAND_RESULTS_DIRECTORY_KEY
 
 
 def parse_arguments():
@@ -46,7 +46,7 @@ def main():
             args.model] else None
         generation_directory = configuration[GENERATION_DIRECTORY_KEY] + '/' + args.ip_or_fqdn
         file_input = True if args.file_input.lower() == 'true' else False
-        file_input_directory = configuration[FILE_INPUT_DIRECTORY_KEY] if file_input else ''
+        file_input_directory = configuration[OFFLINE_COMMAND_RESULTS_DIRECTORY_KEY] if file_input else ''
         physical_device = physical_device.PhysicalDevice(args.device, args.model,
                                                          configuration[args.model][WORKLOADS_KEY],
                                                          args,

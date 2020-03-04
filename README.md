@@ -300,7 +300,7 @@ Combining the SDK and the upload script would go as follows:
 
 ```
 export PYTHONPATH=$PYTHONPATH:~/network-insight-sdk-generic-datasources
-python network_insight_sdk_generic_datasources/main.py -d juniper_srx -m srx -s JUNIPER_JUNOS -i fw1.srx.lab -u rancid -p 'R4nc1D' -o fw1.srx.lab.zip
+python network_insight_sdk_generic_datasources/main.py -d juniper_srx -m srx -s JUNIPER_JUNOS -i abc.srx.lab -u test -p 'test' -o fw1.srx.lab.zip
 
 export PYTHONPATH=$PYTHONPATH:./network-insight-sdk-python/swagger_client-py2.7.egg
 python ./network-insight-sdk-python/examples/add_generic_switch_router.py --platform_ip my-platform-hostname \

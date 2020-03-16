@@ -2,7 +2,9 @@ package_handler:
   <<: *PACKAGE_HANDLER
 
 workloads:
+  - <<: *SHOW_ASRXR_HOSTNAME
   - <<: *SHOW_ASRXR_VERSION
+  - <<: *SHOW_ASRXR_SWITCH
   - <<: *SHOW_ASRXR_VRF
   - <<: *SHOW_ASRXR_VRF_RI
   - <<: *SHOW_ASRXR_INTERFACES

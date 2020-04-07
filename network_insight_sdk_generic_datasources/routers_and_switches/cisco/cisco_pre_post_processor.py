@@ -365,6 +365,21 @@ class CiscoDevicePrePostProcessor(PrePostProcessor):
                 output_lines.append('serial: {}'.format(lines[i].split(' ')[-1]))
 
 
+class CiscoASRXRHostNamePrePostProcessor(PrePostProcessor):
+
+    def parse(self, data):
+        py_logger.info("Parsing output \n{}".format(data))
+        output_lines = []
+        d = dict()
+        lines = data.splitlines()
+        for line in lines:
+            fields = line.split(' ')
+            if fields[0] == 'hostname':
+                d[constants.HOSTNAME_KEY] = fields[1]
+        output_lines.append(d)
+        return output_lines
+
+
 class CiscoASRXRDeviceInfoPrePostProcessor(PrePostProcessor):
 
     def parse(self, data):
@@ -374,15 +389,30 @@ class CiscoASRXRDeviceInfoPrePostProcessor(PrePostProcessor):
         lines = data.splitlines()
         for line in lines:
             if 'board' in line:
-                d['serial'] = line.split(' ')[-1]
-            if 'uptime' in line:
-                d['name'] = line.split(' ')[0]
-                d['hostname'] = line.split(' ')[0]
+                d[constants.SN_KEY] = line.split(' ')[-1]
             if 'Software' in line:
-                d['model'] = line.split('[')[0]
-        d['os'] = 'IOS XR'
-        d['vendor'] = 'Cisco'
-        d['haState'] = 'ACTIVE'
+                d[constants.MODEL_KEY] = line.split('[')[0]
+        output_lines.append(d)
+        return output_lines
+
+
+class CiscoASRXRSwitchPrePostProcessor(PrePostProcessor):
+
+    def process_tables(self, tables):
+        hostname_t = tables['hostname']
+        device_info_t = tables['deviceInfo']
+        output_lines = []
+        d = dict()
+        for dev in device_info_t:
+            d[constants.MODEL_KEY] = dev[constants.MODEL_KEY]
+            if constants.SN_KEY in dev:
+                d[constants.SN_KEY] = dev[constants.SN_KEY]
+        for h in hostname_t:
+            d[constants.NAME_KEY] = h[constants.HOSTNAME_KEY]
+            d[constants.HOSTNAME_KEY] = h[constants.HOSTNAME_KEY]
+        d[constants.OS_KEY] = 'IOS XR'
+        d[constants.VENDOR_KEY] = 'Cisco'
+        d[constants.STATE_KEY] = 'ACTIVE'
         output_lines.append(d)
         return output_lines
 

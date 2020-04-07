@@ -8,7 +8,7 @@ Routes, etc. SDK can connect to physical device and execute commands. Output of 
 files in specific format (eg. CSV). Files generated are then bundled in ZIP format which can then be
 fed into vRNI. SDK generates files compatible to vRNI version 4.2.0 onwards. Driver in SDK is governed by YAML configuration file.
 
-1. [ Envirnoment Requirements ](#envirnoment)
+1. [ Environment Requirements ](#environment)
 2. [ Dependencies ](#dependencies)
 3. [ Launch SDK ](#launch-sdk)
 4. [ Device Configuration File ](#zipfile)
@@ -19,12 +19,12 @@ fed into vRNI. SDK generates files compatible to vRNI version 4.2.0 onwards. Dri
 9. [ Uploading Output Zipfile ](#vrni-api-ref)
 10. [ Running SDK and Uploading ](#run-and-upload)
 
-<a name="envirnoment"></a>
-## 1. Envirnoment Requirements
+<a name="environment"></a>
+## 1. Environment Requirements
 * Linux distributions like Ubuntu, CentOS, Fedora, etc.
 * Pre-requisite packages/tools should be installed:
     * git
-    * python2.7.13 onwards
+    * python 3.5 onwards
 
 <a name="dependencies"></a>
 ## 2. Dependencies
@@ -300,7 +300,7 @@ Combining the SDK and the upload script would go as follows:
 
 ```
 export PYTHONPATH=$PYTHONPATH:~/network-insight-sdk-generic-datasources
-python network_insight_sdk_generic_datasources/main.py -d juniper_srx -m srx -s JUNIPER_JUNOS -i fw1.srx.lab -u rancid -p 'R4nc1D' -o fw1.srx.lab.zip
+python network_insight_sdk_generic_datasources/main.py -d juniper_srx -m srx -s JUNIPER_JUNOS -i abc.srx.lab -u test -p 'test' -o fw1.srx.lab.zip
 
 export PYTHONPATH=$PYTHONPATH:./network-insight-sdk-python/swagger_client-py2.7.egg
 python ./network-insight-sdk-python/examples/add_generic_switch_router.py --platform_ip my-platform-hostname \

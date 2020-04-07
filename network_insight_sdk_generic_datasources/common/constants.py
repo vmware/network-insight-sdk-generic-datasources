@@ -66,3 +66,12 @@ CONNECTED_KEY = 'connected'
 SP_MODE_KEY = 'switchPortMode'
 VRF_KEY = 'vrf'
 # ############ End for Interfaces Keys ############ #
+
+# ############ Keys for Device #######################s #
+HOSTNAME_KEY = 'hostname'
+SN_KEY = 'serial'
+MODEL_KEY = 'model'
+OS_KEY = 'os'
+VENDOR_KEY = 'vendor'
+STATE_KEY = 'haState'
+# ############ End of Keys for Device ################ #

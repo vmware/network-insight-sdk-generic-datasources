@@ -246,11 +246,22 @@ workloads: &WORKLOADS
     reuse_tables: showInterfacesAll
     reuse_table_processor: CiscoASR1KXEPortChannelsPrePostProcessor
 
+  - &SHOW_ASRXR_HOSTNAME
+    table_id: hostname
+    command: show running-config | inc hostname
+    parser:
+      name: routers_and_switches.cisco.cisco_pre_post_processor.CiscoASRXRHostNamePrePostProcessor
+
   - &SHOW_ASRXR_VERSION
-    table_id: switch
+    table_id: deviceInfo
     command: show version | include "uptime|Software"
     parser:
       name: routers_and_switches.cisco.cisco_pre_post_processor.CiscoASRXRDeviceInfoPrePostProcessor
+
+  - &SHOW_ASRXR_SWITCH
+    table_id: switch
+    reuse_tables: hostname,deviceInfo
+    reuse_table_processor: CiscoASRXRSwitchPrePostProcessor
 
   - &SHOW_ASRXR_INTERFACES
     table_id: showInterfacesAll

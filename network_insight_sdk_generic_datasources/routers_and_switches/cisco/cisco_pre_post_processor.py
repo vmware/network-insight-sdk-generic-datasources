@@ -628,22 +628,31 @@ class CiscoASRXRRouteLookupPrePostProcessor(PrePostProcessor):
         output_lines = []
         lines = data.splitlines()
         last_network = ''
+        last_route_type = ''
         for i in range(14, len(lines)):
+            fields = lines[i].split()
+            d = dict()
+            d['vrf'] = 'default'
             if 'via' in lines[i]:
-                fields = lines[i].split()
-                d = dict()
                 if fields[1] == 'via':
                     d['network'] = last_network
+                    d['routeType'] = last_route_type
                     d['nextHop'] = fields[2].rstrip(',')
                 else:
                     d['network'] = fields[1]
                     d['nextHop'] = fields[4].rstrip(',')
+                    d['routeType'] = fields[0]
                     last_network = fields[1]
-                d['vrf'] = 'default'
+                    last_route_type = fields[0]
                 d['nextVrf'] = ''
-                d['routeType'] = fields[0]
                 d['interfaceName'] = fields[-1]
-                output_lines.append(d)
+            if 'directly connected' in lines[i]:
+                d['network'] = fields[1]
+                d['nextHop'] = 'DIRECT'
+                d['routeType'] = 'DIRECT'
+                d['nextVrf'] = ''
+                d['interfaceName'] = fields[6]
+            output_lines.append(d)
         return output_lines
 
 

@@ -695,21 +695,25 @@ class CiscoASRXRRoutesPrePostProcessor(PrePostProcessor):
         output_lines = []
         for v in show_routes_vrf:
             d = dict()
-            if v['routeType'] == 'DIRECT':
-                d['vrf'] = v['vrf']
-                d['name'] = v['network']
-                d['network'] = v['network']
-                d['nextHop'] = 'DIRECT'
-                d['routeType'] = 'DIRECT'
-                d['interfaceName'] = v['interfaceName']
-            else:
-                d = self.get_dest_entry(v, show_routes, show_routes_vrf)
+            d['vrf'] = v['vrf']
+            d['name'] = v['network']
+            d['network'] = v['network']
+            d['nextHop'] = v['nextHop']
+            d['nextVrf'] = v['nextVrf']
+            d['routeType'] = v['routeType']
+            d['interfaceName'] = v['interfaceName']
+            output_lines.append(d)
 
-            if d is not None:
-                if d['interfaceName'] != '':
-                    output_lines.append(d)
-                else:
-                    py_logger.info("Ignoring Route Entry {}".format(d))
+        for v in show_routes:
+            d = dict()
+            d['vrf'] = v['vrf']
+            d['name'] = v['network']
+            d['network'] = v['network']
+            d['nextHop'] = v['nextHop']
+            d['nextVrf'] = v['nextVrf']
+            d['routeType'] = v['routeType']
+            d['interfaceName'] = v['interfaceName']
+            output_lines.append(d)
 
         return output_lines
 

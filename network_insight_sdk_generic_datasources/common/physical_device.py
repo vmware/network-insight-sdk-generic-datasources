@@ -25,7 +25,6 @@ from network_insight_sdk_generic_datasources.common.constants import SOURCE_COLU
 from network_insight_sdk_generic_datasources.common.constants import DESTINATION_TABLE_KEY
 from network_insight_sdk_generic_datasources.common.constants import SOURCE_TABLE_KEY
 from network_insight_sdk_generic_datasources.common.constants import JOINED_TABLE_ID_KEY
-from network_insight_sdk_generic_datasources.common.constants import PATH_KEY
 
 
 class PhysicalDevice(object):
@@ -34,7 +33,8 @@ class PhysicalDevice(object):
     output format. For example, CSV for Excel.
     """
 
-    def __init__(self, device, model,  workloads, credentials, table_joiners, result_writer, generation_dir):
+    def __init__(self, device, model,  workloads, credentials, table_joiners, result_writer, generation_dir,
+                 file_input, file_input_directory):
         self.device = device
         self.model = model
         self.workloads = workloads
@@ -42,6 +42,8 @@ class PhysicalDevice(object):
         self.table_joiners = table_joiners
         self.result_writer = result_writer
         self.generation_dir = generation_dir
+        self.file_input = file_input
+        self.file_input_directory = file_input_directory
         self.result_map = {}  # will be set only after executing commands
 
     def process(self):
@@ -74,11 +76,13 @@ class PhysicalDevice(object):
     def execute_commands(self):
         ssh_connect_handler = None
         try:
-            ssh_connect_handler = SSHConnectHandler(ip=self.credentials.ip_or_fqdn,
-                                                    username=self.credentials.username,
-                                                    password=self.credentials.password,
-                                                    device_type=self.credentials.device_type,
-                                                    port=self.credentials.port)
+            if not self.file_input:
+                # For file input, no need to create actual connection to the switch
+                ssh_connect_handler = SSHConnectHandler(ip=self.credentials.ip_or_fqdn,
+                                                        username=self.credentials.username,
+                                                        password=self.credentials.password,
+                                                        device_type=self.credentials.device_type,
+                                                        port=self.credentials.port)
             command_output_dict = {}
             for workload in self.workloads:
                 command_id = workload[TABLE_ID_KEY]
@@ -91,7 +95,14 @@ class PhysicalDevice(object):
                     py_logger.info('Command %s Result %s' % (workload[REUSE_COMMAND_KEY], command_result))
                     table = self.parse_command_output(workload, command_result)
                 else:
-                    command_result = ssh_connect_handler.execute_command(workload[COMMAND_KEY])
+                    if self.file_input:
+                        # In case of file input, read from the file named as <table_id of command in yml file>.txt
+                        # File is read from the file input directory specified in the yml file
+                        file_path = self.file_input_directory + '/' + command_id + '.txt'
+                        f = open(file_path, 'r')
+                        command_result = f.read() if f.mode == 'r' else ''
+                    else:
+                        command_result = ssh_connect_handler.execute_command(workload[COMMAND_KEY])
                     command_output_dict[workload[COMMAND_KEY]] = command_result
                     py_logger.info('Command %s Result %s' % (workload[COMMAND_KEY], command_result))
                     table = self.parse_command_output(workload, command_result)
@@ -103,7 +114,8 @@ class PhysicalDevice(object):
             py_logger.error("Error occurred while executing command : {}".format(e))
             raise e
         finally:
-            ssh_connect_handler.close_connection()
+            if ssh_connect_handler is not None:
+                ssh_connect_handler.close_connection()
 
     def parse_command_output(self, cmd, command_result):
         blocks = []

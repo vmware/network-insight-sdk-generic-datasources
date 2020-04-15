@@ -33,7 +33,6 @@ JOINED_TABLE_ID_KEY = 'joined_table_id'
 RESULT_WRITER_KEY = 'result_writer'
 PATH_KEY = 'path'
 GENERATION_DIRECTORY_KEY = 'generation_directory'
-OFFLINE_COMMAND_RESULTS_DIRECTORY_KEY = 'offline_command_results_directory'
 # ############ End of YAML Keys ################## #
 
 

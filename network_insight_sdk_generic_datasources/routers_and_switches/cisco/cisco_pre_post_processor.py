@@ -641,7 +641,7 @@ class CiscoASRXRRouteLookupPrePostProcessor(PrePostProcessor):
                 else:
                     d['network'] = fields[1]
                     d['nextHop'] = fields[4].rstrip(',')
-                    d['routeType'] = fields[0]
+                    d['routeType'] = fields[0].rstrip('*')
                     last_network = fields[1]
                     last_route_type = fields[0]
                 d['nextVrf'] = ''
@@ -674,7 +674,7 @@ class CiscoASRXRRoutesVrfPrePostProcessor(PrePostProcessor):
                 if 'via' in line:
                     d['network'] = fields[1]
                     d['nextHop'] = fields[4].rstrip(',')
-                    d['routeType'] = fields[0]
+                    d['routeType'] = fields[0].rstrip('*')
                     if fields[5] == '(nexthop':
                         d['nextVrf'] = fields[8].rstrip('),')
                         d['interfaceName'] = ''

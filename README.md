@@ -161,8 +161,9 @@ name                  | mandatory             | name of route                  |
 network               | mandatory             | network of route               | Network IP in CIDR Format
 nextHop               | mandatory             | next hop of route              | Use IP Address or DIRECT. If there is no nextHop ip address for DIRECT routeType then use DIRECT.
 routeType             | mandatory             | route type eg. static, dynamic | Use Direct or any other routing protocol like OSPF, BGP, Static, etc.
-interfaceName         | mandatory             | interface name                 |
+interfaceName         | optional              | interface name                 | Interface which this route uses to pass traffic.
 vrf                   | mandatory             | vrf                            | VRFs defined in vrfs.csv
+nextVrf               | optional              | Next VRF in case of Routes leak| VRFs defined in vrfs.csv
 
 * peer-devices.csv - contains list of redundant devices with respect the switch. OPTIONAL
 

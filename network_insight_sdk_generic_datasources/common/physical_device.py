@@ -47,7 +47,10 @@ class PhysicalDevice(object):
         self.result_map = {}  # will be set only after executing commands
 
     def process(self):
-        self.execute_commands()
+        if self.file_input:
+            self.process_offline_command_results()
+        else:
+            self.execute_commands()
         self.join_tables()
         self.write_results()
 
@@ -76,13 +79,11 @@ class PhysicalDevice(object):
     def execute_commands(self):
         ssh_connect_handler = None
         try:
-            if not self.file_input:
-                # For file input, no need to create actual connection to the switch
-                ssh_connect_handler = SSHConnectHandler(ip=self.credentials.ip_or_fqdn,
-                                                        username=self.credentials.username,
-                                                        password=self.credentials.password,
-                                                        device_type=self.credentials.device_type,
-                                                        port=self.credentials.port)
+            ssh_connect_handler = SSHConnectHandler(ip=self.credentials.ip_or_fqdn,
+                                                    username=self.credentials.username,
+                                                    password=self.credentials.password,
+                                                    device_type=self.credentials.device_type,
+                                                    port=self.credentials.port)
             command_output_dict = {}
             for workload in self.workloads:
                 command_id = workload[TABLE_ID_KEY]
@@ -95,14 +96,7 @@ class PhysicalDevice(object):
                     py_logger.info('Command %s Result %s' % (workload[REUSE_COMMAND_KEY], command_result))
                     table = self.parse_command_output(workload, command_result)
                 else:
-                    if self.file_input:
-                        # In case of file input, read from the file named as <table_id of command in yml file>.txt
-                        # File is read from the file input directory specified in the yml file
-                        file_path = self.file_input_directory + '/' + command_id + '.txt'
-                        f = open(file_path, 'r')
-                        command_result = f.read() if f.mode == 'r' else ''
-                    else:
-                        command_result = ssh_connect_handler.execute_command(workload[COMMAND_KEY])
+                    command_result = ssh_connect_handler.execute_command(workload[COMMAND_KEY])
                     command_output_dict[workload[COMMAND_KEY]] = command_result
                     py_logger.info('Command %s Result %s' % (workload[COMMAND_KEY], command_result))
                     table = self.parse_command_output(workload, command_result)
@@ -114,8 +108,37 @@ class PhysicalDevice(object):
             py_logger.error("Error occurred while executing command : {}".format(e))
             raise e
         finally:
-            if ssh_connect_handler is not None:
-                ssh_connect_handler.close_connection()
+            ssh_connect_handler.close_connection()
+
+    # In case of file input, read from the file named as <table_id of command in yml file>.txt
+    # File is read from the file offline command results directory specified in the yml file
+    def process_offline_command_results(self):
+        try:
+            command_output_dict = {}
+            for workload in self.workloads:
+                command_id = workload[TABLE_ID_KEY]
+                py_logger.info("Processing workload {}".format(workload))
+                if REUSE_TABLES_KEY in workload:
+                    table = self.process_tables(workload)
+                elif REUSE_COMMAND_KEY in workload:
+                    command_result = command_output_dict[workload[REUSE_COMMAND_KEY]]
+                    workload[COMMAND_KEY] = workload[REUSE_COMMAND_KEY]
+                    py_logger.info('Command %s Result %s' % (workload[REUSE_COMMAND_KEY], command_result))
+                    table = self.parse_command_output(workload, command_result)
+                else:
+                    file_path = self.file_input_directory + '/' + command_id + '.txt'
+                    f = open(file_path, 'r')
+                    command_result = f.read() if f.mode == 'r' else ''
+                    command_output_dict[workload[COMMAND_KEY]] = command_result
+                    py_logger.info('Command %s Result %s' % (workload[COMMAND_KEY], command_result))
+                    table = self.parse_command_output(workload, command_result)
+                if 'switch' == command_id:
+                    table[0]['ipAddress/fqdn'] = self.credentials.ip_or_fqdn
+                    table[0]['name'] = "{}-{}".format(table[0]['name'], self.credentials.ip_or_fqdn)
+                self.result_map[command_id] = table
+        except Exception as e:
+            py_logger.error("Error occurred while executing command : {}".format(e))
+            raise e
 
     def parse_command_output(self, cmd, command_result):
         blocks = []

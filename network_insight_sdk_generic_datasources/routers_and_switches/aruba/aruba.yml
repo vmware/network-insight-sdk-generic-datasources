@@ -1,0 +1,289 @@
+
+vertical_table_parser: &VERTICAL_TABLE_PARSER network_insight_sdk_generic_datasources.parsers.common.vertical_table_parser.VerticalTableParser
+horizontal_table_parser: &HORIZONTAL_TABLE_PARSER network_insight_sdk_generic_datasources.parsers.common.horizontal_table_parser.HorizontalTableParser
+generic_text_parser: &GENERIC_TEXT_PARSER network_insight_sdk_generic_datasources.parsers.common.text_parser.GenericTextParser
+generation_directory: &GENERATION_DIRECTORY /tmp/uani
+
+package_handler: &PACKAGE_HANDLER
+  name: ZipPackageHandler
+
+# workloads added will be executed in sequence
+workloads: &WORKLOADS
+### ARUBA 3810 TABLES
+  - &SHOW_VERSION_3810
+    table_id: switch
+    command: show system information
+    parser:
+      name: *GENERIC_TEXT_PARSER
+        arguments:
+          rules:
+            ipAddress/fqdn: ""
+            name: "System Name\\s+:\\s+(.*)"
+            hostname: "System Name\\s+:\\s+(.*)"
+            model: "Software revision\\s+:\\s+(.*)"
+
+  - &MAC_ADDRESS_TABLE_3810
+    table_id: mac-address-table
+    command: show mac-address detail
+    parser:
+      pre_post_processor: Aruba3810MacAddressPrePostProcessor
+      name: *HORIZONTAL_TABLE_PARSER
+      arguments:
+        skip_head: 4
+        header_keys:
+          - macAddress
+          - port
+          - vlan
+          - age
+      select_columns:
+        macAddress: macAddress
+        port: port
+        vlan: vlan
+
+  - &LLDP_TABLE_3810
+    table_id: neighbors
+    command: show lldp info remote-device detail
+    block_parser:
+      name: GenericBlockParser
+      arguments:
+        line_pattern: 'Local Port\\s+:\\s\\d{1,3}/\\d{1,3}'
+    parser:
+      name: *GENERIC_TEXT_PARSER
+      arguments:
+        rules:
+          localInterface: "Local Port\\s+:\\s(\\d{1,3}/\\d{1,3})"
+          remoteDevice: "SysName\\s+:\\s(.*)"
+          remoteInterface: "PortDescr\\s+:\\s(.*)"
+
+  - &SHOW_IP_ROUTE_VRF_ALL_3810
+    table_id: routespart1
+    command: show ip route
+    parser:
+      name: routers_and_switches.aruba.aruba_pre_post_processor.ArubaPartialRoutesParser3810
+
+  - &SHOW_ROUTER_INTERFACES_3810
+    table_id: router-interfaces
+    command: show running-config vlan
+    block_parser:
+      name: GenericBlockParser
+      arguments:
+        line_pattern: 'vlan \\d{1,4}'
+    parser:
+      pre_post_processor: ArubaRouterInterfacePrePostProcessor3810
+      name: *GENERIC_TEXT_PARSER
+      arguments:
+        rules:
+          name: "(vlan \\d{1,4})"
+          ipAddress: "ip address (\\d{1,3}.\\d{1,3}.\\d{1,3}.\\d{1,3})"
+          netmask: "ip address \\d{1,3}.\\d{1,3}.\\d{1,3}.\\d{1,3}\\s+(\\d{1,3}.\\d{1,3}.\\d{1,3}.\\d{1,3})"
+
+  - &SHOW_INTERFACE1_3810
+      table_id: showSwitchPorts1
+      command: show interfaces ethernet all hc
+      block_parser:
+        name: GenericBlockParser
+        arguments:
+          line_pattern: "Status and Counters - Port Counters for\\s\\w+\\s\\w+.*"
+      parser:
+        pre_post_processor: ArubaInterfacePrePostParser3810
+        name: *GENERIC_TEXT_PARSER
+        arguments:
+          rules:
+            name: "Status and Counters - Port Counters for\\s\\w+\\s(.*)"
+            connected: "Link Status\s+:\s(.*)"
+            administrativeStatus: "Port Enabled\s+:\s(.*)"
+            operationalStatus: "Link Status\s+:\s(.*)"
+            hardwareAddress: "MAC Address\s+:\s(.*)"
+
+  - &SHOW_INTERFACE2_3810
+      table_id: showSwitchPorts2
+      command: show interface status
+      parser:
+        name: routers_and_switches.aruba.aruba_pre_post_processor.ArubaSwitchPorts2Parser3810
+
+  - &SHOW_LACP_3810
+      table_id: showLacp
+      command: show lacp
+      parser:
+        name: routers_and_switches.aruba.aruba_pre_post_processor.ArubaLacp3810Parser
+
+  - &SHOW_RUN_VLAN_3810
+      table_id: showRunVlan
+      command: show running-config vlan
+      block_parser:
+        name: GenericBlockParser
+        arguments:
+          line_pattern: 'vlan \\d{1,4}'
+      parser:
+        pre_post_processor: ArubaVLANTrunkPrePostProcessor3810
+        name: *GENERIC_TEXT_PARSER
+        arguments:
+          rules:
+            vlan: "vlan (\\d{1,4})"
+            trunkport: "^\\s*tagged\\s*(.*)"
+
+  - &SHOW_PORT_CHANNELS_3810
+    table_id: port-channel
+    reuse_tables: showSwitchPorts1,showLacp,showRunVlan
+    reuse_table_processor: Aruba3810PortChannelTableProcessor
+
+
+  - &SHOW_IP_ROUTE_3810
+    table_id: routes
+    reuse_tables: routespart1, router-interfaces
+    reuse_table_processor: Aruba3810RoutesTableProcessor
+
+### ARUBA 8320 TABLES
+  - &SHOW_VERSION_8320
+    table_id: switch
+    command: show system
+    parser:
+      name: *GENERIC_TEXT_PARSER
+        arguments:
+          rules:
+            ipAddress/fqdn: ""
+            name: "Hostname\s+:\s+(.*)"
+            hostname: "Hostname\s+:\s+(.*)"
+            model: "Product\s+Name\s+:\s+(.*)"
+
+  - &MAC_ADDRESS_TABLE_8320
+    table_id: mac-address-table
+    command: show mac-address-table detail
+    parser:
+      name: *HORIZONTAL_TABLE_PARSER
+      arguments:
+        skip_head: 5
+        header_keys:
+          - macAddress
+          - vlan
+          - type
+          - port
+          - denied
+      select_columns:
+        macAddress: macAddress
+        port: port
+        vlan: vlan
+
+  - &LLDP_TABLE_8320
+    table_id: neighbors
+    command: show lldp neighbor-info
+    parser:
+      name: *HORIZONTAL_TABLE_PARSER
+      arguments:
+        skip_head: 10
+        header_keys:
+          - local-port
+          - chassis-id
+          - port-id
+          - port-desc
+          - ttl
+          - sys-name
+      select_columns:
+        localInterface: local-port
+        remoteDevice: sys-names
+        remoteInterface: port-desc
+
+  - &SHOW_IP_ROUTE_VRF_ALL_8320
+      table_id: routes
+      command: show ip route
+      block_parser:
+        name: GenericBlockParser
+        arguments:
+          line_pattern: "\\d+.\\d+.\\d+.\\d+.\\d+,\\s+vrf\\s+"
+      parser:
+        pre_post_processor: ArubaRoutePrePostParser8320
+        name: *GENERIC_TEXT_PARSER
+        arguments:
+          rules:
+            name: "(\\d+.\\d+.\\d+.\\d+.\\d+),\\s+vrf\\s+"
+            network: "(\\d+.\\d+.\\d+.\\d+.\\d+),\\s+vrf\\s+"
+            nextHop: "via\\s+([^,]+)"
+            routeType: "via\\s+[^,]+,\\s+[^,]+,\\s+(.*)"
+            interfaceName: "(\\d+.\\d+.\\d+.\\d+.\\d+),\\s+vrf\\s+"
+            vrf: "\\d+.\\d+.\\d+.\\d+.\\d+,\\s+vrf\\s+(.*)"
+
+  - &SHOW_IP_INTERFACE_VRF_ALL_8320
+      table_id: ri_vrf_mapping
+      command: show ip interface brief all-vrfs
+      parser:
+        name: routers_and_switches.aruba.aruba_pre_post_processor.Aruba8320InterfaceTableProcessor
+
+  - &ALL_PORTS_8320
+    table_id: allPorts
+    command: show interface
+    block_parser:
+      name: GenericBlockParser
+      arguments:
+        line_pattern: '^.{9,10}\\s+.+\\s+is\\s+'
+    parser:
+      pre_post_processor: ArubaSwitchPortsAllDetailsPrePostParser8320
+      name: *GENERIC_TEXT_PARSER
+      arguments:
+        rules:
+          intname: 'Interface\\s+(.+)is\\s+'
+          aggname: 'Aggregate\\s+(.*)\\s+is'
+          administrativeStatus: 'Admin\\s+state\\s+is\\s+(.*)'
+          operationalStatus: 'Interface\\s+.+is\\s+(.*)\\s+'
+          connected: 'Admin\\s+state\\s+is\\s+(.*)'
+          switchPortMode: 'VLAN\\s+Mode:\\s+(.*)'
+          HardwareAddress: 'hardware:\s+Ethernet,\s+MAC\s+Address:\s+(.*)'
+          MacAddress: "MAC\\s+Address\\s+:\\s+(.*)"
+          interfaceSpeed: 'Speed\\s+(.*)\\s+Mb'
+          operationalSpeed: 'Speed\\s+(.*)\\s+Mb'
+          activePorts: 'Aggregated-interfaces\\s+:\\s+(.*)'
+          vlans: "Allowed\\s+VLAN\\s+List:\\s+(.*)"
+          mtu: "MTU\\s+(.*)"
+          duplex: "Auto-Negotiation\\s+is\\s+(.*)"
+
+  - &VRF_8320
+    table_id: vrfs
+    command: show vrf
+    block_parser:
+      name: GenericBlockParser
+      arguments:
+        line_pattern: "VRF\\s+Name\\s+:\s+.+"
+    parser:
+      pre_post_processor: ArubaSwitchPortsAllDetailsPrePostParser8320
+      name: *GENERIC_TEXT_PARSER
+      arguments:
+        rules:
+          intname: 'VRF\\s+Name\\s+:\\s+(.*)'
+
+  - &ROUTER_INTERFACE_TABLE_8320
+    table_id: router-interfaces
+    reuse_tables: ri_vrf_mapping,allPorts
+    reuse_table_processor: Aruba8320RouterInterfaceTableProcessor
+
+  - &SWITCH_PORT_TABLE_8320
+    table_id: switch-ports
+    reuse_tables: allPorts
+    reuse_table_processor: Aruba8320SwitchPortTableProcessor
+
+  - &PORT_CHANNEL_TABLE_8320
+    table_id: port-channel
+    reuse_tables: allPorts
+    reuse_table_processor: Aruba8320PortChannelTableProcessor
+
+
+table_joiners: &TABLE_JOINERS
+  - &SHOW_INTERFACE_TABLE_3810
+    name: network_insight_sdk_generic_datasources.joiner.table_joiner.SimpleTableJoiner
+    source_table: showSwitchPorts1
+    destination_table: showSwitchPorts2
+    source_column: name
+    destination_column: name
+    joined_table_id: switch-ports
+
+result_writer: &RESULT_WRITER
+  name: CsvWriter
+  table_id:
+    - switch
+    - mac-address-table
+    - neighbors
+    - routes
+    - vrfs
+    - router-interfaces
+    - switch-ports
+    - port-channels
+
+aruba3810: !include aruba3810.yml

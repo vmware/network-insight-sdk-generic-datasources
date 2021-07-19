@@ -236,16 +236,11 @@ workloads: &WORKLOADS
   - &VRF_8320
     table_id: vrfs
     command: show vrf
-    block_parser:
-      name: GenericBlockParser
-      arguments:
-        line_pattern: "VRF\\s+Name\\s+:\\s+.+"
     parser:
-      pre_post_processor: ArubaVrfPrePostParser8320
       name: *GENERIC_TEXT_PARSER
       arguments:
         rules:
-          intname: 'VRF\\s+Name\\s+:\\s+(.*)'
+          name: 'VRF\\s+Name\\s+:\\s+(.*)'
 
   - &ROUTER_INTERFACE_TABLE_8320
     table_id: router-interfaces

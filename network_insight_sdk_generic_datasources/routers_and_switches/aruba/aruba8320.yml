@@ -12,6 +12,7 @@ workloads:
   - <<: *ALL_PORTS_8320
   - <<: *VRF_8320
   - <<: *ROUTER_INTERFACE_TABLE_8320
+  - <<: *SWITCH_PORT_TABLE_8320
   - <<: *PORT_CHANNEL_TABLE_8320
 
 result_writer:

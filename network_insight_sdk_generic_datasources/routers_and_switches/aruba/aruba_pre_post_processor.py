@@ -571,12 +571,11 @@ class ArubaVrfPrePostParser8320(PrePostProcessor):
 class Aruba8320RouterInterfaceTableProcessor(TableProcessor):
     def process_tables(self, tables):
         allPorts = tables['allPorts']
-        routerinterface = tables['routerinterface']
+        ri_vrf_mapping = tables['ri_vrf_mapping']
         result = []
-        for interface in routerinterface:
-            t = interface
+        for t in ri_vrf_mapping:
             for port in allPorts:
-                if port['intname'] == interface['name']:
+                if port['intname'] == t['name']:
                     if 'hardwareAddress' in port:
                         t.update({'hardwareAddress': port['hardwareAddress']})
                     if 'interfaceSpeed' in port:

@@ -241,7 +241,7 @@ workloads: &WORKLOADS
       arguments:
         line_pattern: "VRF\\s+Name\\s+:\\s+.+"
     parser:
-      pre_post_processor: ArubaSwitchPortsAllDetailsPrePostParser8320
+      pre_post_processor: ArubaVrfPrePostParser8320
       name: *GENERIC_TEXT_PARSER
       arguments:
         rules:

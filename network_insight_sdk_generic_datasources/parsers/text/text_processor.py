@@ -3,6 +3,7 @@
 
 import re
 from functools import partial
+from network_insight_sdk_generic_datasources.common.log import py_logger
 
 from network_insight_sdk_generic_datasources.parsers.common.line_parser import LineTokenizer
 from network_insight_sdk_generic_datasources.parsers.common.block_parser import BlockParser
@@ -52,6 +53,9 @@ class TextProcessor(object):
                     if match is not None:
                         parsed_key_values = {}
                         fields = self.line_tokenizer.tokenize(current_line)
+                        if fields is None:
+                            py_logger.log("Cannot processing None fields")
+                            continue
                         input_lines = lines if type(rule) == BlockRule else current_line
                         rule.apply(current_line_number, input_lines, fields, match.groups(), parsed_key_values)
                         row.update(parsed_key_values)

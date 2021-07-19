@@ -15,12 +15,11 @@ workloads: &WORKLOADS
     command: show system information
     parser:
       name: *GENERIC_TEXT_PARSER
-        arguments:
-          rules:
-            ipAddress/fqdn: ""
-            name: "System Name\\s+:\\s+(.*)"
-            hostname: "System Name\\s+:\\s+(.*)"
-            model: "Software revision\\s+:\\s+(.*)"
+      arguments:
+        rules:
+          name: "System Name\\s+:\\s+(.*)"
+          hostname: "System Name\\s+:\\s+(.*)"
+          model: "Software revision\\s+:\\s+(.*)"
 
   - &MAC_ADDRESS_TABLE_3810
     table_id: mac-address-table
@@ -90,10 +89,10 @@ workloads: &WORKLOADS
         arguments:
           rules:
             name: "Status and Counters - Port Counters for\\s\\w+\\s(.*)"
-            connected: "Link Status\s+:\s(.*)"
-            administrativeStatus: "Port Enabled\s+:\s(.*)"
-            operationalStatus: "Link Status\s+:\s(.*)"
-            hardwareAddress: "MAC Address\s+:\s(.*)"
+            connected: "Link Status\\s+:\\s(.*)"
+            administrativeStatus: "Port Enabled\\s+:\\s(.*)"
+            operationalStatus: "Link Status\\s+:\\s(.*)"
+            hardwareAddress: "MAC Address\\s+:\\s(.*)"
 
   - &SHOW_INTERFACE2_3810
       table_id: showSwitchPorts2
@@ -139,12 +138,11 @@ workloads: &WORKLOADS
     command: show system
     parser:
       name: *GENERIC_TEXT_PARSER
-        arguments:
-          rules:
-            ipAddress/fqdn: ""
-            name: "Hostname\s+:\s+(.*)"
-            hostname: "Hostname\s+:\s+(.*)"
-            model: "Product\s+Name\s+:\s+(.*)"
+      arguments:
+        rules:
+          name: "Hostname\\s+:\\s+(.*)"
+          hostname: "Hostname\\s+:\\s+(.*)"
+          model: "Product\\s+Name\\s+:\\s+(.*)"
 
   - &MAC_ADDRESS_TABLE_8320
     table_id: mac-address-table
@@ -241,7 +239,7 @@ workloads: &WORKLOADS
     block_parser:
       name: GenericBlockParser
       arguments:
-        line_pattern: "VRF\\s+Name\\s+:\s+.+"
+        line_pattern: "VRF\\s+Name\\s+:\\s+.+"
     parser:
       pre_post_processor: ArubaSwitchPortsAllDetailsPrePostParser8320
       name: *GENERIC_TEXT_PARSER
@@ -287,3 +285,4 @@ result_writer: &RESULT_WRITER
     - port-channels
 
 aruba3810: !include aruba3810.yml
+aruba8320: !include aruba8320.yml

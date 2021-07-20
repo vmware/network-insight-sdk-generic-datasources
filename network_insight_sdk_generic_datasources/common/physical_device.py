@@ -155,7 +155,7 @@ class PhysicalDevice(object):
         for table in cmd[REUSE_TABLES_KEY].split(','):
             tables[table] = self.result_map[table]
             py_logger.info("Fetching table name = {} self data length = {} copied data length = {}", table,
-                           len(self.result_map[table]), tables[table])
+                           len(self.result_map[table]), len(tables[table]))
         result_dict = self.call_process_table_function(process_table, tables)
 
         message = 'Expecting result dictionary to be list of dictionaries'

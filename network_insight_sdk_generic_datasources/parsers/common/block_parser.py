@@ -55,8 +55,9 @@ class BlockParser(object):
             self._set_previous_line(total_lines, lines, i)
             self._set_next_line(total_lines, lines, i)
             current_line = str(lines[i]).strip()
-            py_logger.info("Creating block for line=[{}]".format(current_line))
+
             if self.is_start_of_block(current_line, i) and self.has_block_ended:
+                py_logger.info("Creating block for line=[{}]".format(current_line))
                 self.has_block_started = True
                 self.has_block_ended = False
 

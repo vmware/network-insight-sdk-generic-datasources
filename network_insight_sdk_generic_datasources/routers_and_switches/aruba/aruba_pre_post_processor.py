@@ -623,4 +623,5 @@ class Aruba8320PortChannelTableProcessor(TableProcessor):
                 t.update({'hardwareAddress': t['macAddress']})
                 t.pop('macAddress')
                 result.append(t.copy())
+        py_logger.info("port channel table {}".format(result))
         return result

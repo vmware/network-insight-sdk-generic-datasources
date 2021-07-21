@@ -49,7 +49,7 @@ class TextProcessor(object):
             while current_line_number < total_lines:
                 current_line = lines[current_line_number]
                 for rule in self.rules:
-                    py_logger.info("Processing line=[{}] with rule=[{}]".format(current_line, rule))
+                    py_logger.info("Processing line=[{}] with rule=[{}]".format(current_line, rule.pattern))
                     match = rule.get_pattern_match(current_line)
                     if match is not None:
                         parsed_key_values = {}

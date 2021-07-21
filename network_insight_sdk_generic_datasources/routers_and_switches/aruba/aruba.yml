@@ -220,7 +220,7 @@ workloads: &WORKLOADS
         rules:
           intname: 'Interface\s+(.*)\s+is\s+(?:up|down)'
           aggname: 'Aggregate\s+(.*)\s+is\s+(?:up|down)'
-          administrativeStatus: 'Admin\\s+state\\s+is\\s+(up|down)'
+          administrativeStatus: 'Admin\s+state\s+is\s+(up|down)'
           operationalStatus: '^(?:Interface|Aggregate)\s+(?:.*)\s+is\s+(up|down)'
           connected: 'Admin\\s+state\\s+is\\s+(up|down)'
           switchPortMode: 'VLAN\s+Mode:\s+(.*)'

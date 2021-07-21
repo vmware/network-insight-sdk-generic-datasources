@@ -218,13 +218,13 @@ workloads: &WORKLOADS
       name: *GENERIC_TEXT_PARSER
       arguments:
         rules:
-          intname: 'Interface\\s+(.*)\\s+is\\s+'
-          aggname: 'Aggregate\\s+(.*)\\s+is'
-          administrativeStatus: 'Admin\\s+state\\s+is\\s+(.*)'
-          operationalStatus: 'Interface\\s+.+is\\s+(.[^\\s]+)'
-          connected: 'Admin\\s+state\\s+is\\s+(.*)'
-          switchPortMode: 'VLAN\\s+Mode:\\s+(.*)'
-          HardwareAddress: 'Hardware:\\s+Ethernet,\\s+MAC\\s+Address:\\s+(.*)'
+          intname: 'Interface\\s+(.*)\\s+is\\s+(?:up|down)'
+          aggname: 'Aggregate\\s+(.*)\\s+is\\s+(?:up|down)'
+          administrativeStatus: 'Admin\\s+state\\s+is\\s+(up|down)'
+          operationalStatus: '^(?:Interface|Aggregate)\s+(?:.*)\s+is\s+(up|down)'
+          connected: 'Admin\\s+state\\s+is\\s+(up|down)'
+          switchPortMode: 'VLAN\s+Mode:\s+(.*)'
+          HardwareAddress: 'MAC\\s+Address\\s+:\\s+(.*)'
           MacAddress: "MAC\\s+Address\\s+:\\s+(.*)"
           interfaceSpeed: 'Speed\\s+(.*)\\s+Mb'
           operationalSpeed: 'Speed\\s+(.*)\\s+Mb'

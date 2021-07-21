@@ -49,10 +49,8 @@ class TextProcessor(object):
             while current_line_number < total_lines:
                 current_line = lines[current_line_number]
                 for rule in self.rules:
-                    py_logger.info("Processing line=[{}] with rule=[{}]".format(current_line, rule.pattern))
                     match = rule.get_pattern_match(current_line)
                     if match is not None:
-                        py_logger.info("Match found line=[{}] with rule=[{}]".format(current_line, rule.pattern))
                         parsed_key_values = {}
                         fields = self.line_tokenizer.tokenize(current_line)
                         if fields is None:

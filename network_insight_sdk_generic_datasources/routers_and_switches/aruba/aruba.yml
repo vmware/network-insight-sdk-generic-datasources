@@ -239,7 +239,7 @@ workloads: &WORKLOADS
       name: *GENERIC_TEXT_PARSER
       arguments:
         rules:
-          name: 'VRF\\s+Name\\s+:\\s+(.*)'
+          name: 'VRF\s+Name\s+:\s+(.*)'
 
   - &ROUTER_INTERFACE_TABLE_8320
     table_id: router-interfaces

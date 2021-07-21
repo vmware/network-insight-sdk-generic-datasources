@@ -88,12 +88,12 @@ class PhysicalDevice(object):
                 elif REUSE_COMMAND_KEY in workload:
                     command_result = command_output_dict[workload[REUSE_COMMAND_KEY]]
                     workload[COMMAND_KEY] = workload[REUSE_COMMAND_KEY]
-                    py_logger.info('Command %s Result %s' % (workload[REUSE_COMMAND_KEY], command_result))
+                    # py_logger.info('Command %s Result %s' % (workload[REUSE_COMMAND_KEY], command_result))
                     table = self.parse_command_output(workload, command_result)
                 else:
                     command_result = ssh_connect_handler.execute_command(workload[COMMAND_KEY])
                     command_output_dict[workload[COMMAND_KEY]] = command_result
-                    py_logger.info('Command %s Result %s' % (workload[COMMAND_KEY], command_result))
+                    # py_logger.info('Command %s Result %s' % (workload[COMMAND_KEY], command_result))
                     table = self.parse_command_output(workload, command_result)
                 if 'switch' == command_id:
                     table[0]['ipAddress/fqdn'] = self.credentials.ip_or_fqdn
@@ -115,7 +115,7 @@ class PhysicalDevice(object):
             else:
                 block_parser = import_utilities.load_class(cmd[BLOCK_PARSER_KEY][NAME_KEY])()
             blocks = import_utilities.load_class_method(block_parser, 'parse')(command_result)
-
+            py_logger.info("Blocks created={} cmd={}".format(len(blocks), cmd))
         else:
             blocks.append(command_result)
         for block in blocks:

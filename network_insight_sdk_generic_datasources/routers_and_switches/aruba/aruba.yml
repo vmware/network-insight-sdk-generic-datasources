@@ -220,16 +220,16 @@ workloads: &WORKLOADS
         rules:
           intname: 'Interface\\s+(.*)\\s+is\\s+(?:up|down)'
           aggname: 'Aggregate\\s+(.*)\\s+is\\s+(?:up|down)'
-          administrativeStatus: 'Admin\s+state\s+is\s+(up|down)'
+          administrativeStatus: 'Admin\\s+state\\s+is\\s+(up|down)'
           operationalStatus: '^(?:Interface|Aggregate)\s+(?:.*)\s+is\s+(up|down)'
-          connected: 'Admin\s+state\s+is\s+(up|down)'
+          connected: 'Admin\\s+state\\s+is\\s+(up|down)'
           switchPortMode: 'VLAN\s+Mode:\s+(.*)'
           HardwareAddress: 'MAC\\s+Address\\s+:\\s+(.*)'
           MacAddress: "MAC\\s+Address\\s+:\\s+(.*)"
-          interfaceSpeed: 'Speed\s+(.*)\s+Mb'
-          operationalSpeed: 'Speed\s+(.*)\s+Mb'
-          activePorts: 'Aggregated-interfaces\s+:\s+(.*)'
-          vlans: "Allowed\s+VLAN\s+List:\s+(.*)"
+          interfaceSpeed: 'Speed\\s+(.*)\\s+Mb'
+          operationalSpeed: 'Speed\\s+(.*)\\s+Mb'
+          activePorts: 'Aggregated-interfaces\\s+:\\s+(.*)'
+          vlans: "Allowed\\s+VLAN\\s+List:\\s+(.*)"
           mtu: "MTU\\s+(.*)"
 
   - &VRF_8320

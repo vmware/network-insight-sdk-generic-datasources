@@ -590,7 +590,6 @@ class Aruba8320RouterInterfaceTableProcessor(TableProcessor):
 
 class Aruba8320SwitchPortTableProcessor(TableProcessor):
     def process_tables(self, tables):
-        py_logger.info("Remove this logging {}".format(tables.keys()))
         all_ports = tables['allPorts']
         result = []
         for port in all_ports:
@@ -620,8 +619,8 @@ class Aruba8320PortChannelTableProcessor(TableProcessor):
             if 'aggname' not in port:
                 continue
             else:
-                t = port
+                t = port.copy()
                 t.update({'hardwareAddress': t['macAddress']})
-                p = t.pop('macAddress')
+                t.pop('macAddress')
                 result.append(t.copy())
-        return (result)
+        return result

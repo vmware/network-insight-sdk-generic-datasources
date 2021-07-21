@@ -606,10 +606,8 @@ class Aruba8320SwitchPortTableProcessor(TableProcessor):
                 continue
             else:
                 t = port.copy()
-                if 'activePorts' in t:
-                    t.pop('activePorts')
-                if 'macAddress' in t:
-                    t.pop('macAddress')
+                t.pop('activePorts')
+                t.pop('macAddress')
                 result.append(t.copy())
         return result
 

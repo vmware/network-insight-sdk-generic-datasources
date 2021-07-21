@@ -49,12 +49,13 @@ class TextProcessor(object):
             while current_line_number < total_lines:
                 current_line = lines[current_line_number]
                 for rule in self.rules:
+                    py_logger.info("Processing line=[{}] with rule=[{}]".format(current_line, rule))
                     match = rule.get_pattern_match(current_line)
                     if match is not None:
                         parsed_key_values = {}
                         fields = self.line_tokenizer.tokenize(current_line)
                         if fields is None:
-                            py_logger.log("Cannot processing None fields")
+                            py_logger.info("Cannot processing None fields")
                             continue
                         input_lines = lines if type(rule) == BlockRule else current_line
                         rule.apply(current_line_number, input_lines, fields, match.groups(), parsed_key_values)

@@ -252,7 +252,7 @@ workloads: &WORKLOADS
     reuse_table_processor: Aruba8320SwitchPortTableProcessor
 
   - &PORT_CHANNEL_TABLE_8320
-    table_id: port-channel
+    table_id: port-channels
     reuse_tables: allPorts
     reuse_table_processor: Aruba8320PortChannelTableProcessor
 

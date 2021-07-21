@@ -57,7 +57,6 @@ class BlockParser(object):
             current_line = str(lines[i]).strip()
 
             if self.is_start_of_block(current_line, i) and self.has_block_ended:
-                py_logger.info("Creating block for line=[{}]".format(current_line))
                 self.has_block_started = True
                 self.has_block_ended = False
 
@@ -65,12 +64,16 @@ class BlockParser(object):
                 # Block has been initialize now we can add lines to block
                 block = ('' if block is None else block) + current_line
             else:
-                py_logger.info("Ignoring line {}".format(current_line))
+                py_logger.info("isStart={}, isEnd={} Ignoring line {}".format(self.has_block_started,
+                                                                              self.has_block_ended, current_line))
 
             if self.is_end_of_block(current_line, i):
-                blocks.append(block.strip())
-                self.has_block_started = False
-                self.has_block_ended = True
+                if block is not None:
+                    blocks.append(block.strip())
+                    self.has_block_started = False
+                    self.has_block_ended = True
+                else:
+                    py_logger.info("Block not created. At line=[{}]".format(current_line))
                 block = None
             if block is not None:
                 block = block + self.newline_if_required()

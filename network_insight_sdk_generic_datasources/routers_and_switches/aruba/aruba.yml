@@ -212,7 +212,7 @@ workloads: &WORKLOADS
     block_parser:
       name: GenericBlockParser
       arguments:
-        line_pattern: '^.{9,10}\\s+.+\\s+is\\s+'
+        line_pattern: '^(Interface|Aggregate).*is.*(up|down).*'
     parser:
       pre_post_processor: ArubaSwitchPortsAllDetailsPrePostParser8320
       name: *GENERIC_TEXT_PARSER

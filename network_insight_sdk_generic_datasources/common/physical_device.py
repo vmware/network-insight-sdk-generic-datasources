@@ -105,30 +105,31 @@ class PhysicalDevice(object):
         finally:
             ssh_connect_handler.close_connection()
 
-    def parse_command_output(self, cmd, command_result):
+    def parse_command_output(self, workload, command_result):
         blocks = []
         table = []  # Each row is dictionary
-        if BLOCK_PARSER_KEY in cmd:
-            if ARGUMENTS_KEY in cmd[BLOCK_PARSER_KEY]:
-                block_parser = import_utilities.load_block_parser(cmd[BLOCK_PARSER_KEY][NAME_KEY])(
-                    **cmd[BLOCK_PARSER_KEY][ARGUMENTS_KEY])
+        if BLOCK_PARSER_KEY in workload:
+            if ARGUMENTS_KEY in workload[BLOCK_PARSER_KEY]:
+                block_parser = import_utilities.load_block_parser(workload[BLOCK_PARSER_KEY][NAME_KEY])(
+                    **workload[BLOCK_PARSER_KEY][ARGUMENTS_KEY])
             else:
-                block_parser = import_utilities.load_class(cmd[BLOCK_PARSER_KEY][NAME_KEY])()
+                block_parser = import_utilities.load_class(workload[BLOCK_PARSER_KEY][NAME_KEY])()
             blocks = import_utilities.load_class_method(block_parser, 'parse')(command_result)
-            py_logger.info("Blocks created={} cmd={}".format(len(blocks), cmd))
+            py_logger.info("Blocks created={} cmd={}".format(len(blocks), workload))
         else:
             blocks.append(command_result)
         for block in blocks:
             try:
                 if not block:
                     continue
-                result_dict = self.process_block(block, cmd)
+                result_dict = self.process_block(block, workload)
                 if len(result_dict) > 0:
                     table += result_dict
             except IndexError as e:
-                py_logger.info("Couldn't parse block {}\nfor command {}".format(block, cmd[COMMAND_KEY]))
+                py_logger.info("Couldn't parse block {}\nfor command {}".format(block, workload[COMMAND_KEY]))
                 py_logger.error(e)
-        table = self.filter_columns(cmd, table)
+        py_logger.info("DELETE ME >>>> {}".format(workload))
+        table = self.filter_columns(workload, table)
         return table
 
     @staticmethod

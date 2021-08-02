@@ -168,7 +168,7 @@ workloads: &WORKLOADS
     parser:
       name: *HORIZONTAL_TABLE_PARSER
       arguments:
-        skip_head: 10
+        skip_head: 11
         header_keys:
           - local-port
           - chassis-id

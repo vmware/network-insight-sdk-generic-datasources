@@ -178,7 +178,7 @@ workloads: &WORKLOADS
           - sys-name
     select_columns:
       local-port: localInterface
-      sys-names: remoteDevice
+      sys-name: remoteDevice
       port-desc: remoteInterface
 
   - &SHOW_IP_ROUTE_VRF_ALL_8320

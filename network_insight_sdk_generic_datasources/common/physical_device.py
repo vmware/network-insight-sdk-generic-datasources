@@ -108,7 +108,6 @@ class PhysicalDevice(object):
     def parse_command_output(self, workload, command_result):
         blocks = []
         table = []  # Each row is dictionary
-        py_logger.info("Command output {}".format(command_result))
         if BLOCK_PARSER_KEY in workload:
             if ARGUMENTS_KEY in workload[BLOCK_PARSER_KEY]:
                 block_parser = import_utilities.load_block_parser(workload[BLOCK_PARSER_KEY][NAME_KEY])(

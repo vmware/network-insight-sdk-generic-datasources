@@ -22,7 +22,6 @@ class SSHConnectHandler(object):
 
         py_logger.info("Making connection to Device IP {} Type {}".format(ip, self.device_type))
         self.net_connect = ConnectHandler(ip=ip, username=username, password=password, device_type=self.device_type, port=self.port)
-        self.net_connect.set_terminal_width(command='stty cols 200')
 
     def execute_command(self, command=None):
         if command is None:

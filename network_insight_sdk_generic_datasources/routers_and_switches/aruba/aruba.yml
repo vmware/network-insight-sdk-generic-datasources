@@ -34,10 +34,10 @@ workloads: &WORKLOADS
           - port
           - vlan
           - age
-      select_columns:
-        macAddress: macAddress
-        port: switchPort
-        vlan: vlan
+    select_columns:
+      macAddress: macAddress
+      port: switchPort
+      vlan: vlan
 
   - &LLDP_TABLE_3810
     table_id: neighbors
@@ -157,10 +157,10 @@ workloads: &WORKLOADS
           - type
           - port
           - denied
-      select_columns:
-        macAddress: macAddress
-        port: switchPort
-        vlan: vlan
+    select_columns:
+      macAddress: macAddress
+      port: switchPort
+      vlan: vlan
 
   - &LLDP_TABLE_8320
     table_id: neighbors
@@ -176,10 +176,10 @@ workloads: &WORKLOADS
           - port-desc
           - ttl
           - sys-name
-      select_columns:
-        localInterface: local-port
-        remoteDevice: sys-names
-        remoteInterface: port-desc
+    select_columns:
+      localInterface: local-port
+      remoteDevice: sys-names
+      remoteInterface: port-desc
 
   - &SHOW_IP_ROUTE_VRF_ALL_8320
       table_id: routes

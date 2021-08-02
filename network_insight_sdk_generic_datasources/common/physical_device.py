@@ -133,13 +133,12 @@ class PhysicalDevice(object):
         return table
 
     @staticmethod
-    def filter_columns(cmd, table):
-        py_logger.info("DELETE ME >>>> {}".format(SELECT_COLUMNS_KEY not in cmd))
-        if SELECT_COLUMNS_KEY not in cmd:
+    def filter_columns(workload, table):
+        if SELECT_COLUMNS_KEY not in workload:
             return table
 
         final_table = []
-        keys = cmd[SELECT_COLUMNS_KEY]
+        keys = workload[SELECT_COLUMNS_KEY]
         for row in table:
             new_row = {}
             for k in keys:

@@ -128,12 +128,13 @@ class PhysicalDevice(object):
             except IndexError as e:
                 py_logger.info("Couldn't parse block {}\nfor command {}".format(block, workload[COMMAND_KEY]))
                 py_logger.error(e)
-        py_logger.info("DELETE ME >>>> {}".format(workload))
+
         table = self.filter_columns(workload, table)
         return table
 
     @staticmethod
     def filter_columns(cmd, table):
+        py_logger.info("DELETE ME >>>> {}".format(SELECT_COLUMNS_KEY not in cmd))
         if SELECT_COLUMNS_KEY not in cmd:
             return table
 

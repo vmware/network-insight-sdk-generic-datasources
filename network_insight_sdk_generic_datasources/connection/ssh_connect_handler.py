@@ -22,13 +22,14 @@ class SSHConnectHandler(object):
 
         py_logger.info("Making connection to Device IP {} Type {}".format(ip, self.device_type))
         self.net_connect = ConnectHandler(ip=ip, username=username, password=password, device_type=self.device_type, port=self.port)
-        self.net_connect.set_terminal_width(command='stty cols 150')
+        self.net_connect.set_terminal_width(command='stty cols 200')
 
     def execute_command(self, command=None):
         if command is None:
             raise ValueError("Command not provided")
         py_logger.info('Executing command <{}>'.format(command))
         result = self.net_connect.send_command(command, delay_factor=2, max_loops=1000)
+        py_logger.info("Command output {}".format(result))
         return result
 
     def execute_multiple_commands(self, commands=None):

@@ -147,6 +147,7 @@ class PhysicalDevice(object):
                     py_logger.error("Did not find key {}".format(k))
                     continue
                 new_row[keys[k]] = value
+            py_logger.info("Adding row {}".format(new_row))
             final_table.append(new_row)
         return final_table
 

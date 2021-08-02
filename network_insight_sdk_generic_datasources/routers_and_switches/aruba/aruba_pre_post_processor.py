@@ -298,97 +298,13 @@ class ArubaSwitchPortsAllDetailsPrePostParser8320(PrePostProcessor):
             if 'mtu' in d:
                 intfdetails.update({"mtu": d['mtu']})
             if 'vlans' in d:
-                vlanslist = d['vlans'].split(',')
-                vlanfinal = []
-                for vlan in vlanslist:
-                    match = re.match('\\d+-\\d+',vlan)
-                    if match:
-                        range = vlan.split('-')
-                        i = int(range[1]) - int(range[0])
-                        start = int(range[0])
-                        count = 0
-                        while count < i + 1:
-                            vlanfinal.append(start)
-                            start += 1
-                            count += 1
-                    elif vlan == 'all':
-                        count = 0
-                        while count < 4096:
-                            vlanfinal.append(count + 1)
-                            count += 1
-                    else:
-                        vlanfinal.append(vlan)
-                intfdetails.update({'vlans': vlanfinal})
+                if d['vlans'] == 'all':
+                    intfdetails.update({'vlans': "1-4095"})
+                else:
+                    vlanslist = d['vlans'].split(',')
+                    intfdetails.update({'vlans': vlanslist })
             result.append(intfdetails.copy())
         return result
-
-
-class ArubaPortChannelPrePostParser8320(PrePostProcessor):
-    def post_process(self, data):
-            result = []
-            intfdetails = dict()
-            for d in data:
-                if 'name' in d:
-                    if d['name'] == '':
-                        continue
-                    intfdetails.update({"name": d['name']})
-                if 'administrativeStatus' in d:
-                    intfdetails.update({"administrativeStatus": d['administrativeStatus'].upper()})
-                if 'operationalStatus' in d:
-                    intfdetails.update({"operationalStatus": d['operationalStatus'].upper()})
-                if 'connected' in d:
-                    intfdetails.update({"connected": d['connected'].upper()})
-                if 'hardwareAddress' in d:
-                    intfdetails.update({"hardwareAddress": d['hardwareAddress']})
-                if 'interfaceSpeed' in d:
-                    intspeed = d['interfaceSpeed']
-                    if intspeed == '0':
-                        intfdetails.update({'interfaceSpeed': intspeed})
-                    else:
-                        intspeed = int(intspeed) * 100000
-                        intfdetails.update({'interfaceSpeed': intspeed})
-                if 'operationalSpeed' in d:
-                    opspeed = d['operationalSpeed']
-                    if opspeed == '0':
-                        intfdetails.update({'operationalSpeed': opspeed})
-                    else:
-                        opspeed = int(opspeed) * 100000
-                        intfdetails.update({'operationalSpeed': opspeed})
-                if 'switchPortMode' in d:
-                    if d['switchPortMode'] == 'native-untagged' or 'native-tagged':
-                        intfdetails.update({"switchPortMode": 'TRUNK'})
-                    elif d['switchPortMode'] == 'access':
-                        intfdetails.update({"switchPortMode": 'ACCESS'})
-                    else:
-                        intfdetails.update({"switchPortMode": 'OTHER'})
-                if 'activePorts' in d:
-                    ports = d['activePorts']
-                    intfdetails.update({"activePorts": ports.split()})
-                if 'vlans' in d:
-                    vlanslist = d['vlans'].split(',')
-                    vlanfinal = []
-                    for vlan in vlanslist:
-                        match = re.match('\\d+-\\d+', vlan)
-                        if match:
-                            range = vlan.split('-')
-                            i = int(range[1]) - int(range[0])
-                            start = int(range[0])
-                            count = 0
-                            while count < i + 1:
-                                vlanfinal.append(start)
-                                start += 1
-                                count += 1
-                        elif vlan == 'all':
-                            count = 0
-                            while count < 4096:
-                                vlanfinal.append(count + 1)
-                                count += 1
-                        else:
-                            vlanfinal.append(vlan)
-                    intfdetails.update({'vlans': vlanfinal})
-                result.append(intfdetails.copy())
-            return result
-
 
 class ArubaRoutePrePostParser8320(PrePostProcessor):
     def post_process(self, data):

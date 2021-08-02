@@ -36,7 +36,7 @@ workloads: &WORKLOADS
           - age
       select_columns:
         macAddress: macAddress
-        port: port
+        port: switchPort
         vlan: vlan
 
   - &LLDP_TABLE_3810
@@ -159,7 +159,7 @@ workloads: &WORKLOADS
           - denied
       select_columns:
         macAddress: macAddress
-        port: port
+        port: switchPort
         vlan: vlan
 
   - &LLDP_TABLE_8320

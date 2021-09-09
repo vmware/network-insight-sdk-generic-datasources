@@ -15,9 +15,9 @@ workloads: &WORKLOADS
     command: no page
     parser:
       name: *GENERIC_TEXT_PARSER
-        arguments:
-          rules:
-            page: "(.*)"
+      arguments:
+        rules:
+          page: "(.*)"
 
   - &SHOW_VERSION_3810
     table_id: switch

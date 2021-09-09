@@ -33,7 +33,7 @@ class SSHConnectHandler(object):
             raise ValueError("Command not provided")
         py_logger.info('Executing command <{}>'.format(command))
         result = self.net_connect.send_command(command, delay_factor=2, max_loops=1000)
-        py_logger.info(result)
+        py_logger.info("Command output {}".format(result))
         return result
 
     def execute_multiple_commands(self, commands=None):

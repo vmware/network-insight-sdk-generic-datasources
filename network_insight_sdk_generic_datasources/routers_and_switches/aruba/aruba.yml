@@ -24,12 +24,11 @@ workloads: &WORKLOADS
     command: show system information
     parser:
       name: *GENERIC_TEXT_PARSER
-        arguments:
-          rules:
-            ipAddress/fqdn: ""
-            name: "System Name\\s+:\\s+(.*)"
-            hostname: "System Name\\s+:\\s+(.*)"
-            model: "Software revision\\s+:\\s+(.*)"
+      arguments:
+        rules:
+          name: "System Name\\s+:\\s+(.*)"
+          hostname: "System Name\\s+:\\s+(.*)"
+          model: "Software revision\\s+:\\s+(.*)"
 
   - &MAC_ADDRESS_TABLE_3810
     table_id: mac-address-table
@@ -44,10 +43,10 @@ workloads: &WORKLOADS
           - port
           - vlan
           - age
-      select_columns:
-        macAddress: macAddress
-        port: port
-        vlan: vlan
+    select_columns:
+      macAddress: macAddress
+      port: switchPort
+      vlan: vlan
 
   - &LLDP_TABLE_3810
     table_id: neighbors
@@ -99,10 +98,10 @@ workloads: &WORKLOADS
         arguments:
           rules:
             name: "Status and Counters - Port Counters for\\s\\w+\\s(.*)"
-            connected: "Link Status\s+:\s(.*)"
-            administrativeStatus: "Port Enabled\s+:\s(.*)"
-            operationalStatus: "Link Status\s+:\s(.*)"
-            hardwareAddress: "MAC Address\s+:\s(.*)"
+            connected: "Link Status\\s+:\\s(.*)"
+            administrativeStatus: "Port Enabled\\s+:\\s(.*)"
+            operationalStatus: "Link Status\\s+:\\s(.*)"
+            hardwareAddress: "MAC Address\\s+:\\s(.*)"
 
   - &SHOW_INTERFACE2_3810
       table_id: showSwitchPorts2
@@ -148,12 +147,11 @@ workloads: &WORKLOADS
     command: show system
     parser:
       name: *GENERIC_TEXT_PARSER
-        arguments:
-          rules:
-            ipAddress/fqdn: ""
-            name: "Hostname\s+:\s+(.*)"
-            hostname: "Hostname\s+:\s+(.*)"
-            model: "Product\s+Name\s+:\s+(.*)"
+      arguments:
+        rules:
+          name: "Hostname\\s+:\\s+(.*)"
+          hostname: "Hostname\\s+:\\s+(.*)"
+          model: "Product\\s+Name\\s+:\\s+(.*)"
 
   - &MAC_ADDRESS_TABLE_8320
     table_id: mac-address-table
@@ -168,10 +166,10 @@ workloads: &WORKLOADS
           - type
           - port
           - denied
-      select_columns:
-        macAddress: macAddress
-        port: port
-        vlan: vlan
+    select_columns:
+      macAddress: macAddress
+      port: switchPort
+      vlan: vlan
 
   - &LLDP_TABLE_8320
     table_id: neighbors
@@ -179,7 +177,7 @@ workloads: &WORKLOADS
     parser:
       name: *HORIZONTAL_TABLE_PARSER
       arguments:
-        skip_head: 10
+        skip_head: 11
         header_keys:
           - local-port
           - chassis-id
@@ -187,10 +185,10 @@ workloads: &WORKLOADS
           - port-desc
           - ttl
           - sys-name
-      select_columns:
-        localInterface: local-port
-        remoteDevice: sys-names
-        remoteInterface: port-desc
+    select_columns:
+      local-port: localInterface
+      sys-name: remoteDevice
+      port-desc: remoteInterface
 
   - &SHOW_IP_ROUTE_VRF_ALL_8320
       table_id: routes
@@ -223,40 +221,34 @@ workloads: &WORKLOADS
     block_parser:
       name: GenericBlockParser
       arguments:
-        line_pattern: '^.{9,10}\\s+.+\\s+is\\s+'
+        line_pattern: '\s?(Interface|Aggregate)\s+(.*)\s+is\s+(up|down)'
     parser:
       pre_post_processor: ArubaSwitchPortsAllDetailsPrePostParser8320
       name: *GENERIC_TEXT_PARSER
       arguments:
         rules:
-          intname: 'Interface\\s+(.+)is\\s+'
-          aggname: 'Aggregate\\s+(.*)\\s+is'
-          administrativeStatus: 'Admin\\s+state\\s+is\\s+(.*)'
-          operationalStatus: 'Interface\\s+.+is\\s+(.*)\\s+'
-          connected: 'Admin\\s+state\\s+is\\s+(.*)'
-          switchPortMode: 'VLAN\\s+Mode:\\s+(.*)'
-          HardwareAddress: 'hardware:\s+Ethernet,\s+MAC\s+Address:\s+(.*)'
-          MacAddress: "MAC\\s+Address\\s+:\\s+(.*)"
-          interfaceSpeed: 'Speed\\s+(.*)\\s+Mb'
-          operationalSpeed: 'Speed\\s+(.*)\\s+Mb'
-          activePorts: 'Aggregated-interfaces\\s+:\\s+(.*)'
-          vlans: "Allowed\\s+VLAN\\s+List:\\s+(.*)"
-          mtu: "MTU\\s+(.*)"
-          duplex: "Auto-Negotiation\\s+is\\s+(.*)"
+          intname: 'Interface\s+(.*)\s+is\s+(?:up|down)'
+          aggname: 'Aggregate\s+(.*)\s+is\s+(?:up|down)'
+          administrativeStatus: 'Admin\s+state\s+is\s+(up|down)'
+          operationalStatus: '^(?:Interface|Aggregate)\s+(?:.*)\s+is\s+(up|down)'
+          connected: 'Admin\s+state\s+is\s+(up|down)'
+          switchPortMode: 'VLAN\s+Mode:\s+(.*)'
+          hardwareAddress: 'Hardware:\s+Ethernet,\s+MAC\s+Address:\s+(.*)'
+          macAddress: 'MAC\s+Address\s+:\s*(.*)'
+          interfaceSpeed: 'Speed\s+(.*)\s+Mb'
+          operationalSpeed: 'Speed\s+(.*)\s+Mb'
+          activePorts: 'Aggregated-interfaces\s+:\s+(.*)'
+          vlans: 'Allowed\s+VLAN\s+List:\s+(.*)'
+          mtu: 'MTU\s+(.*)'
 
   - &VRF_8320
     table_id: vrfs
     command: show vrf
-    block_parser:
-      name: GenericBlockParser
-      arguments:
-        line_pattern: "VRF\\s+Name\\s+:\s+.+"
     parser:
-      pre_post_processor: ArubaSwitchPortsAllDetailsPrePostParser8320
       name: *GENERIC_TEXT_PARSER
       arguments:
         rules:
-          intname: 'VRF\\s+Name\\s+:\\s+(.*)'
+          name: 'VRF\s+Name\s+:\s+(.*)'
 
   - &ROUTER_INTERFACE_TABLE_8320
     table_id: router-interfaces
@@ -269,7 +261,7 @@ workloads: &WORKLOADS
     reuse_table_processor: Aruba8320SwitchPortTableProcessor
 
   - &PORT_CHANNEL_TABLE_8320
-    table_id: port-channel
+    table_id: port-channels
     reuse_tables: allPorts
     reuse_table_processor: Aruba8320PortChannelTableProcessor
 
@@ -296,3 +288,4 @@ result_writer: &RESULT_WRITER
     - port-channels
 
 aruba3810: !include aruba3810.yml
+aruba8320: !include aruba8320.yml

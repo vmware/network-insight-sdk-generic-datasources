@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: BSD-2-Clause
 
 import re
+from network_insight_sdk_generic_datasources.common.log import py_logger
 
 
 class LineTokenizer(object):
@@ -17,10 +18,11 @@ class LineTokenizer(object):
         """
         Tokenizes based on regex
         @param line:
-        @return:
+        @return: array after splitting with regex
         """
         if line is None or line.strip() == '':
-            raise ValueError('Line not provided')
+            py_logger.log("Line is null or empty")
+            return None
         line = line.strip()
         array = re.split(self.regex, str(line))
         return array

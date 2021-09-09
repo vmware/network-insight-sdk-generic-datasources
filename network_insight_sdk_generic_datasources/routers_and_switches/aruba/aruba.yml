@@ -10,6 +10,15 @@ package_handler: &PACKAGE_HANDLER
 # workloads added will be executed in sequence
 workloads: &WORKLOADS
 ### ARUBA 3810 TABLES
+  - &NO_PAGE
+    table_id: nopage
+    command: no page
+    parser:
+      name: *GENERIC_TEXT_PARSER
+        arguments:
+          rules:
+            page: "(.*)"
+
   - &SHOW_VERSION_3810
     table_id: switch
     command: show system information

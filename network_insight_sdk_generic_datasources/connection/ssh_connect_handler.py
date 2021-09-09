@@ -2,8 +2,10 @@
 # SPDX-License-Identifier: BSD-2-Clause
 
 from netmiko import ConnectHandler
+from netmiko.ssh_dispatcher import CLASS_MAPPER_BASE, CLASS_MAPPER
 from network_insight_sdk_generic_datasources.connection.device_type import DeviceType
 from network_insight_sdk_generic_datasources.common.log import py_logger
+from network_insight_sdk_generic_datasources.routers_and_switches.aruba.custom_aruba_ssh import CustomArubaSSH
 
 
 class SSHConnectHandler(object):
@@ -20,7 +22,10 @@ class SSHConnectHandler(object):
 
         self.device_type = DeviceType.value_of(device_type).to_lower_case()
 
-        py_logger.info("Making connection to Device IP {} Type {}".format(ip, self.device_type))
+        if self.device_type == 'ARUBA_OS':
+            CLASS_MAPPER[self.device_type] = CustomArubaSSH
+
+        py_logger.info("Making connection to Device IP {} Type {} classMapperBase {} classMapper {}".format(ip, self.device_type, CLASS_MAPPER_BASE[self.device_type], CLASS_MAPPER[self.device_type]))
         self.net_connect = ConnectHandler(ip=ip, username=username, password=password, device_type=self.device_type, port=self.port)
 
     def execute_command(self, command=None):

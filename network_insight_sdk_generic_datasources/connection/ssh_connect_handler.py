@@ -22,7 +22,7 @@ class SSHConnectHandler(object):
 
         self.device_type = DeviceType.value_of(device_type).to_lower_case()
 
-        if self.device_type == 'ARUBA_OS':
+        if self.device_type.lower() == 'aruba_os':
             CLASS_MAPPER[self.device_type] = CustomArubaSSH
 
         py_logger.info("Making connection to Device IP {} Type {} classMapperBase {} classMapper {}".format(ip, self.device_type, CLASS_MAPPER_BASE[self.device_type], CLASS_MAPPER[self.device_type]))

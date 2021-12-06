@@ -21,7 +21,7 @@ class LineTokenizer(object):
         @return: array after splitting with regex
         """
         if line is None or line.strip() == '':
-            py_logger.log("Line is null or empty")
+            py_logger.info("Line is null or empty")
             return None
         line = line.strip()
         array = re.split(self.regex, str(line))

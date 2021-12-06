@@ -42,6 +42,7 @@ def configure_logger(file_name=None):
     # add the handler to the root logger
     logging.getLogger().addHandler(console)
     py_logger = logging.getLogger()
+    netmiko = logging.getLogger("netmiko")
 
     py_logger.critical("Log file Name: %s", tmp_file)
 

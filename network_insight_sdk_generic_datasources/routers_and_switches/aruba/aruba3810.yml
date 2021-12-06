@@ -4,6 +4,7 @@ package_handler:
   <<: *PACKAGE_HANDLER
 
 workloads:
+  - <<: *NO_PAGE
   - <<: *SHOW_VERSION_3810
   - <<: *MAC_ADDRESS_TABLE_3810
   - <<: *LLDP_TABLE_3810
@@ -12,7 +13,6 @@ workloads:
   - <<: *SHOW_INTERFACE1_3810
   - <<: *SHOW_INTERFACE2_3810
   - <<: *SHOW_LACP_3810
-  - <<: *SHOW_RUN_VLAN_3810
   - <<: *SHOW_PORT_CHANNELS_3810
   - <<: *SHOW_IP_ROUTE_3810
 

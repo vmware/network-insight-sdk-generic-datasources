@@ -10,6 +10,15 @@ package_handler: &PACKAGE_HANDLER
 # workloads added will be executed in sequence
 workloads: &WORKLOADS
 ### ARUBA 3810 TABLES
+  - &NO_PAGE
+    table_id: nopage
+    command: no page
+    parser:
+      name: *GENERIC_TEXT_PARSER
+      arguments:
+        rules:
+          page: "(.*)"
+
   - &SHOW_VERSION_3810
     table_id: switch
     command: show system information
@@ -62,19 +71,9 @@ workloads: &WORKLOADS
 
   - &SHOW_ROUTER_INTERFACES_3810
     table_id: router-interfaces
-    command: show running-config vlan
-    block_parser:
-      name: GenericBlockParser
-      arguments:
-        line_pattern: 'vlan \\d{1,4}'
+    command: show ip
     parser:
-      pre_post_processor: ArubaRouterInterfacePrePostProcessor3810
-      name: *GENERIC_TEXT_PARSER
-      arguments:
-        rules:
-          name: "(vlan \\d{1,4})"
-          ipAddress: "ip address (\\d{1,3}.\\d{1,3}.\\d{1,3}.\\d{1,3})"
-          netmask: "ip address \\d{1,3}.\\d{1,3}.\\d{1,3}.\\d{1,3}\\s+(\\d{1,3}.\\d{1,3}.\\d{1,3}.\\d{1,3})"
+      name: routers_and_switches.aruba.aruba_pre_post_processor.Aruba3810RouterInterfaceParser
 
   - &SHOW_INTERFACE1_3810
       table_id: showSwitchPorts1
@@ -104,28 +103,12 @@ workloads: &WORKLOADS
       table_id: showLacp
       command: show lacp
       parser:
-        name: routers_and_switches.aruba.aruba_pre_post_processor.ArubaLacp3810Parser
-
-  - &SHOW_RUN_VLAN_3810
-      table_id: showRunVlan
-      command: show running-config vlan
-      block_parser:
-        name: GenericBlockParser
-        arguments:
-          line_pattern: 'vlan \\d{1,4}'
-      parser:
-        pre_post_processor: ArubaVLANTrunkPrePostProcessor3810
-        name: *GENERIC_TEXT_PARSER
-        arguments:
-          rules:
-            vlan: "vlan (\\d{1,4})"
-            trunkport: "^\\s*tagged\\s*(.*)"
+        name: routers_and_switches.aruba.aruba_pre_post_processor.
 
   - &SHOW_PORT_CHANNELS_3810
     table_id: port-channel
-    reuse_tables: showSwitchPorts1,showLacp,showRunVlan
+    reuse_tables: showSwitchPorts1,showLacp
     reuse_table_processor: Aruba3810PortChannelTableProcessor
-
 
   - &SHOW_IP_ROUTE_3810
     table_id: routes

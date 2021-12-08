@@ -35,6 +35,8 @@ class ArubaPartialRoutesParser3810(PrePostProcessor):
             line_counter = 0
             header_found = False
             for line in lines:
+                if line.strip() == '':
+                    continue
                 match = pattern.match(line.strip())
                 if match is not None:
                     header_found = True
@@ -223,6 +225,8 @@ class ArubaLacp3810Parser(PrePostProcessor):
             line_counter = 0
             header_found = False
             for line in lines:
+                if line.strip() == '':
+                    continue
                 match = pattern.match(line.strip())
                 if match is not None:
                     header_found = True
@@ -434,8 +438,8 @@ class Aruba3810PortChannelTableProcessor(TableProcessor):
 class Aruba3810RoutesTableProcessor(TableProcessor):
     def process_tables(self, tables):
         result = []
-        routes = tables['routes']
-        vlans = tables['vlan']
+        routes = tables['routespart1']
+        vlans = tables['router-interfaces']
         for detail in routes:
             t = dict()
             if 'vrf' in detail:

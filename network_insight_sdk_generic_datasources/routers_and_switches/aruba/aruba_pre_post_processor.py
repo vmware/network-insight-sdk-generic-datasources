@@ -102,7 +102,7 @@ class Aruba3810RouterInterfaceParser(PrePostProcessor):
                     continue
                 # Parsing Logic goes here
                 tokens = tokenizer.tokenize(line)
-                if len(tokens) == 0:
+                if tokens is None or len(tokens) == 0:
                     continue
                 routers = dict()
                 vlan_match = tokens[0]

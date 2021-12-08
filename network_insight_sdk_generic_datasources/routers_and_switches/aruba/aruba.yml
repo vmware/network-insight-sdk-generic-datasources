@@ -112,7 +112,7 @@ workloads: &WORKLOADS
 
   - &SHOW_IP_ROUTE_3810
     table_id: routes
-    reuse_tables: routespart1, router-interfaces
+    reuse_tables: routespart1,router-interfaces
     reuse_table_processor: Aruba3810RoutesTableProcessor
 
 ### ARUBA 8320 TABLES

@@ -435,7 +435,7 @@ class Aruba3810PortChannelTableProcessor(TableProcessor):
                     t['activePorts'].append(member['portId'])
             d.update(t)
             result = d
-            return(result)
+            return result
 
 
 class Aruba3810RoutesTableProcessor(TableProcessor):

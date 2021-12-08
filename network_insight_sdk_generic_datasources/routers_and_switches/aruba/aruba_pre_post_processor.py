@@ -72,6 +72,7 @@ class ArubaPartialRoutesParser3810(PrePostProcessor):
             py_logger.error("{}\n{}".format(e, traceback.format_exc()))
         return result
 
+
 class Aruba3810RouterInterfaceParser(PrePostProcessor):
     """
     Get router interface, subnet and mask information
@@ -104,7 +105,7 @@ class Aruba3810RouterInterfaceParser(PrePostProcessor):
                 tokens = tokenizer.tokenize(line)
                 if tokens is None or len(tokens) == 0:
                     continue
-                routers = dict()
+                vlan_interface = dict()
                 vlan_match = tokens[0]
                 ip_match_text = re.match(".+\\s+(\\d{1,3}.\\d{1,3}.\\d{1,3}.\\d{1,3}.\\d{1,3})\\s+\\d.+", line)
                 mask_match = re.match(".+\\d\\s+(\\d{1,3}.\\d{1,3}.\\d{1,3}.\\d{1,3}.\\d{1,3}).+", line)
@@ -114,13 +115,13 @@ class Aruba3810RouterInterfaceParser(PrePostProcessor):
                     ip_address = ip_match_text.group(1).strip()
                     subnet_mask = mask_match.group(1).strip()
                     ip_address_cidr = ip_address + '/' + str(IPAddress(subnet_mask).netmask_bits())
-                    routers.update({"name": vlan_match})
-                    routers.update({"ipAddress": ip_address_cidr})
-                    routers.update({"vrf": "default"})
-                    routers.update({"administrativeStatus": "UP"})
-                    routers.update({"operationalStatus": "UP"})
-                    routers.update({"connected": "True"})
-                result.append(routers.copy())
+                    vlan_interface.update({"name": vlan_match})
+                    vlan_interface.update({"ipAddress": ip_address_cidr})
+                    vlan_interface.update({"vrf": "default"})
+                    vlan_interface.update({"administrativeStatus": "UP"})
+                    vlan_interface.update({"operationalStatus": "UP"})
+                    vlan_interface.update({"connected": "TRUE"})
+                result.append(vlan_interface.copy())
         except Exception as e:
             py_logger.error("{}\n{}".format(e, traceback.format_exc()))
         return result
@@ -369,6 +370,7 @@ class ArubaSwitchPortsAllDetailsPrePostParser8320(PrePostProcessor):
             result.append(intfdetails.copy())
         return result
 
+
 class ArubaRoutePrePostParser8320(PrePostProcessor):
     def post_process(self, data):
             result = []
@@ -462,15 +464,16 @@ class Aruba3810RoutesTableProcessor(TableProcessor):
                     t.update({'interface': detail['nextHop']})
                 if detail['routeType'] == 'static' and nexthop_ipmatch == None:
                     t.update({'interfaceName': detail['nextHop']})
-            for ipaddress in vlans:
+            for row in vlans:
                 if 'interface' in t:
                     break
-                network = ipaddress['ipAddress']
+                network = row['ipAddress']
+                py_logger.info("network : " + network)
                 if nexthop in IPNetwork(network):
-                    t.update({'interfaceName': ipaddress['name']})
+                    t.update({'interfaceName': row['name']})
                     break
             result.append(t.copy())
-        return(result)
+        return result
 
 
 class Aruba8320InterfaceTableProcessor(TableProcessor):

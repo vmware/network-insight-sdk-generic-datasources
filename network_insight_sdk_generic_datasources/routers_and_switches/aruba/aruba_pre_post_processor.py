@@ -468,7 +468,7 @@ class Aruba3810RoutesTableProcessor(TableProcessor):
                 if 'interface' in t:
                     break
                 network = row['ipAddress']
-                py_logger.info("network : " + network)
+                py_logger.info("network : [{}]".format(network))
                 if nexthop in IPNetwork(network):
                     t.update({'interfaceName': row['name']})
                     break

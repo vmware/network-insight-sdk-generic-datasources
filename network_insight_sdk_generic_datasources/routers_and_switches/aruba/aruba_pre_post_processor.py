@@ -102,18 +102,20 @@ class Aruba3810RouterInterfaceParser(PrePostProcessor):
                     continue
                 # Parsing Logic goes here
                 tokens = tokenizer.tokenize(line)
+                if len(tokens) == 0:
+                    continue
                 routers = dict()
-                VLAN_match = tokens[0]
+                vlan_match = tokens[0]
                 ip_match_text = re.match(".+\\s+(\\d{1,3}.\\d{1,3}.\\d{1,3}.\\d{1,3}.\\d{1,3})\\s+\\d.+", line)
                 mask_match = re.match(".+\\d\\s+(\\d{1,3}.\\d{1,3}.\\d{1,3}.\\d{1,3}.\\d{1,3}).+", line)
                 if ip_match_text is None:
                     continue
                 if ip_match_text:
-                    ipAddress = ip_match_text.group(1).strip()
-                    subnetMask = mask_match.group(1).strip()
-                    ipAddress_cidr = ipAddress + '/' + str(IPAddress(subnetMask).netmask_bits())
-                    routers.update({"name": VLAN_match})
-                    routers.update({"ipAddress": ipAddress_cidr})
+                    ip_address = ip_match_text.group(1).strip()
+                    subnet_mask = mask_match.group(1).strip()
+                    ip_address_cidr = ip_address + '/' + str(IPAddress(subnet_mask).netmask_bits())
+                    routers.update({"name": vlan_match})
+                    routers.update({"ipAddress": ip_address_cidr})
                     routers.update({"vrf": "default"})
                     routers.update({"administrativeStatus": "UP"})
                     routers.update({"operationalStatus": "UP"})
@@ -123,20 +125,21 @@ class Aruba3810RouterInterfaceParser(PrePostProcessor):
             py_logger.error("{}\n{}".format(e, traceback.format_exc()))
         return result
 
+
 class Aruba3810MacAddressPrePostProcessor(PrePostProcessor):
     def post_process(self, data):
         result = []
-        intfdetails = dict()
+        interface_details = dict()
         for d in data:
             if 'vlan' in d:
-                intfdetails.update({"vlan": d['vlan']})
+                interface_details.update({"vlan": d['vlan']})
             if 'port' in d:
-                intfdetails.update({"port": d['port']})
+                interface_details.update({"port": d['port']})
             if 'macAddress' in d:
                 d['macAddress'] = re.findall('..', d['macAddress'].replace('-', ''))
                 d['macAddress'] = (":".join(d['macAddress']))
-                intfdetails.update({"macAddress": d['macAddress']})
-            result.append(intfdetails.copy())
+                interface_details.update({"macAddress": d['macAddress']})
+            result.append(interface_details.copy())
         return result
 
 

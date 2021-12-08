@@ -415,7 +415,7 @@ class ArubaVLANTrunkPrePostProcessor3810(PrePostProcessor):
                 return def_dict
 
             trunk_items = functools.reduce(combine, preprocessedresult, defaultdict(list))
-            result = [{k:v} for k,v in trunk_items.items()]
+            result = [{k: v} for k, v in trunk_items.items()]
             return result
 
 
@@ -423,6 +423,7 @@ class Aruba3810PortChannelTableProcessor(TableProcessor):
     def process_tables(self, tables):
         filtered_trunk_ports = list(filter(lambda port: ('Trk' in port['name']), tables['showSwitchPorts1']))
         lacp_members = tables['showLacp']
+        result = []
         d = dict()
         for port in filtered_trunk_ports:
             t = port
@@ -434,8 +435,8 @@ class Aruba3810PortChannelTableProcessor(TableProcessor):
                 if member['trunkGroup'] == port['name'] and member['enabledStatus'] == 'Passive':
                     t['activePorts'].append(member['portId'])
             d.update(t)
-            result = d
-            return result
+            result.append(d)
+        return result
 
 
 class Aruba3810RoutesTableProcessor(TableProcessor):

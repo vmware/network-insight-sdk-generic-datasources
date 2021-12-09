@@ -451,7 +451,7 @@ class Aruba3810RoutesTableProcessor(TableProcessor):
     def process_tables(self, tables):
         result = []
         routes = tables['routespart1']
-        vlans = tables['router_interfaces']
+        vlans = tables['router-interfaces']
         for detail in routes:
             t = dict()
             if 'vrf' in detail:

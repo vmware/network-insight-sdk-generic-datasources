@@ -145,7 +145,7 @@ class Aruba3810MacAddressPrePostProcessor(PrePostProcessor):
 
 
 class Aruba3810DefaultVrfsParser(PrePostProcessor):
-    def post_process(self, data):
+    def parse(self, data):
         result = [{"name": 'default'}]
         return result
 

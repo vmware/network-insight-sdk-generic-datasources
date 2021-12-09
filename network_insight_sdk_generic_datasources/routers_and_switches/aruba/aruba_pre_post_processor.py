@@ -297,7 +297,7 @@ class ArubaInterfacePrePostParser3810(PrePostProcessor):
                     d['operationalStatus'] = 'UP' if d['operationalStatus'] == 'Up' else 'DOWN'
                     intfdetails.update({"operationalStatus": d['operationalStatus']})
                 if 'connected' in d:
-                    d['connected'] = 'UP' if d['connected'] == 'Up' else 'DOWN'
+                    d['connected'] = 'TRUE' if d['connected'] == 'Up' else 'FALSE'
                     intfdetails.update({"connected": d['connected']})
                 if 'hardwareAddress' in d:
                     d['hardwareAddress'] = re.findall('..', d['hardwareAddress'].replace('-', ''))

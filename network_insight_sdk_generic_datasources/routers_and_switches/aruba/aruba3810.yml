@@ -6,6 +6,7 @@ package_handler:
 workloads:
   - <<: *NO_PAGE
   - <<: *SHOW_VERSION_3810
+  - <<: *VRFS_3810
   - <<: *MAC_ADDRESS_TABLE_3810
   - <<: *LLDP_TABLE_3810
   - <<: *SHOW_IP_ROUTE_VRF_ALL_3810

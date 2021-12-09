@@ -186,6 +186,7 @@ class ArubaSwitchPorts2Parser3810(object):
                 for token in tokens:
                     name_match = re.match("\\d{1,2}\\/.{1,2}", token)
                     duplex_match = re.match("(Auto|Full|half)", token)
+                    status_match = re.match("(Up|DOWN)", token)
                     operationalspeed_match = re.match("(100FDx|1000FDx|10GigFD)", token)
                     interfacespeed_match = re.match("(100/1000T|10GbE-GEN)", token)
                     switchportmode_match = re.match("(No|multi)", token)
@@ -214,6 +215,13 @@ class ArubaSwitchPorts2Parser3810(object):
                     elif vlan_match is not None:
                         if token != "1":
                             ports.update({"vlans": token})
+                    elif status_match is not None:
+                        if token == "Up":
+                            ports.update({"administrativeStatus": "UP"})
+                            ports.update({"operationalStatus": "UP"})
+                        elif token == "DOWN":
+                            ports.update({"administrativeStatus": "DOWN"})
+                            ports.update({"operationalStatus": "DOWN"})
                 result.append(ports.copy())
         except Exception as e:
             py_logger.error("Line:[{}]\n{}\n{}".format(line, e, traceback.format_exc()))

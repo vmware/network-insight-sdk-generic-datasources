@@ -144,6 +144,12 @@ class Aruba3810MacAddressPrePostProcessor(PrePostProcessor):
         return result
 
 
+class Aruba3810DefaultVrfsParser(PrePostProcessor):
+    def post_process(self, data):
+        result = [{"name": 'default'}]
+        return result
+
+
 class ArubaSwitchPorts2Parser3810(object):
     """
     Get interfaces from show interface status

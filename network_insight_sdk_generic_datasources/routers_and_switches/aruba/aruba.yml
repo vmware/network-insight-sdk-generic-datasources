@@ -75,6 +75,12 @@ workloads: &WORKLOADS
     parser:
       name: routers_and_switches.aruba.aruba_pre_post_processor.Aruba3810RouterInterfaceParser
 
+  - &VRFS_3810
+    table_id: vrfs
+    command: show version
+    parser:
+      name: routers_and_switches.aruba.aruba_pre_post_processor.Aruba3810DefaultVrfsParser
+
   - &SHOW_INTERFACE1_3810
       table_id: showSwitchPorts1
       command: show interfaces ethernet all hc

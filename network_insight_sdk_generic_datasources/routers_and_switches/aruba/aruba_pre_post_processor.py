@@ -445,7 +445,7 @@ class Aruba3810RoutesTableProcessor(TableProcessor):
     def process_tables(self, tables):
         result = []
         routes = tables['routespart1']
-        vlans = tables['router-interfaces']
+        vlans = tables['router_interfaces']
         for detail in routes:
             t = dict()
             if 'vrf' in detail:
@@ -456,19 +456,31 @@ class Aruba3810RoutesTableProcessor(TableProcessor):
                 t.update({"name": detail['name']})
             if 'nextHop' in detail:
                 nexthop = detail['nextHop']
+                nexthop_textmatch = re.match("\\D+\\.\\.\\.", nexthop)
                 nexthop_ipmatch = re.match("\\d{1,3}.\\d{1,3}.\\d{1,3}.\\d{1,3}.\\d{1,2}", nexthop)
-                t.update({"nextHop": detail['nextHop']})
+                if nexthop_textmatch:
+                    t.update({"nextHop": "DIRECT"})
+                else:
+                    t.update({"nextHop": detail['nextHop']})
             if 'routeType' in detail:
                 t.update({"routeType": detail['routeType']})
                 if detail['routeType'] == 'connected':
-                    t.update({'interface': detail['nextHop']})
+                    if nexthop_textmatch == None:
+                        t.update({'interface': detail['nextHop']})
+                    if nexthop_textmatch:
+                        prefix = detail['nextHop'][:12]
+                        for row in vlans:
+                            if row['name'].startswith(prefix):
+                                t.update({'interfaceName': row['name']})
+                            break
                 if detail['routeType'] == 'static' and nexthop_ipmatch == None:
                     t.update({'interfaceName': detail['nextHop']})
             for row in vlans:
                 if 'interface' in t:
                     break
                 network = row['ipAddress']
-                py_logger.info("network : [{}]".format(network))
+                if nexthop_ipmatch == None:
+                    continue
                 if nexthop in IPNetwork(network):
                     t.update({'interfaceName': row['name']})
                     break

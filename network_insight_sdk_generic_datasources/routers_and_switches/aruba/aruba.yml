@@ -70,7 +70,7 @@ workloads: &WORKLOADS
       name: routers_and_switches.aruba.aruba_pre_post_processor.ArubaPartialRoutesParser3810
 
   - &SHOW_ROUTER_INTERFACES_3810
-    table_id: router-interfaces
+    table_id: router_interfaces
     command: show ip
     parser:
       name: routers_and_switches.aruba.aruba_pre_post_processor.Aruba3810RouterInterfaceParser
@@ -112,7 +112,7 @@ workloads: &WORKLOADS
 
   - &SHOW_IP_ROUTE_3810
     table_id: routes
-    reuse_tables: routespart1,router-interfaces
+    reuse_tables: routespart1,router_interfaces
     reuse_table_processor: Aruba3810RoutesTableProcessor
 
 ### ARUBA 8320 TABLES
@@ -225,7 +225,7 @@ workloads: &WORKLOADS
           name: 'VRF\s+Name\s+:\s+(.*)'
 
   - &ROUTER_INTERFACE_TABLE_8320
-    table_id: router-interfaces
+    table_id: router_interfaces
     reuse_tables: ri_vrf_mapping,allPorts
     reuse_table_processor: Aruba8320RouterInterfaceTableProcessor
 
@@ -257,7 +257,7 @@ result_writer: &RESULT_WRITER
     - neighbors
     - routes
     - vrfs
-    - router-interfaces
+    - router_interfaces
     - switch-ports
     - port-channels
 

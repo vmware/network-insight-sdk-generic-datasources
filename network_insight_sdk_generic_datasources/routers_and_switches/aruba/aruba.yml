@@ -69,7 +69,7 @@ workloads: &WORKLOADS
     parser:
       name: routers_and_switches.aruba.aruba_pre_post_processor.ArubaPartialRoutesParser3810
 
-  - &SHOW_router-interfaces_3810
+  - &SHOW_ROUTER_INTERFACES_3810
     table_id: router-interfaces
     command: show ip
     parser:

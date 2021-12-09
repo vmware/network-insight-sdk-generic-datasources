@@ -112,7 +112,7 @@ workloads: &WORKLOADS
         name: routers_and_switches.aruba.aruba_pre_post_processor.
 
   - &SHOW_PORT_CHANNELS_3810
-    table_id: port-channel
+    table_id: port-channels
     reuse_tables: showSwitchPorts1,showLacp
     reuse_table_processor: Aruba3810PortChannelTableProcessor
 

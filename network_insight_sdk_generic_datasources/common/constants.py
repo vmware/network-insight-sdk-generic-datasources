@@ -37,6 +37,7 @@ GENERATION_DIRECTORY_KEY = 'generation_directory'
 
 
 # #################### CSV Filename ############# #
+CSV_EXTENSION = '.csv'
 SWITCH_CSV_FILENAME = 'switch.csv'
 SWITCH_PORT_CSV_FILENAME = 'switch-ports.csv'
 ROUTER_INTERFACE_CSV_FILENAME = 'router-interfaces.csv'

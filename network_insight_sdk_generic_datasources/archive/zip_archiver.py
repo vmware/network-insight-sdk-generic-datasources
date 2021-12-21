@@ -42,7 +42,6 @@ class ZipArchiver(object):
         for root, dirs, files in os.walk(self.path):
             for f in files:
                 if f in self.expected_filenames:
-                    py_logger.info("file={} files={}".format(f, self.expected_filenames))
                     zipf.write(os.path.join(root, f))
         zipf.close()
 

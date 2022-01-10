@@ -192,7 +192,8 @@ class ArubaSwitchPorts2Parser3810(object):
                     switchportmode_match = re.match("(No|multi)", token)
                     vlan_match = re.match("^\\d{1,4}$", token)
                     if name_match is not None:
-                        ports.update({"name": token})
+                        name = re.match("\\d{1,2}\\/.{1,2}", token).group(0)
+                        ports.update({"name": name})
                     elif duplex_match is not None:
                         ports.update({"duplex": token.upper()})
                     elif interfacespeed_match is not None:

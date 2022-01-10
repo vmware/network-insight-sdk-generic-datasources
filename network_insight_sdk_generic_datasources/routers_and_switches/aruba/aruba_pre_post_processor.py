@@ -481,7 +481,10 @@ class Aruba3810RoutesTableProcessor(TableProcessor):
                 else:
                     t.update({"nextHop": detail['nextHop']})
             if 'routeType' in detail:
-                t.update({"routeType": detail['routeType']})
+                if detail['routeType'] == 'connected':
+                    t.update({"routeType": "DIRECT"})
+                else:
+                    t.update({"routeType": detail['routeType']})
                 if detail['routeType'] == 'connected':
                     if nexthop_textmatch == None:
                         t.update({'interface': detail['nextHop']})

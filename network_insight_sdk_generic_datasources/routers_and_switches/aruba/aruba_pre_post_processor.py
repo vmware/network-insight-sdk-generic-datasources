@@ -472,7 +472,7 @@ class Aruba3810RoutesTableProcessor(TableProcessor):
                 t.update({"name": detail['name']})
             if 'nextHop' in detail:
                 nexthop = detail['nextHop']
-                nexthop_textmatch = re.match("\\D+\\.\\.\\.", nexthop)
+                nexthop_textmatch = re.match("\\D+", nexthop)
                 nexthop_ipmatch = re.match("\\d{1,3}.\\d{1,3}.\\d{1,3}.\\d{1,3}.\\d{1,2}", nexthop)
                 if nexthop == 'reject':
                     continue

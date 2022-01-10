@@ -445,13 +445,13 @@ class Aruba3810PortChannelTableProcessor(TableProcessor):
         for port in filtered_trunk_ports:
             t = port
             t.update({'switchPortMode': 'TRUNK'})
-            t['activePorts'] = []
-            t['passivePorts'] = []
-            for member in lacp_members:
-                if member['trunkGroup'] == port['name'] and member['enabledStatus'] == 'Active':
-                    t['activePorts'].append(member['portId'])
-                if member['trunkGroup'] == port['name'] and member['enabledStatus'] == 'Passive':
-                    t['activePorts'].append(member['portId'])
+            # t['activePorts'] = []
+            # t['passivePorts'] = []
+            # for member in lacp_members:
+            #     if member['trunkGroup'] == port['name'] and member['enabledStatus'] == 'Active':
+            #         t['activePorts'].append(member['portId'])
+            #     if member['trunkGroup'] == port['name'] and member['enabledStatus'] == 'Passive':
+            #         t['activePorts'].append(member['portId'])
             d.update(t)
             result.append(d)
         return result

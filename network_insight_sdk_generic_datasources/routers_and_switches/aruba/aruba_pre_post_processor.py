@@ -461,7 +461,7 @@ class Aruba3810RoutesTableProcessor(TableProcessor):
     def process_tables(self, tables):
         result = []
         routes = tables['routespart1']
-        vlans = tables['router-interfaces']
+        vlans = tables['router_interfaces']
         for detail in routes:
             t = dict()
             if 'vrf' in detail:
@@ -474,6 +474,8 @@ class Aruba3810RoutesTableProcessor(TableProcessor):
                 nexthop = detail['nextHop']
                 nexthop_textmatch = re.match("\\D+\\.\\.\\.", nexthop)
                 nexthop_ipmatch = re.match("\\d{1,3}.\\d{1,3}.\\d{1,3}.\\d{1,3}.\\d{1,2}", nexthop)
+                if nexthop == 'reject':
+                    continue
                 if nexthop_textmatch:
                     t.update({"nextHop": "DIRECT"})
                 else:

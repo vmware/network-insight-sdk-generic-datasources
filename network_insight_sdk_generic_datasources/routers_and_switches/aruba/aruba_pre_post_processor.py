@@ -156,9 +156,9 @@ class ArubaSwitchPorts2Parser3810(object):
     """
     def parse(self, data):
         """
-        Parse show interface statusl command output
+        Parse show interface status command output
         :param data: show interface status
-        :return: switch ports: name, vlan, speed, duplex mode, switchport mode
+        :return: switch ports: name, vlan, speed, duplex mode, switch port mode
         """
         try:
             result = []
@@ -187,28 +187,28 @@ class ArubaSwitchPorts2Parser3810(object):
                     name_match = re.match("\\d{1,2}\\/.{1,2}", token)
                     duplex_match = re.match("(Auto|Full|half)", token)
                     status_match = re.match("(Up|Down)", token)
-                    operationalspeed_match = re.match("(100FDx|1000FDx|10GigFD)", token)
-                    interfacespeed_match = re.match("(100/1000T|10GbE-GEN)", token)
-                    switchportmode_match = re.match("(No|multi)", token)
+                    operational_speed_match = re.match("(100FDx|1000FDx|10GigFD)", token)
+                    interface_speed_match = re.match("(100/1000T|10GbE-GEN)", token)
+                    switch_port_mode_match = re.match("(No|multi)", token)
                     vlan_match = re.match("^\\d{1,4}$", token)
                     if name_match is not None:
                         name = re.match("\\d{1,2}\\/.{1,2}", token).group(0)
                         ports.update({"name": name})
                     elif duplex_match is not None:
                         ports.update({"duplex": token.upper()})
-                    elif interfacespeed_match is not None:
+                    elif interface_speed_match is not None:
                         if token == "100/1000T":
                             ports.update({"interfaceSpeed": "1000000000"})
                         elif token == "10GbE-GEN":
                             ports.update({"interfaceSpeed": "10000000000"})
-                    elif operationalspeed_match is not None:
+                    elif operational_speed_match is not None:
                         if token == "100FDx":
                             ports.update({"operationalSpeed": "100000000"})
                         elif token == "1000FDx":
                             ports.update({"operationalSpeed":  "1000000000"})
                         elif token == "10GigFD":
                             ports.update({"operationalSpeed":  "10000000000"})
-                    elif switchportmode_match is not None:
+                    elif switch_port_mode_match is not None:
                         if token == "No":
                             ports.update({"switchPortMode": "ACCESS"})
                         elif token == "multi":
@@ -256,17 +256,17 @@ class ArubaLacp3810Parser(PrePostProcessor):
                 if not is_start_of_output:
                     continue
                 tokens = tokenizer.tokenize(line.strip())
-                lacpPorts = dict()
-                PortId = tokens[0]
-                LacpEnabled_status = tokens[1]
-                TrunkGroup = tokens[2]
-                if PortId is not None:
-                    lacpPorts.update({"portId" : PortId})
-                if LacpEnabled_status is not None:
-                    lacpPorts.update({"enabledStatus" : LacpEnabled_status})
-                if TrunkGroup is not None:
-                    lacpPorts.update({"trunkGroup" : TrunkGroup})
-                result.append(lacpPorts.copy())
+                link_ports = dict()
+                port_id = tokens[0]
+                link_enabled_status = tokens[1]
+                trunk_group = tokens[2]
+                if port_id is not None:
+                    link_ports.update({"portId": port_id})
+                if link_enabled_status is not None:
+                    link_ports.update({"enabledStatus": link_enabled_status})
+                if trunk_group is not None:
+                    link_ports.update({"trunkGroup": trunk_group})
+                result.append(link_ports.copy())
         except Exception as e:
             py_logger.error("Line:[{}]\n{}\n{}".format(line, e, traceback.format_exc()))
             raise e
@@ -295,24 +295,24 @@ class ArubaInterfaceStatusParser3810(PrePostProcessor):
 class ArubaInterfacePrePostParser3810(PrePostProcessor):
     def post_process(self, data):
             result = []
-            intfdetails = dict()
+            interface_details = dict()
             for d in data:
                 if 'name' in d:
-                    intfdetails.update({"name": d['name']})
+                    interface_details.update({"name": d['name']})
                 if 'administrativeStatus' in d:
                     d['administrativeStatus'] = 'UP' if d['administrativeStatus'] == 'Yes' else 'DOWN'
-                    intfdetails.update({"administrativeStatus": d['administrativeStatus']})
+                    interface_details.update({"administrativeStatus": d['administrativeStatus']})
                 if 'operationalStatus' in d:
                     d['operationalStatus'] = 'UP' if d['operationalStatus'] == 'Up' else 'DOWN'
-                    intfdetails.update({"operationalStatus": d['operationalStatus']})
+                    interface_details.update({"operationalStatus": d['operationalStatus']})
                 if 'connected' in d:
                     d['connected'] = 'TRUE' if d['connected'] == 'Up' else 'FALSE'
-                    intfdetails.update({"connected": d['connected']})
+                    interface_details.update({"connected": d['connected']})
                 if 'hardwareAddress' in d:
                     d['hardwareAddress'] = re.findall('..', d['hardwareAddress'].replace('-', ''))
                     d['hardwareAddress'] = (":".join(d['hardwareAddress']))
-                    intfdetails.update({"hardwareAddress": d['hardwareAddress']})
-                result.append(intfdetails.copy())
+                    interface_details.update({"hardwareAddress": d['hardwareAddress']})
+                result.append(interface_details.copy())
             return result
 
 
@@ -321,111 +321,111 @@ class ArubaSwitchPortsAllDetailsPrePostParser8320(PrePostProcessor):
         result = []
         for d in data:
             py_logger.info("Processing block {}".format(d))
-            intfdetails = dict()
+            interface_details = dict()
             if 'intname' in d:
                 if d['intname'] == '' and d['aggname'] == '':
                     continue
                 if d['intname'] != '':
-                    intfdetails.update({"intname": d['intname']})
+                    interface_details.update({"intname": d['intname']})
             if 'aggname' in d:
                 if d['aggname'] != '':
-                    intfdetails.update({"aggname": d['aggname']})
+                    interface_details.update({"aggname": d['aggname']})
             if 'administrativeStatus' in d:
-                intfdetails.update({"administrativeStatus": d['administrativeStatus'].upper()})
+                interface_details.update({"administrativeStatus": d['administrativeStatus'].upper()})
             if 'operationalStatus' in d:
-                intfdetails.update({"operationalStatus": d['operationalStatus'].upper()})
+                interface_details.update({"operationalStatus": d['operationalStatus'].upper()})
             if 'connected' in d:
                 if d['connected'] == 'up':
-                    intfdetails.update({"connected": "TRUE"})
+                    interface_details.update({"connected": "TRUE"})
                 else:
-                    intfdetails.update({"connected": "FALSE"})
+                    interface_details.update({"connected": "FALSE"})
             if 'hardwareAddress' in d:
-                intfdetails.update({"hardwareAddress": d['hardwareAddress']})
+                interface_details.update({"hardwareAddress": d['hardwareAddress']})
             if 'macAddress' in d:
-                intfdetails.update({"macAddress": d['macAddress']})
+                interface_details.update({"macAddress": d['macAddress']})
             if 'interfaceSpeed' in d:
                 intspeed = d['interfaceSpeed']
                 if intspeed == '0':
-                    intfdetails.update({'interfaceSpeed': intspeed})
+                    interface_details.update({'interfaceSpeed': intspeed})
                 if intspeed != '':
                     intspeed = int(intspeed) * 100000
-                    intfdetails.update({'interfaceSpeed': intspeed})
+                    interface_details.update({'interfaceSpeed': intspeed})
             if 'operationalSpeed' in d:
                 opspeed = d['operationalSpeed']
                 if opspeed == '0':
-                    intfdetails.update({'operationalSpeed': opspeed})
+                    interface_details.update({'operationalSpeed': opspeed})
                 if opspeed != '':
                     opspeed = int(opspeed) * 100000
-                    intfdetails.update({'operationalSpeed': opspeed})
+                    interface_details.update({'operationalSpeed': opspeed})
             if 'switchPortMode' in d:
-                    intfdetails.update({"switchPortMode": d['switchPortMode']})
+                    interface_details.update({"switchPortMode": d['switchPortMode']})
             if 'switchPortMode' in d:
                 if d['switchPortMode'] == 'access':
-                    intfdetails.update({"switchPortMode": 'ACCESS'})
+                    interface_details.update({"switchPortMode": 'ACCESS'})
                 if d['switchPortMode'] == 'native-untagged' or 'native-tagged':
-                    intfdetails.update({"switchPortMode": 'TRUNK'})
+                    interface_details.update({"switchPortMode": 'TRUNK'})
                 elif d['switchPortMode'] == 'access':
-                    intfdetails.update({"switchPortMode": 'ACCESS'})
+                    interface_details.update({"switchPortMode": 'ACCESS'})
                 else:
-                    intfdetails.update({"switchPortMode": 'OTHER'})
+                    interface_details.update({"switchPortMode": 'OTHER'})
             if 'activePorts' in d:
                 ports = d['activePorts']
                 ports = ports.split()
                 portsstring = ",".join(ports)
-                intfdetails.update({"activePorts": portsstring})
+                interface_details.update({"activePorts": portsstring})
             if 'mtu' in d:
-                intfdetails.update({"mtu": d['mtu']})
+                interface_details.update({"mtu": d['mtu']})
             if 'vlans' in d:
                 if d['vlans'] == 'all':
-                    intfdetails.update({'vlans': "1-4095"})
+                    interface_details.update({'vlans': "1-4095"})
                 else:
                     vlanslist = d['vlans'].split(',')
                     vlanstring = ",".join(vlanslist)
-                    intfdetails.update({'vlans': vlanstring})
-            result.append(intfdetails.copy())
+                    interface_details.update({'vlans': vlanstring})
+            result.append(interface_details.copy())
         return result
 
 
 class ArubaRoutePrePostParser8320(PrePostProcessor):
     def post_process(self, data):
             result = []
-            routedetails = dict()
+            route_details = dict()
             for d in data:
                 if 'name' in d:
                     if d['name'] == '':
                         continue
-                    routedetails.update({"name": d['name']})
+                    route_details.update({"name": d['name']})
                 if 'network' in d:
-                    routedetails.update({"network": d['network']})
+                    route_details.update({"network": d['network']})
                 if 'nextHop' in d:
                     name_match = re.match("(\\d+.\\d+.\\d+.\\d+)", d['nextHop'])
                     if not name_match:
-                        routedetails.update({"nextHop": 'DIRECT'})
-                        routedetails.update({"routeType": 'DIRECT'})
+                        route_details.update({"nextHop": 'DIRECT'})
+                        route_details.update({"routeType": 'DIRECT'})
                     else:
-                        routedetails.update({"nextHop": d['nextHop']})
-                        routedetails.update({"routeType": d['routeType']})
+                        route_details.update({"nextHop": d['nextHop']})
+                        route_details.update({"routeType": d['routeType']})
                 if 'interfaceName' in d:
-                    routedetails.update({"interfaceName": d['interfaceName']})
+                    route_details.update({"interfaceName": d['interfaceName']})
                 if 'vrf' in d:
-                    routedetails.update({"vrf": d['vrf']})
-                result.append(routedetails.copy())
+                    route_details.update({"vrf": d['vrf']})
+                result.append(route_details.copy())
             return result
 
 
 class ArubaVLANTrunkPrePostProcessor3810(PrePostProcessor):
     def post_process(self, data):
             preprocessedresult = []
-            intfdetails = dict()
+            interface_details = dict()
             for d in data:
                 if d['trunkport'] != '':
-                    intfdetails.update({"trunkport": d["trunkport"]})
+                    interface_details.update({"trunkport": d["trunkport"]})
                     if 'vlan' in d:
                         d['vlan'] = int(d['vlan'].replace(' ', ''))
-                        intfdetails.update({"vlan": d['vlan']})
+                        interface_details.update({"vlan": d['vlan']})
                 else:
                     continue
-                preprocessedresult.append(intfdetails.copy())
+                preprocessedresult.append(interface_details.copy())
 
             def combine(def_dict, next_item):
                 def_dict[next_item["trunkport"]].append(next_item["vlan"])
@@ -471,12 +471,12 @@ class Aruba3810RoutesTableProcessor(TableProcessor):
             if 'name' in detail:
                 t.update({"name": detail['name']})
             if 'nextHop' in detail:
-                nexthop = detail['nextHop']
-                nexthop_textmatch = re.match("\\D+", nexthop)
-                nexthop_ipmatch = re.match("\\d{1,3}.\\d{1,3}.\\d{1,3}.\\d{1,3}.\\d{1,2}", nexthop)
-                if nexthop == 'reject':
+                next_hop = detail['nextHop']
+                next_hop_text_match = re.match("\\D+", next_hop)
+                next_hop_ip_match = re.match("\\d{1,3}.\\d{1,3}.\\d{1,3}.\\d{1,3}.\\d{1,2}", next_hop)
+                if next_hop == 'reject':
                     continue
-                if nexthop_textmatch:
+                if next_hop_text_match:
                     t.update({"nextHop": "DIRECT"})
                 else:
                     t.update({"nextHop": detail['nextHop']})
@@ -486,23 +486,23 @@ class Aruba3810RoutesTableProcessor(TableProcessor):
                 else:
                     t.update({"routeType": detail['routeType']})
                 if detail['routeType'] == 'connected':
-                    if nexthop_textmatch == None:
+                    if next_hop_text_match == None:
                         t.update({'interface': detail['nextHop']})
-                    if nexthop_textmatch:
+                    if next_hop_text_match:
                         prefix = detail['nextHop'][:12]
                         for row in vlans:
                             if row['name'].startswith(prefix):
                                 t.update({'interfaceName': row['name']})
                             break
-                if detail['routeType'] == 'static' and nexthop_ipmatch == None:
+                if detail['routeType'] == 'static' and next_hop_ip_match == None:
                     t.update({'interfaceName': detail['nextHop']})
             for row in vlans:
                 if 'interface' in t:
                     break
                 network = row['ipAddress']
-                if nexthop_ipmatch == None:
+                if next_hop_ip_match == None:
                     continue
-                if nexthop in IPNetwork(network):
+                if next_hop in IPNetwork(network):
                     t.update({'interfaceName': row['name']})
                     break
             result.append(t.copy())
@@ -530,16 +530,16 @@ class Aruba8320InterfaceTableProcessor(TableProcessor):
                 skip3 = re.match('link/admin', line)
                 if any([skip1, skip2, skip3]):
                     continue
-                itemmatch = re.match('(^.{1,16}[^ ])\\s+(.{1,25}[^ ])\\s+(.*)/(.*)', line)
+                item_match = re.match('(^.{1,16}[^ ])\\s+(.{1,25}[^ ])\\s+(.*)/(.*)', line)
                 t.update({'vrf': vrf})
-                t.update({'name': itemmatch.group(1)})
-                if itemmatch.group(2) == 'No Address':
+                t.update({'name': item_match.group(1)})
+                if item_match.group(2) == 'No Address':
                     continue
                 else:
-                    t.update({'ipAddress': itemmatch.group(2)})
-                t.update({'operationalStatus': itemmatch.group(3).upper()})
-                t.update({'administrativeStatus': itemmatch.group(4).upper()})
-                if itemmatch.group(3) == 'up':
+                    t.update({'ipAddress': item_match.group(2)})
+                t.update({'operationalStatus': item_match.group(3).upper()})
+                t.update({'administrativeStatus': item_match.group(4).upper()})
+                if item_match.group(3) == 'up':
                     t.update({'connected': 'TRUE'})
                 else:
                     t.update({'connected': 'FALSE'})
@@ -549,11 +549,11 @@ class Aruba8320InterfaceTableProcessor(TableProcessor):
 
 class ArubaVrfPrePostParser8320(PrePostProcessor):
     def post_process(self, data):
-            vrfdetails = dict()
+            vrf_details = dict()
             for d in data:
                 if d['name'] != '':
-                    vrfdetails.update({"name": d["name"]})
-            result = vrfdetails
+                    vrf_details.update({"name": d["name"]})
+            result = vrf_details
             return result
 
 
@@ -585,11 +585,11 @@ class Aruba8320SwitchPortTableProcessor(TableProcessor):
                 continue
             if port['intname'] == '':
                 continue
-            vlanmatch = re.match('vlan.*', port['intname'])
-            if vlanmatch:
+            vlan_match = re.match('vlan.*', port['intname'])
+            if vlan_match:
                 continue
-            loopbackmatch = re.match('loopback.*', port['intname'])
-            if loopbackmatch:
+            loopback_match = re.match('loopback.*', port['intname'])
+            if loopback_match:
                 continue
             else:
                 t = port.copy()

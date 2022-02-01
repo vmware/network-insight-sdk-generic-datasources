@@ -229,6 +229,71 @@ class ArubaSwitchPorts2Parser3810(object):
             raise e
         return result
 
+class ArubaRoutesParser8320v1007(object):
+    """
+    Get interfaces from show interface status
+    """
+    def parse(self, data):
+        """
+        Parse show interface status command output
+        :param data: show interface status
+        :return: switch ports: name, vlan, speed, duplex mode, switch port mode
+        """
+        try:
+            result = []
+            header_regex = "Type\\s+Metric"
+            tokenizer = LineTokenizer()
+            lines = data.splitlines()
+            pattern = re.compile(header_regex)
+            line_counter = 0
+            header_found = False
+            for line in lines:
+                match = pattern.match(line.strip())
+                if match is not None:
+                    header_found = True
+                if not header_found:
+                    line_counter = 0
+                line_counter = line_counter + 1
+                is_start_of_output = header_found and line_counter > 3
+                if not is_start_of_output:
+                    continue
+                # Parsing Logic goes here
+                if len(line.strip()) == 0:
+                    continue
+                tokens = tokenizer.tokenize(line.strip())
+                routes = dict()
+                prefix_match = re.match("(\\d{1,3}.\\d{1,3}.\\d{1,3}.\\d{1,3}\\/\\d{1,3})", tokens[0])
+                if not prefix_match:
+                    continue
+                next_hop_match = re.match("(\\d{1,3}.\\d{1,3}.\\d{1,3}.\\d{1,3})", tokens[1])
+                vrf_match = re.match("(-)", tokens[3])
+                ospf_match = re.match("(O)", tokens[4])
+                bgp_match = re.match("(B)", tokens[4])
+                rip_match = re.match("(R)", tokens[4])
+                routes.update({"name": tokens[0]})
+                routes.update({"network": tokens[0]})
+                if next_hop_match is not None:
+                    routes.update({"nextHop": tokens[1]})
+                else:
+                    routes.update({"nextHop": "DIRECT"})
+                if tokens[4] == "C" or "L":
+                    routes.update({"routeType": "Direct"})
+                if ospf_match is not None:
+                    routes.update({"routeType": "OSPF"})
+                elif bgp_match is not None:
+                    routes.update({"routeType": "BGP"})
+                elif rip_match is not None:
+                    routes.update({"routeType": "RIP"})
+                if vrf_match is not None:
+                    routes.update({"vrf": "default"})
+                else:
+                    routes.update({"vrf": tokens[3]})
+                routes.update({"interfaceName": tokens[2]})
+                result.append(routes.copy())
+        except Exception as e:
+            py_logger.error("Line:[{}]\n{}\n{}".format(line, e, traceback.format_exc()))
+            raise e
+        return result
 
 class ArubaLacp3810Parser(PrePostProcessor):
     """
@@ -294,26 +359,26 @@ class ArubaInterfaceStatusParser3810(PrePostProcessor):
 
 class ArubaInterfacePrePostParser3810(PrePostProcessor):
     def post_process(self, data):
-            result = []
-            interface_details = dict()
-            for d in data:
-                if 'name' in d:
-                    interface_details.update({"name": d['name']})
-                if 'administrativeStatus' in d:
-                    d['administrativeStatus'] = 'UP' if d['administrativeStatus'] == 'Yes' else 'DOWN'
-                    interface_details.update({"administrativeStatus": d['administrativeStatus']})
-                if 'operationalStatus' in d:
-                    d['operationalStatus'] = 'UP' if d['operationalStatus'] == 'Up' else 'DOWN'
-                    interface_details.update({"operationalStatus": d['operationalStatus']})
-                if 'connected' in d:
-                    d['connected'] = 'TRUE' if d['connected'] == 'Up' else 'FALSE'
-                    interface_details.update({"connected": d['connected']})
-                if 'hardwareAddress' in d:
-                    d['hardwareAddress'] = re.findall('..', d['hardwareAddress'].replace('-', ''))
-                    d['hardwareAddress'] = (":".join(d['hardwareAddress']))
-                    interface_details.update({"hardwareAddress": d['hardwareAddress']})
-                result.append(interface_details.copy())
-            return result
+        result = []
+        interface_details = dict()
+        for d in data:
+            if 'name' in d:
+                interface_details.update({"name": d['name']})
+            if 'administrativeStatus' in d:
+                d['administrativeStatus'] = 'UP' if d['administrativeStatus'] == 'Yes' else 'DOWN'
+                interface_details.update({"administrativeStatus": d['administrativeStatus']})
+            if 'operationalStatus' in d:
+                d['operationalStatus'] = 'UP' if d['operationalStatus'] == 'Up' else 'DOWN'
+                interface_details.update({"operationalStatus": d['operationalStatus']})
+            if 'connected' in d:
+                d['connected'] = 'TRUE' if d['connected'] == 'Up' else 'FALSE'
+                interface_details.update({"connected": d['connected']})
+            if 'hardwareAddress' in d:
+                d['hardwareAddress'] = re.findall('..', d['hardwareAddress'].replace('-', ''))
+                d['hardwareAddress'] = (":".join(d['hardwareAddress']))
+                interface_details.update({"hardwareAddress": d['hardwareAddress']})
+            result.append(interface_details.copy())
+        return result
 
 
 class ArubaSwitchPortsAllDetailsPrePostParser8320(PrePostProcessor):
@@ -386,54 +451,54 @@ class ArubaSwitchPortsAllDetailsPrePostParser8320(PrePostProcessor):
         return result
 
 
-class ArubaRoutePrePostParser8320(PrePostProcessor):
-    def post_process(self, data):
-            result = []
-            route_details = dict()
-            for d in data:
-                if 'name' in d:
-                    if d['name'] == '':
-                        continue
-                    route_details.update({"name": d['name']})
-                if 'network' in d:
-                    route_details.update({"network": d['network']})
-                if 'nextHop' in d:
-                    name_match = re.match("(\\d+.\\d+.\\d+.\\d+)", d['nextHop'])
-                    if not name_match:
-                        route_details.update({"nextHop": 'DIRECT'})
-                        route_details.update({"routeType": 'DIRECT'})
-                    else:
-                        route_details.update({"nextHop": d['nextHop']})
-                        route_details.update({"routeType": d['routeType']})
-                if 'interfaceName' in d:
-                    route_details.update({"interfaceName": d['interfaceName']})
-                if 'vrf' in d:
-                    route_details.update({"vrf": d['vrf']})
-                result.append(route_details.copy())
-            return result
+# class ArubaRoutePrePostParser8320(PrePostProcessor):
+#     def post_process(self, data):
+#         result = []
+#         route_details = dict()
+#         for d in data:
+#             if 'name' in d:
+#                 if d['name'] == '':
+#                     continue
+#                 route_details.update({"name": d['name']})
+#             if 'network' in d:
+#                 route_details.update({"network": d['network']})
+#             if 'nextHop' in d:
+#                 name_match = re.match("(\\d+.\\d+.\\d+.\\d+)", d['nextHop'])
+#                 if not name_match:
+#                     route_details.update({"nextHop": 'DIRECT'})
+#                     route_details.update({"routeType": 'DIRECT'})
+#                 else:
+#                     route_details.update({"nextHop": d['nextHop']})
+#                     route_details.update({"routeType": d['routeType']})
+#             if 'interfaceName' in d:
+#                 route_details.update({"interfaceName": d['interfaceName']})
+#             if 'vrf' in d:
+#                 route_details.update({"vrf": d['vrf']})
+#             result.append(route_details.copy())
+#         return result
 
 
 class ArubaVLANTrunkPrePostProcessor3810(PrePostProcessor):
     def post_process(self, data):
-            preprocessedresult = []
-            interface_details = dict()
-            for d in data:
-                if d['trunkport'] != '':
-                    interface_details.update({"trunkport": d["trunkport"]})
-                    if 'vlan' in d:
-                        d['vlan'] = int(d['vlan'].replace(' ', ''))
-                        interface_details.update({"vlan": d['vlan']})
-                else:
-                    continue
-                preprocessedresult.append(interface_details.copy())
+        preprocessed_result = []
+        interface_details = dict()
+        for d in data:
+            if d['trunkport'] != '':
+                interface_details.update({"trunkport": d["trunkport"]})
+                if 'vlan' in d:
+                    d['vlan'] = int(d['vlan'].replace(' ', ''))
+                    interface_details.update({"vlan": d['vlan']})
+            else:
+                continue
+            preprocessed_result.append(interface_details.copy())
 
-            def combine(def_dict, next_item):
-                def_dict[next_item["trunkport"]].append(next_item["vlan"])
-                return def_dict
+        def combine(def_dict, next_item):
+            def_dict[next_item["trunkport"]].append(next_item["vlan"])
+            return def_dict
 
-            trunk_items = functools.reduce(combine, preprocessedresult, defaultdict(list))
-            result = [{k: v} for k, v in trunk_items.items()]
-            return result
+        trunk_items = functools.reduce(combine, preprocessed_result, defaultdict(list))
+        result = [{k: v} for k, v in trunk_items.items()]
+        return result
 
 
 class Aruba3810PortChannelTableProcessor(TableProcessor):

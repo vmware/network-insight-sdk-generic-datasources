@@ -4,6 +4,7 @@ package_handler:
   <<: *PACKAGE_HANDLER
 
 workloads:
+  - <<: *NO_PAGE
   - <<: *SHOW_VERSION_8320
   - <<: *MAC_ADDRESS_TABLE_8320
   - <<: *LLDP_TABLE_8320

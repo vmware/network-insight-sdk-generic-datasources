@@ -170,24 +170,30 @@ workloads: &WORKLOADS
       sys-name: remoteDevice
       port-desc: remoteInterface
 
-  - &SHOW_IP_ROUTE_VRF_ALL_8320
+#  - &SHOW_IP_ROUTE_VRF_ALL_8320
+#      table_id: routes
+#      command: show ip route
+#      block_parser:
+#        name: GenericBlockParser
+#        arguments:
+#          line_pattern: "\\d+.\\d+.\\d+.\\d+.\\d+,\\s+vrf\\s+"
+#      parser:
+#        pre_post_processor: ArubaRoutePrePostParser8320
+#        name: *GENERIC_TEXT_PARSER
+#        arguments:
+#          rules:
+#            name: "(\\d+.\\d+.\\d+.\\d+.\\d+),\\s+vrf\\s+"
+#            network: "(\\d+.\\d+.\\d+.\\d+.\\d+),\\s+vrf\\s+"
+#            nextHop: "via\\s+([^,]+)"
+#            routeType: "via\\s+[^,]+,\\s+[^,]+,\\s+(.*)"
+#            interfaceName: "(\\d+.\\d+.\\d+.\\d+.\\d+),\\s+vrf\\s+"
+#            vrf: "\\d+.\\d+.\\d+.\\d+.\\d+,\\s+vrf\\s+(.*)"
+
+    - &SHOW_IP_ROUTE_VRF_ALL_8320
       table_id: routes
       command: show ip route
-      block_parser:
-        name: GenericBlockParser
-        arguments:
-          line_pattern: "\\d+.\\d+.\\d+.\\d+.\\d+,\\s+vrf\\s+"
       parser:
-        pre_post_processor: ArubaRoutePrePostParser8320
-        name: *GENERIC_TEXT_PARSER
-        arguments:
-          rules:
-            name: "(\\d+.\\d+.\\d+.\\d+.\\d+),\\s+vrf\\s+"
-            network: "(\\d+.\\d+.\\d+.\\d+.\\d+),\\s+vrf\\s+"
-            nextHop: "via\\s+([^,]+)"
-            routeType: "via\\s+[^,]+,\\s+[^,]+,\\s+(.*)"
-            interfaceName: "(\\d+.\\d+.\\d+.\\d+.\\d+),\\s+vrf\\s+"
-            vrf: "\\d+.\\d+.\\d+.\\d+.\\d+,\\s+vrf\\s+(.*)"
+        name: routers_and_switches.aruba.aruba_pre_post_processor.ArubaRoutesParser8320v1007
 
   - &SHOW_IP_INTERFACE_VRF_ALL_8320
       table_id: ri_vrf_mapping
@@ -215,8 +221,8 @@ workloads: &WORKLOADS
           switchPortMode: 'VLAN\s+Mode:\s+(.*)'
           hardwareAddress: 'Hardware:\s+Ethernet,\s+MAC\s+Address:\s+(.*)'
           macAddress: 'MAC\s+Address\s+:\s*(.*)'
-          interfaceSpeed: 'Speed\s+(.*)\s+Mb'
-          operationalSpeed: 'Speed\s+(.*)\s+Mb'
+          interfaceSpeed: 'Speed\s+:\s+(.*)\s+Mb'
+          operationalSpeed: 'Speed\s+:\s+(.*)\s+Mb'
           activePorts: 'Aggregated-interfaces\s+:\s+(.*)'
           vlans: 'Allowed\s+VLAN\s+List:\s+(.*)'
           mtu: 'MTU\s+(.*)'

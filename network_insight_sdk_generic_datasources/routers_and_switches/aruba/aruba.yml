@@ -189,11 +189,11 @@ workloads: &WORKLOADS
 #            interfaceName: "(\\d+.\\d+.\\d+.\\d+.\\d+),\\s+vrf\\s+"
 #            vrf: "\\d+.\\d+.\\d+.\\d+.\\d+,\\s+vrf\\s+(.*)"
 
-    - &SHOW_IP_ROUTE_VRF_ALL_8320
-      table_id: routes
-      command: show ip route
-      parser:
-        name: routers_and_switches.aruba.aruba_pre_post_processor.ArubaRoutesParser8320v1007
+  - &SHOW_IP_ROUTE_VRF_ALL_8320
+    table_id: routes
+    command: show ip route
+    parser:
+      name: routers_and_switches.aruba.aruba_pre_post_processor.ArubaRoutesParser8320v1007
 
   - &SHOW_IP_INTERFACE_VRF_ALL_8320
       table_id: ri_vrf_mapping

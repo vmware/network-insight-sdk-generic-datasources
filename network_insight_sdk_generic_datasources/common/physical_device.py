@@ -88,12 +88,10 @@ class PhysicalDevice(object):
                 elif REUSE_COMMAND_KEY in workload:
                     command_result = command_output_dict[workload[REUSE_COMMAND_KEY]]
                     workload[COMMAND_KEY] = workload[REUSE_COMMAND_KEY]
-                    # py_logger.info('Command %s Result %s' % (workload[REUSE_COMMAND_KEY], command_result))
                     table = self.parse_command_output(workload, command_result)
                 else:
                     command_result = ssh_connect_handler.execute_command(workload[COMMAND_KEY])
                     command_output_dict[workload[COMMAND_KEY]] = command_result
-                    # py_logger.info('Command %s Result %s' % (workload[COMMAND_KEY], command_result))
                     table = self.parse_command_output(workload, command_result)
                 if 'switch' == command_id:
                     table[0]['ipAddress/fqdn'] = self.credentials.ip_or_fqdn

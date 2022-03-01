@@ -65,11 +65,22 @@ workloads: &WORKLOADS
       arguments:
         skip_head: 16
         token_length: 11
-        header_keys:
-          - port
-
+        header_keys:  'vrfName', 'vrfId', 'vlanCount', 'arpCount', 'rip', 'ospf', 'bgp', 'pim', 'nbrv6Count', 'ripng', 'ospfv3', 'pim6'
+          - vrfName
+          - vrfId
+          - vlanCount
+          - arpCount
+          - rip
+          - ospf
+          - ospf
+          - bgp
+          - pim
+          - nbrv6Count
+          - ripng
+          - ospfv3
+          - pim6
     select_columns:
-      name: port
+      name: vrfName
 
 
 

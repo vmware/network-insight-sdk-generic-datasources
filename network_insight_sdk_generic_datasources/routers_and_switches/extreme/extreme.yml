@@ -84,7 +84,7 @@ workloads: &WORKLOADS
 
 
 
-#  - &SHOW_CDP_NEIGHBORS
+#  - &SHOW_CDP_NEIGHBORSs
 #    table_id: neighbors
 #    command: show cdp neighbors | xml
 #    block_parser:

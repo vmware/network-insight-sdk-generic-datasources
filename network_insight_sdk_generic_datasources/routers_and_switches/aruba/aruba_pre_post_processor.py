@@ -453,31 +453,31 @@ class ArubaSwitchPortsAllDetailsPrePostParser8320(PrePostProcessor):
         return result
 
 
-class ArubaRoutePrePostParser8320(PrePostProcessor):
-    def post_process(self, data):
-        result = []
-        route_details = dict()
-        for d in data:
-            if 'name' in d:
-                if d['name'] == '':
-                    continue
-                route_details.update({"name": d['name']})
-            if 'network' in d:
-                route_details.update({"network": d['network']})
-            if 'nextHop' in d:
-                name_match = re.match("(\\d+.\\d+.\\d+.\\d+)", d['nextHop'])
-                if not name_match:
-                    route_details.update({"nextHop": 'DIRECT'})
-                    route_details.update({"routeType": 'DIRECT'})
-                else:
-                    route_details.update({"nextHop": d['nextHop']})
-                    route_details.update({"routeType": d['routeType']})
-            if 'interfaceName' in d:
-                route_details.update({"interfaceName": d['interfaceName']})
-            if 'vrf' in d:
-                route_details.update({"vrf": d['vrf']})
-            result.append(route_details.copy())
-        return result
+# class ArubaRoutePrePostParser8320(PrePostProcessor):
+#     def post_process(self, data):
+#         result = []
+#         route_details = dict()
+#         for d in data:
+#             if 'name' in d:
+#                 if d['name'] == '':
+#                     continue
+#                 route_details.update({"name": d['name']})
+#             if 'network' in d:
+#                 route_details.update({"network": d['network']})
+#             if 'nextHop' in d:
+#                 name_match = re.match("(\\d+.\\d+.\\d+.\\d+)", d['nextHop'])
+#                 if not name_match:
+#                     route_details.update({"nextHop": 'DIRECT'})
+#                     route_details.update({"routeType": 'DIRECT'})
+#                 else:
+#                     route_details.update({"nextHop": d['nextHop']})
+#                     route_details.update({"routeType": d['routeType']})
+#             if 'interfaceName' in d:
+#                 route_details.update({"interfaceName": d['interfaceName']})
+#             if 'vrf' in d:
+#                 route_details.update({"vrf": d['vrf']})
+#             result.append(route_details.copy())
+#         return result
 
 
 class ArubaVLANTrunkPrePostProcessor3810(PrePostProcessor):

@@ -11,7 +11,7 @@ package_handler: &PACKAGE_HANDLER
 workloads: &WORKLOADS
   - &SHOW_VERSION_ASR
     table_id: switch
-    command: show sys-info
+    command: show sys-info | no-more
     parser:
       name: *GENERIC_TEXT_PARSER
       arguments:
@@ -24,7 +24,7 @@ workloads: &WORKLOADS
 
   - &SWITCH_PORTS_1
     table_id: switch_ports_1
-    command: show interfaces gigabitEthernet interface
+    command: show interfaces gigabitEthernet interface | no-more
     parser:
       name: *HORIZONTAL_TABLE_PARSER
       arguments:
@@ -47,19 +47,19 @@ workloads: &WORKLOADS
 
   - &SWITCH_PORTS_2
     table_id: switch_port_2
-    command: show interfaces gigabitEthernet name
+    command: show interfaces gigabitEthernet name | no-more
     parser:
       name: routers_and_switches.extreme.extreme_pre_post_processor.ExtremeSwitchPort2Parser
 
   - &PORT_CHANNEL
     table_id: port-channels
-    command: show mlt
+    command: show mlt | no-more
     parser:
       name: routers_and_switches.extreme.extreme_pre_post_processor.ExtremePortChannelParser
 
   - &SHOW_IP_VRF
     table_id: vrfs
-    command: show ip vrf
+    command: show ip vrf | no-more
     parser:
       name: *HORIZONTAL_TABLE_PARSER
       arguments:
@@ -81,6 +81,34 @@ workloads: &WORKLOADS
           - pim6
     select_columns:
       name: vrfName
+
+  - &MAC_ADDRESS_TABLE
+    table_id: mac-address-table
+    command: show interfaces gigabitEthernet fdb-entry | no-more
+    parser:
+      pre_post_processor: ExtremeMacAddressTablePrePostProcessor
+      name: *HORIZONTAL_TABLE_PARSER
+      arguments:
+        skip_head: 10
+        skip_tail: 4
+        header_keys:
+          - vlan
+          - status
+          - macAddress
+          - Interface
+          - smltRemote
+    select_columns:
+      macAddress: macAddress
+      vlan: vlan
+      switchPort: interface
+
+  - &ROUTER_INTERFACES
+    table_id: router-interfaces
+    command: show interfaces vlan ip | no-more
+
+  - &ROUTES
+    table_id: routes
+    command: show ip route | no-more
 
 
 

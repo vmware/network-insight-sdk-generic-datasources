@@ -152,7 +152,23 @@ class ExtremePortChannelParser(PrePostProcessor):
             py_logger.error("{}\n{}".format(e, traceback.format_exc()))
         return result
 
-
+class ExtremeMacAddressTablePrePostProcessor(PrePostProcessor):
+    def post_process(self, data):
+        ###Need to validate SMLT Remote Interfaces???###
+        result = []
+        macDetails = dict()
+        for d in data:
+            if 'vlan' in d:
+                macDetails.update({"vlan": d['vlan']})
+            if 'macAddress' in d:
+                macDetails.update({"macAddress": d['macAddress']})
+            if 'interface' in d:
+                portMatch = re.match('Port-(.*)', d['interface'])
+                if portMatch:
+                    port = portMatch = re.match('Port-(.*)', d['interface']).group(0)
+                    macDetails.update({"port": port})
+            result.append(macDetails.copy())
+        return result
 
 
 #

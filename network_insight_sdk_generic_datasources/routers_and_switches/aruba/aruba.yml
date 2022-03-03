@@ -109,7 +109,7 @@ workloads: &WORKLOADS
       table_id: showLacp
       command: show lacp
       parser:
-        name: routers_and_switches.aruba.aruba_pre_post_processor.
+        name: routers_and_switches.aruba.aruba_pre_post_processor.ArubaLacp3810Parser
 
   - &SHOW_PORT_CHANNELS_3810
     table_id: port-channels

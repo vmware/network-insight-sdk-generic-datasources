@@ -79,6 +79,89 @@ class ExtremeSwitchPort2Parser(PrePostProcessor):
             py_logger.error("{}\n{}".format(e, traceback.format_exc()))
         return result
 
+class ExtremeRouterInterfacePrePostProcessor(PrePostProcessor):
+    """
+    Get port number, duplex, operational speed, and switchport mode
+    """
+    def parse(self, data):
+        """
+        Parse show interface detail command output
+        :param data: show interface gigabitEthernet name
+        :return: List of dict of switch interface_details
+        """
+        try:
+            result = []
+            router_interface1 = []
+            router_interface2 = []
+            header_regex = "ID\\s+NAME\\s+ADDRESS\\s+MASK\\s+FORMAT\\s+MAXSIZE\\s+WHEN_DOWN\\s+BROADCAST"
+            second_table_regex = "MULTID\\s+IFINDEX\\s+PORTS\\s+ADMIN\\s+OPER"
+            break_regex_count = 0
+            tokenizer = LineTokenizer()
+            lines = data.splitlines()
+            pattern = re.compile(header_regex)
+            line_counter = 0
+            header_found = False
+            for line in lines:
+                if line == '':
+                    continue
+                match = pattern.match(line.strip())
+                break_regex = re.match("All\\s+\\d+\\s+out\\s+of\\s+\\d+\\s+Total\\sNum\\sof\\sVlan\\sIp\\sEntries\\sdisplayed", line)
+                if break_regex:
+                    line_counter = -1
+                    break_regex_count += 1
+                    if break_regex_count == 2:
+                        break
+                if match is not None:
+                    header_found = True
+                if not header_found:
+                    line_counter = 0
+                line_counter = line_counter + 1
+                is_start_of_output = header_found and line_counter > 3
+                if not is_start_of_output:
+                    continue
+                # Parsing Logic goes here
+                tokens = tokenizer.tokenize(line)
+                if tokens is None or len(tokens) == 0:
+                    continue
+                interface_details = dict()
+                if break_regex_count == 0:
+                    ipaddress_cidr= tokens[2] + '/' + str(IPAddress(tokens[3]).netmask_bits())
+                    interface_details.update({'name': tokens[2], 'vlan': tokens[0], 'ipAddress': ipaddress_cidr, 'mtu': tokens[5], 'administrativeStatus': 'UP', 'operationalStatus': 'UP', 'connected': 'UP'})
+                    router_interface1.append(interface_details.copy())
+                if break_regex_count == 1:
+                    interface_details.update({'vlan': tokens[0], 'vrf': tokens[1]})
+                    router_interface2.append(interface_details.copy())
+            for interface in router_interface1:
+                t = dict()
+                t.update(interface)
+                for item in router_interface2:
+                    if item['vlan'] == interface['vlan']:
+                        t.update({'vrf': item['vrf']})
+                        break
+                result.append(t.copy())
+            return result
+        except Exception as e:
+            py_logger.error("{}\n{}".format(e, traceback.format_exc()))
+        return result
+
+class ExtremeMacAddressTablePrePostProcessor(PrePostProcessor):
+    def post_process(self, data):
+        ###Need to validate SMLT Remote Interfaces???###
+        result = []
+        macDetails = dict()
+        for d in data:
+            if 'vlan' in d:
+                macDetails.update({"vlan": d['vlan']})
+            if 'macAddress' in d:
+                macDetails.update({"macAddress": d['macAddress']})
+            if 'interface' in d:
+                portMatch = re.match('Port-(.*)', d['interface'])
+                if portMatch:
+                    port = portMatch = re.match('Port-(.*)', d['interface']).group(0)
+                    macDetails.update({"port": port})
+            result.append(macDetails.copy())
+        return result
+
 class ExtremePortChannelParser(PrePostProcessor):
     """
     Get port number, duplex, operational speed, and switchport mode
@@ -152,22 +235,33 @@ class ExtremePortChannelParser(PrePostProcessor):
             py_logger.error("{}\n{}".format(e, traceback.format_exc()))
         return result
 
-class ExtremeMacAddressTablePrePostProcessor(PrePostProcessor):
+class ExtremeRoutesPrePostProcessor(PrePostProcessor):
     def post_process(self, data):
-        ###Need to validate SMLT Remote Interfaces???###
         result = []
-        macDetails = dict()
+        routes = dict()
         for d in data:
-            if 'vlan' in d:
-                macDetails.update({"vlan": d['vlan']})
-            if 'macAddress' in d:
-                macDetails.update({"macAddress": d['macAddress']})
-            if 'interface' in d:
-                portMatch = re.match('Port-(.*)', d['interface'])
-                if portMatch:
-                    port = portMatch = re.match('Port-(.*)', d['interface']).group(0)
-                    macDetails.update({"port": port})
-            result.append(macDetails.copy())
+            if 'name' in d:
+                routes.update({"name": d['name']})
+            if 'mask' in d:
+                ipaddress_cidr= d['name'] + '/' + str(IPAddress(d['mask']).netmask_bits())
+                routes.update({'network': ipaddress_cidr})
+            if 'nextHop' in d:
+                routes.update({'nextHop': d['nextHop']})
+            if 'routeType' in d:
+                if d['routeType'] == 'STAT':
+                    routes.update({'routeType': 'Static'})
+                if d['routeType'] == 'LOC':
+                    routes.update({'routeType': 'DIRECT'})
+                if d['routeType'] != 'STAT' and d['routeType'] != 'LOC':
+                    routes.update({'routeType': d['routeType']})
+            if 'interfaceName' in d:
+                routes.update({'interfaceName': d['interfaceName']})
+            if 'vrf' in d:
+                if d['vrf'] == '-':
+                    routes.update({'vrf': 'DEFAULT'})
+                else:
+                    routes.update({'vrf': d['vrf']})
+            result.append(routes.copy())
         return result
 
 

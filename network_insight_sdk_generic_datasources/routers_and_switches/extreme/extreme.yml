@@ -105,11 +105,36 @@ workloads: &WORKLOADS
   - &ROUTER_INTERFACES
     table_id: router-interfaces
     command: show interfaces vlan ip | no-more
+    parser:
+      name: routers_and_switches.extreme.extreme_pre_post_processor.ExtremeRouterInterfaceParser
 
   - &ROUTES
     table_id: routes
     command: show ip route | no-more
-
+   parser:
+      pre_post_processor: ExtremeRoutesPrePostProcessor
+      name: *HORIZONTAL_TABLE_PARSER
+      arguments:
+        skip_head: 9
+        skip_tail: 7
+        header_keys:
+          - name
+          - mask
+          - nextHop
+          - vrf
+          - cost
+          - interfaceName
+          - routeType
+          - age
+          - type
+          - prf
+    select_columns:
+      name: destination
+      mask: mask
+      nextHop: nextHop
+      routeType: routeType
+      interfaceName: interfaceName
+      vrf: vrf
 
 
 #  - &SHOW_CDP_NEIGHBORSs

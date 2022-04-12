@@ -11,6 +11,7 @@ REUSE_TABLE_PROCESSOR_KEY = 'reuse_table_processor'
 COMMAND_KEY = 'command'
 REUSE_COMMAND_KEY = 'reuse_command'
 REUSE_TABLES_KEY = "reuse_tables"
+REUSE_TABLES_FOR_COMMAND_KEY = 'reuse_tables_for_command'
 TABLE_ID_KEY = 'table_id'
 TABLE_JOINERS_KEY = 'table_joiners'
 WORKLOADS_KEY = 'workloads'

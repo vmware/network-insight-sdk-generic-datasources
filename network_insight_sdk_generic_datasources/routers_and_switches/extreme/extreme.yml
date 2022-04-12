@@ -111,7 +111,7 @@ workloads: &WORKLOADS
   - &ROUTES
     table_id: routes
     command: show ip route | no-more
-   parser:
+    parser:
       pre_post_processor: ExtremeRoutesPrePostProcessor
       name: *HORIZONTAL_TABLE_PARSER
       arguments:
@@ -135,6 +135,22 @@ workloads: &WORKLOADS
       routeType: routeType
       interfaceName: interfaceName
       vrf: vrf
+
+  - &ROUTES
+    table_id: routes
+    reuse_tables_for_command: vrfs
+      arguments:
+        used_column: name
+        command_format:
+    reuse_command: show ip route vrf
+
+    parser:
+      pre_post_processor: ExtremeRoutesPrePostProcessor
+      name: *HORIZONTAL_TABLE_PARSER
+      arguments:
+        skip_head: 9
+        skip_tail: 7
+        header_keys:
 
 
 #  - &SHOW_CDP_NEIGHBORSs

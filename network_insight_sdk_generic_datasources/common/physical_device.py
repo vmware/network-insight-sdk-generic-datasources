@@ -17,9 +17,12 @@ from network_insight_sdk_generic_datasources.common.constants import SELECT_COLU
 from network_insight_sdk_generic_datasources.common.constants import REUSE_COMMAND_KEY
 from network_insight_sdk_generic_datasources.common.constants import TABLE_ID_KEY
 from network_insight_sdk_generic_datasources.common.constants import REUSE_TABLES_KEY
+from network_insight_sdk_generic_datasources.common.constants import COMMAND_FORMAT_KEY
 from network_insight_sdk_generic_datasources.common.constants import REUSE_TABLES_FOR_COMMAND_KEY
 from network_insight_sdk_generic_datasources.common.constants import REUSE_TABLE_PROCESSOR_KEY
-
+from network_insight_sdk_generic_datasources.common.constants import REUSE_COLUMN_KEY
+from network_insight_sdk_generic_datasources.common.constants import EXCEPT_COMMAND_KEY
+from network_insight_sdk_generic_datasources.common.constants import EXCEPT_VALUE_KEY
 
 from network_insight_sdk_generic_datasources.common.constants import DESTINATION_COLUMN_KEY
 from network_insight_sdk_generic_datasources.common.constants import SOURCE_COLUMN_KEY
@@ -27,6 +30,7 @@ from network_insight_sdk_generic_datasources.common.constants import DESTINATION
 from network_insight_sdk_generic_datasources.common.constants import SOURCE_TABLE_KEY
 from network_insight_sdk_generic_datasources.common.constants import JOINED_TABLE_ID_KEY
 from network_insight_sdk_generic_datasources.common.constants import PATH_KEY
+
 
 
 class PhysicalDevice(object):
@@ -79,7 +83,7 @@ class PhysicalDevice(object):
                                                     username=self.credentials.username,
                                                     password=self.credentials.password,
                                                     device_type=self.credentials.device_type,
-                                                    port=self.credentials.port)
+                                                    port=self.credentials.port),
             command_output_dict = {}
             for workload in self.workloads:
                 command_id = workload[TABLE_ID_KEY]
@@ -93,20 +97,41 @@ class PhysicalDevice(object):
                     table = self.parse_command_output(workload, command_result)
 
                 elif REUSE_TABLES_FOR_COMMAND_KEY in workload:
-                    process_table = import_utilities.load_class_for_process_table(self.device, workload[REUSE_TABLES_FOR_COMMAND_KEY])
-                    tables = {}
-                    for table in workload[REUSE_TABLES_FOR_COMMAND_KEY].split(','):
-                        tables[table] = self.result_map[table]
-                    result_dict = self.call_process_table_function(process_table, tables)
+                    source_table = self.result_map[workload[REUSE_TABLES_FOR_COMMAND_KEY]]
+                    if ARGUMENTS_KEY in workload:
+                        reuse_column = workload[ARGUMENTS_KEY][REUSE_COLUMN_KEY]
+                        command_format = workload[ARGUMENTS_KEY][COMMAND_FORMAT_KEY]
+                        command_list = []
+                        for row in source_table:
+                            value = row.get(reuse_column)
+                            if EXCEPT_VALUE_KEY in workload[ARGUMENTS_KEY] and value == workload[ARGUMENTS_KEY][EXCEPT_VALUE_KEY]:
+                                command_list.append(workload[ARGUMENTS_KEY][EXCEPT_COMMAND_KEY])
+                            else:
+                                command_list.append(command_format.replace("()", value))
+                        table = []
+                        for command in command_list:
+                            command_result = ssh_connect_handler.execute_command(command)
+                            command_output_dict[command] = command_result
+                            py_logger.info('Command %s Result %s' % (command, command_result))
+                            table = table + self.parse_command_output(workload, command_result)
 
-                    command_result = command_output_dict[workload[REUSE_COMMAND_KEY]]  ## this will be list of VRFs
-                    input_to_cmd = convertToList(command_result)  ## write convertToList
-                    command_result = ''
-                    for input in input_to_cmd:
-                        output = ssh_connect_handler.execute_command(
-                            prepareCommand(input, command_format))  # command_format will be in your yaml definition
-                        command_result = command_result + '\n\n' + output
-                    table = self.parse_command_output(workload, command_result)  # We already have this.
+
+                    # table_key_list = import_utilities.get_list_of_table_key(source_table, )
+                    #
+                    # process_table = import_utilities.load_class_for_process_table(self.device, workload[REUSE_TABLES_FOR_COMMAND_KEY])
+                    # tables = {}
+                    # for table in workload[REUSE_TABLES_FOR_COMMAND_KEY].split(','):
+                    #     tables[table] = self.result_map[table]
+                    # result_dict = self.call_process_table_function(process_table, tables)
+                    #
+                    # command_result = command_output_dict[workload[REUSE_COMMAND_KEY]]  ## this will be list of VRFs
+                    # input_to_cmd = convertToList(command_result)  ## write convertToList
+                    # command_result = ''
+                    # for input in input_to_cmd:
+                    #     output = ssh_connect_handler.execute_command(
+                    #         prepareCommand(input, command_format))  # command_format will be in your yaml definition
+                    #     command_result = command_result + '\n\n' + output
+                    # table = self.parse_command_output(workload, command_result)  # We already have this.
 
                 else:
                     command_result = ssh_connect_handler.execute_command(workload[COMMAND_KEY])

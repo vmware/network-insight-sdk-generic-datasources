@@ -1,0 +1,19 @@
+package_handler:
+  <<: *PACKAGE_HANDLER
+
+workloads:
+#  - <<: *SHOW_VERSION_ASR
+#  - <<: *SWITCH_PORTS_1
+#  - <<: *SWITCH_PORTS_2
+#  - <<: *PORT_CHANNEL
+  - <<: *SHOW_IP_VRF
+#  - <<: *MAC_ADDRESS_TABLE
+#  - <<: *ROUTER_INTERFACES
+  - <<: *ROUTES
+
+
+
+result_writer:
+  name: CsvWriter
+  table_id:
+#    - switch

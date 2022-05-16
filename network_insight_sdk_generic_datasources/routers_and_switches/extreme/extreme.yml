@@ -65,7 +65,7 @@ workloads: &WORKLOADS
       arguments:
         skip_head: 16
         token_length: 11
-        header_keys:  'vrfName', 'vrfId', 'vlanCount', 'arpCount', 'rip', 'ospf', 'bgp', 'pim', 'nbrv6Count', 'ripng', 'ospfv3', 'pim6'
+        header_keys:
           - vrfName
           - vrfId
           - vlanCount
@@ -108,9 +108,42 @@ workloads: &WORKLOADS
     parser:
       name: routers_and_switches.extreme.extreme_pre_post_processor.ExtremeRouterInterfaceParser
 
+#  - &ROUTES
+#    table_id: routes
+#    command: show ip route | no-more
+#    parser:
+#      pre_post_processor: ExtremeRoutesPrePostProcessor
+#      name: *HORIZONTAL_TABLE_PARSER
+#      arguments:
+#        skip_head: 9
+#        skip_tail: 7
+#        header_keys:
+#          - name
+#          - mask
+#          - nextHop
+#          - vrf
+#          - cost
+#          - interfaceName
+#          - routeType
+#          - age
+#          - type
+#          - prf
+#    select_columns:
+#      name: destination
+#      mask: mask
+#      nextHop: nextHop
+#      routeType: routeType
+#      interfaceName: interfaceName
+#      vrf: vrf
+
   - &ROUTES
     table_id: routes
-    command: show ip route | no-more
+    reuse_tables_for_command: vrfs
+    arguments:
+      reuse_column: vrfName
+      command_format: show ip route vrf () | no-more
+      except_value: GlobalRouter
+      except_command: show ip route | no-more
     parser:
       pre_post_processor: ExtremeRoutesPrePostProcessor
       name: *HORIZONTAL_TABLE_PARSER
@@ -135,22 +168,6 @@ workloads: &WORKLOADS
       routeType: routeType
       interfaceName: interfaceName
       vrf: vrf
-
-  - &ROUTES
-    table_id: routes
-    reuse_tables_for_command: vrfs
-      arguments:
-        used_column: name
-        command_format:
-    reuse_command: show ip route vrf
-
-    parser:
-      pre_post_processor: ExtremeRoutesPrePostProcessor
-      name: *HORIZONTAL_TABLE_PARSER
-      arguments:
-        skip_head: 9
-        skip_tail: 7
-        header_keys:
 
 
 #  - &SHOW_CDP_NEIGHBORSs
@@ -461,9 +478,9 @@ workloads: &WORKLOADS
 #    destination_column: name
 #    joined_table_id: port-channels
 #
-#result_writer: &RESULT_WRITER
-#  name: CsvWriter
-#  table_id:
+result_writer: &RESULT_WRITER
+  name: CsvWriter
+  table_id:
 #    - switch
 #    - mac-address-table
 #    - neighbors
@@ -472,9 +489,6 @@ workloads: &WORKLOADS
 #    - router-interfaces
 #    - switch-ports
 #    - port-channels
-#
-#
-#n5k: !include n5k.yml
-#ASR1k: !include ASR1k.yml
-#ASR9k: !include ASR9k.yml
+
+Extreme7400: !include Extreme7400.yml
 

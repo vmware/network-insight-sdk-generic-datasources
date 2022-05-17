@@ -16,4 +16,5 @@ workloads:
 result_writer:
   name: CsvWriter
   table_id:
-#    - switch
+    - vrfs
+    - routes

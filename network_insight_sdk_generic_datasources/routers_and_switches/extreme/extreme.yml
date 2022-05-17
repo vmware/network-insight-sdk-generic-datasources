@@ -485,7 +485,8 @@ result_writer: &RESULT_WRITER
 #    - mac-address-table
 #    - neighbors
 #    - routes
-#    - vrfs
+    - vrfs
+    - routes
 #    - router-interfaces
 #    - switch-ports
 #    - port-channels

@@ -102,9 +102,11 @@ class PhysicalDevice(object):
                         reuse_column = workload[ARGUMENTS_KEY][REUSE_COLUMN_KEY]
                         command_format = workload[ARGUMENTS_KEY][COMMAND_FORMAT_KEY]
                         command_list = []
-                        py_logger.error("Source Table \n %s" % (source_table))
+                        py_logger.info("Source Table \n %s" % (source_table))
                         for row in source_table:
+                            py_logger.info("Processing row \n %s" % (row))
                             value = row.get(reuse_column)
+                            py_logger.info("Processing value \n %s" % (value))
                             if EXCEPT_VALUE_KEY in workload[ARGUMENTS_KEY] and value == workload[ARGUMENTS_KEY][EXCEPT_VALUE_KEY]:
                                 command_list.append(workload[ARGUMENTS_KEY][EXCEPT_COMMAND_KEY])
                             else:

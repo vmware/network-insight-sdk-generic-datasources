@@ -139,7 +139,7 @@ workloads: &WORKLOADS
     table_id: routes
     reuse_tables_for_command: vrfs
     arguments:
-      reuse_column: vrfName
+      reuse_column: name
       command_format: show ip route vrf () | no-more
       except_value: GlobalRouter
       except_command: show ip route | no-more

@@ -109,6 +109,7 @@ class PhysicalDevice(object):
                             else:
                                 command_list.append(command_format.replace("()", value))
                         table = []
+                        py_logger.info('Command List %s' % (command_list))
                         for command in command_list:
                             py_logger.error("Iterate through command list for Routes")
                             command_result = ssh_connect_handler.execute_command(command)

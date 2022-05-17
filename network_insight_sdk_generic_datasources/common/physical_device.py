@@ -83,7 +83,7 @@ class PhysicalDevice(object):
                                                     username=self.credentials.username,
                                                     password=self.credentials.password,
                                                     device_type=self.credentials.device_type,
-                                                    port=self.credentials.port),
+                                                    port=self.credentials.port)
             command_output_dict = {}
             for workload in self.workloads:
                 command_id = workload[TABLE_ID_KEY]

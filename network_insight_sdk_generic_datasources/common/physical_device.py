@@ -100,6 +100,7 @@ class PhysicalDevice(object):
                     source_table = self.result_map[workload[REUSE_TABLES_FOR_COMMAND_KEY]]
                     if ARGUMENTS_KEY in workload:
                         reuse_column = workload[ARGUMENTS_KEY][REUSE_COLUMN_KEY]
+                        py_logger.info("Column to reuse \n %s" % (workload[ARGUMENTS_KEY][REUSE_COLUMN_KEY]))
                         command_format = workload[ARGUMENTS_KEY][COMMAND_FORMAT_KEY]
                         command_list = []
                         py_logger.info("Source Table \n %s" % (source_table))

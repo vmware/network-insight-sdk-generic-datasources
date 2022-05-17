@@ -134,7 +134,6 @@ class PhysicalDevice(object):
                     # table = self.parse_command_output(workload, command_result)  # We already have this.
 
                 else:
-                    py_logger.info('Issuing Command %s' % (workload[COMMAND_KEY]))
                     command_result = ssh_connect_handler.execute_command(workload[COMMAND_KEY])
                     command_output_dict[workload[COMMAND_KEY]] = command_result
                     py_logger.info('Command %s Result %s' % (workload[COMMAND_KEY], command_result))

@@ -72,7 +72,6 @@ workloads: &WORKLOADS
           - arpCount
           - rip
           - ospf
-          - ospf
           - bgp
           - pim
           - nbrv6Count

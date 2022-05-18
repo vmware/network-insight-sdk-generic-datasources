@@ -184,11 +184,12 @@ class PhysicalDevice(object):
 
         final_table = []
         keys = cmd[SELECT_COLUMNS_KEY]
-        py_logger.error("Keys %s" % keys)
         for row in table:
             new_row = {}
             for k in keys:
                 try:
+                    py_logger.error("Row %s" % row)
+                    py_logger.error("k %s" % k)
                     value = row[k]
                 except KeyError:
                     py_logger.error("Did not find key {}".format(k))

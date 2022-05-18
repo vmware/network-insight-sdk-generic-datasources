@@ -164,7 +164,6 @@ class PhysicalDevice(object):
             try:
                 if not block: continue
                 result_dict = self.process_block(block, cmd)
-                py_logger.info("Result_dict %s" % result_dict)
                 if len(result_dict) > 0:
                     table += result_dict
             except IndexError as e:
@@ -217,19 +216,19 @@ class PhysicalDevice(object):
             pre_post_processor = import_utilities.load_class_for_pre_post_parser(self.device,
                                                                                  cmd[PARSER_KEY][PRE_POST_PROCESSOR_KEY])()
             block = self.call_pre_function(pre_post_processor, block)
-
+        py_logger.info("Has_pre_post_Processor Block %s " % block)
         # Calling main parse function
         if ARGUMENTS_KEY in cmd[PARSER_KEY]:
             result_dict = import_utilities.load_class(cmd[PARSER_KEY][NAME_KEY])().parse(block, **cmd[PARSER_KEY][
                 ARGUMENTS_KEY])
         else:
             result_dict = import_utilities.load_class(cmd[PARSER_KEY][NAME_KEY])().parse(block)
-
+        py_logger.info("result_dict  %s " % result_dict)
         # Calling post processor
         if has_pre_post_processor:
             result_dict = self.call_post_function(pre_post_processor, result_dict)
         message = 'Expecting result dictionary to be list of dictionaries'
-
+        py_logger.info("Has_pre_post_Processor result_dict %s " % result_dict)
         # Verify parsed objects
         if type(result_dict) != list:
             raise TypeError(message)

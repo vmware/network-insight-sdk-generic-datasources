@@ -242,8 +242,8 @@ class ExtremeRoutesPrePostProcessor(PrePostProcessor):
         for d in data:
             if 'name' in d:
                 routes.update({"name": d['name']})
-            if 'mask' in d:
-                ipaddress_cidr= d['name'] + '/' + str(IPAddress(d['mask']).netmask_bits())
+            if 'network' in d:
+                ipaddress_cidr= d['name'] + '/' + str(IPAddress(d['network']).netmask_bits())
                 routes.update({'network': ipaddress_cidr})
             if 'nextHop' in d:
                 routes.update({'nextHop': d['nextHop']})

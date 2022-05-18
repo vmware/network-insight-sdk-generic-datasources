@@ -151,7 +151,7 @@ workloads: &WORKLOADS
         skip_tail: 7
         header_keys:
           - name
-          - mask
+          - network
           - nextHop
           - vrf
           - cost
@@ -162,7 +162,7 @@ workloads: &WORKLOADS
           - prf
     select_columns:
       name: name
-      network: mask
+      network: network
       nextHop: nextHop
       routeType: routeType
       interfaceName: interfaceName

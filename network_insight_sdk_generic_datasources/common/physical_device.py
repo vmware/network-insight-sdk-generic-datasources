@@ -160,11 +160,11 @@ class PhysicalDevice(object):
 
         else:
             blocks.append(command_result)
-            py_logger.info("Blocks %s" % blocks)
         for block in blocks:
             try:
                 if not block: continue
                 result_dict = self.process_block(block, cmd)
+                py_logger("Result_dict %s" % result_dict)
                 if len(result_dict) > 0:
                     table += result_dict
             except IndexError as e:

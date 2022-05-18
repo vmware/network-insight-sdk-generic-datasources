@@ -184,6 +184,7 @@ class PhysicalDevice(object):
 
         final_table = []
         keys = cmd[SELECT_COLUMNS_KEY]
+        py_logger.error("Keys %s" % keys)
         for row in table:
             new_row = {}
             for k in keys:

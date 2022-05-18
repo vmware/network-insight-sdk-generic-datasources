@@ -9,7 +9,7 @@ package_handler: &PACKAGE_HANDLER
 
 # workloads added will be executed in sequence
 workloads: &WORKLOADS
-  - &SHOW_VERSION_ASR
+  - &SHOW_VERSION
     table_id: switch
     command: show sys-info | no-more
     parser:
@@ -107,34 +107,6 @@ workloads: &WORKLOADS
     parser:
       name: routers_and_switches.extreme.extreme_pre_post_processor.ExtremeRouterInterfaceParser
 
-#  - &ROUTES
-#    table_id: routes
-#    command: show ip route | no-more
-#    parser:
-#      pre_post_processor: ExtremeRoutesPrePostProcessor
-#      name: *HORIZONTAL_TABLE_PARSER
-#      arguments:
-#        skip_head: 9
-#        skip_tail: 7
-#        header_keys:
-#          - name
-#          - mask
-#          - nextHop
-#          - vrf
-#          - cost
-#          - interfaceName
-#          - routeType
-#          - age
-#          - type
-#          - prf
-#    select_columns:
-#      name: destination
-#      mask: mask
-#      nextHop: nextHop
-#      routeType: routeType
-#      interfaceName: interfaceName
-#      vrf: vrf
-
   - &ROUTES
     table_id: routes
     reuse_tables_for_command: vrfs
@@ -167,7 +139,6 @@ workloads: &WORKLOADS
       routeType: routeType
       interfaceName: interfaceName
       vrf: vrf
-
 
 #  - &SHOW_CDP_NEIGHBORSs
 #    table_id: neighbors
@@ -480,15 +451,14 @@ workloads: &WORKLOADS
 result_writer: &RESULT_WRITER
   name: CsvWriter
   table_id:
-#    - switch
-#    - mac-address-table
+    - switch
+    - mac-address-table
 #    - neighbors
+#    - vrfs
 #    - routes
-    - vrfs
-    - routes
 #    - router-interfaces
 #    - switch-ports
-#    - port-channels
+    - port-channels
 
 Extreme7400: !include Extreme7400.yml
 

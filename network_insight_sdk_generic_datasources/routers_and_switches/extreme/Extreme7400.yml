@@ -2,19 +2,25 @@ package_handler:
   <<: *PACKAGE_HANDLER
 
 workloads:
-#  - <<: *SHOW_VERSION_ASR
+  - <<: *SHOW_VERSION
 #  - <<: *SWITCH_PORTS_1
 #  - <<: *SWITCH_PORTS_2
-#  - <<: *PORT_CHANNEL
-  - <<: *SHOW_IP_VRF
-#  - <<: *MAC_ADDRESS_TABLE
-#  - <<: *ROUTER_INTERFACES
-  - <<: *ROUTES
+  - <<: *PORT_CHANNEL
+#  - <<: *SHOW_IP_VRF
+  - <<: *MAC_ADDRESS_TABLE
+  - <<: *ROUTER_INTERFACES
+#  - <<: *ROUTES
 
 
 
 result_writer:
   name: CsvWriter
   table_id:
-    - vrfs
-    - routes
+    - switch
+    - mac-address-table
+#    - neighbors
+#    - vrfs
+#    - routes
+#    - router-interfaces
+#    - switch-ports
+    - port-channels

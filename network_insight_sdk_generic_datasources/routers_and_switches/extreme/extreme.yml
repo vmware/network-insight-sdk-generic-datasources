@@ -162,7 +162,7 @@ workloads: &WORKLOADS
           - prf
     select_columns:
       name: name
-      mask: mask
+      network: mask
       nextHop: nextHop
       routeType: routeType
       interfaceName: interfaceName

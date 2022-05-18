@@ -99,6 +99,7 @@ class PhysicalDevice(object):
                 elif REUSE_TABLES_FOR_COMMAND_KEY in workload:
                     source_table = self.result_map[workload[REUSE_TABLES_FOR_COMMAND_KEY]]
                     if ARGUMENTS_KEY in workload:
+                        py_logger.info("Arguments Key \n %s" % (ARGUMENTS_KEY))
                         reuse_column = workload[ARGUMENTS_KEY][REUSE_COLUMN_KEY]
                         command_format = workload[ARGUMENTS_KEY][COMMAND_FORMAT_KEY]
                         command_list = []
@@ -113,7 +114,7 @@ class PhysicalDevice(object):
                                 command_list.append(command_format.replace("()", value))
                         table = []
                         for command in command_list:
-                            py_logger.error("Iterate through command list for Routes")
+                            py_logger.info("Iterate through command list for Routes")
                             command_result = ssh_connect_handler.execute_command(command)
                             command_output_dict[command] = command_result
                             py_logger.info('Command %s Result %s' % (command, command_result))

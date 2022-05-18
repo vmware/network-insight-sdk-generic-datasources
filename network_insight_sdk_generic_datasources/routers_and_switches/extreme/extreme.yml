@@ -161,7 +161,7 @@ workloads: &WORKLOADS
           - type
           - prf
     select_columns:
-      name: destination
+      name: name
       mask: mask
       nextHop: nextHop
       routeType: routeType

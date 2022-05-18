@@ -99,22 +99,17 @@ class PhysicalDevice(object):
                 elif REUSE_TABLES_FOR_COMMAND_KEY in workload:
                     source_table = self.result_map[workload[REUSE_TABLES_FOR_COMMAND_KEY]]
                     if ARGUMENTS_KEY in workload:
-                        py_logger.info("Arguments Key \n %s" % (ARGUMENTS_KEY))
                         reuse_column = workload[ARGUMENTS_KEY][REUSE_COLUMN_KEY]
                         command_format = workload[ARGUMENTS_KEY][COMMAND_FORMAT_KEY]
                         command_list = []
-                        py_logger.info("Source Table \n %s" % (source_table))
                         for row in source_table:
-                            py_logger.info("Processing row \n %s" % (row))
                             value = row.get(reuse_column)
-                            py_logger.info("Processing value \n %s" % (value))
                             if EXCEPT_VALUE_KEY in workload[ARGUMENTS_KEY] and value == workload[ARGUMENTS_KEY][EXCEPT_VALUE_KEY]:
                                 command_list.append(workload[ARGUMENTS_KEY][EXCEPT_COMMAND_KEY])
                             else:
                                 command_list.append(command_format.replace("()", value))
                         table = []
                         for command in command_list:
-                            py_logger.info("Iterate through command list for Routes")
                             command_result = ssh_connect_handler.execute_command(command)
                             command_output_dict[command] = command_result
                             py_logger.info('Command %s Result %s' % (command, command_result))
@@ -165,6 +160,7 @@ class PhysicalDevice(object):
 
         else:
             blocks.append(command_result)
+            py_logger.info("Blocks %s" % blocks)
         for block in blocks:
             try:
                 if not block: continue

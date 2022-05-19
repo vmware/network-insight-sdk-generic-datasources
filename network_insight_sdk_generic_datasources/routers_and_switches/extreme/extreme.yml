@@ -38,7 +38,7 @@ workloads: &WORKLOADS
     parser:
       name: *HORIZONTAL_TABLE_PARSER
       arguments:
-        skip_head: 12
+        skip_head: 10
         header_keys:
           - name
           - index

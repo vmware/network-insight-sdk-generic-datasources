@@ -3,13 +3,13 @@ package_handler:
 
 workloads:
   - <<: *ENABLE
-  - <<: *SHOW_VERSION
+#  - <<: *SHOW_VERSION
 #  - <<: *SWITCH_PORTS_1
 #  - <<: *SWITCH_PORTS_2
-  - <<: *PORT_CHANNEL
+#  - <<: *PORT_CHANNEL
 #  - <<: *SHOW_IP_VRF
   - <<: *MAC_ADDRESS_TABLE
-  - <<: *ROUTER_INTERFACES
+#  - <<: *ROUTER_INTERFACES
 #  - <<: *ROUTES
 
 
@@ -17,11 +17,11 @@ workloads:
 result_writer:
   name: CsvWriter
   table_id:
-    - switch
+#    - switch
     - mac-address-table
 #    - neighbors
 #    - vrfs
 #    - routes
 #    - router-interfaces
 #    - switch-ports
-    - port-channels
+#    - port-channels

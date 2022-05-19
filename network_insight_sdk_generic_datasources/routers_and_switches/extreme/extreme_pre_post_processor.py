@@ -154,10 +154,10 @@ class ExtremeMacAddressTablePrePostProcessor(PrePostProcessor):
                 macDetails.update({"vlan": d['vlan']})
             if 'macAddress' in d:
                 macDetails.update({"macAddress": d['macAddress']})
-            if 'interface' in d:
-                portMatch = re.match('Port-(.*)', d['interface'])
+            if 'switchPort' in d:
+                portMatch = re.match('Port-(.*)', d['switchPort'])
                 if portMatch:
-                    port = portMatch = re.match('Port-(.*)', d['interface']).group(0)
+                    port = portMatch.group(0)
                     macDetails.update({"port": port})
             result.append(macDetails.copy())
         return result

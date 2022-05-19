@@ -115,7 +115,7 @@ workloads: &WORKLOADS
     table_id: router-interfaces
     command: show interfaces vlan ip | no-more
     parser:
-      name: routers_and_switches.extreme.extreme_pre_post_processor.ExtremeRouterInterfaceParser
+      name: routers_and_switches.extreme.extreme_pre_post_processor.ExtremeRouterInterfacePrePostProcessor
 
   - &ROUTES
     table_id: routes

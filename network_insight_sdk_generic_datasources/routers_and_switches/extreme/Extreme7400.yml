@@ -2,6 +2,7 @@ package_handler:
   <<: *PACKAGE_HANDLER
 
 workloads:
+  - <<: *ENABLE
   - <<: *SHOW_VERSION
 #  - <<: *SWITCH_PORTS_1
 #  - <<: *SWITCH_PORTS_2

@@ -8,6 +8,15 @@ package_handler: &PACKAGE_HANDLER
   name: ZipPackageHandler
 
 # workloads added will be executed in sequence
+  - &ENABLE
+    table_id: enable
+    command: en
+    parser:
+      name: *GENERIC_TEXT_PARSER
+      arguments:
+        rules:
+          page: "(.*)"
+
 workloads: &WORKLOADS
   - &SHOW_VERSION
     table_id: switch

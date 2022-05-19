@@ -152,7 +152,7 @@ workloads: &WORKLOADS
 
 
 table_joiners: &TABLE_JOINERS
-  - &N5K_RI_TABLE
+  - &SWITCH_PORTS_7400
     name: network_insight_sdk_generic_datasources.joiner.table_joiner.SimpleTableJoiner
     source_table: switch_ports_1
     destination_table: switch_ports_2

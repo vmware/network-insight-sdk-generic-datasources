@@ -12,7 +12,8 @@ workloads:
   - <<: *ROUTER_INTERFACES
   - <<: *ROUTES
 
-
+table_joiners:
+  - <<: *SWITCH_PORTS_7400
 
 result_writer:
   name: CsvWriter

@@ -8,6 +8,8 @@ package_handler: &PACKAGE_HANDLER
   name: ZipPackageHandler
 
 # workloads added will be executed in sequence
+
+workloads: &WORKLOADS
   - &ENABLE
     table_id: enable
     command: en
@@ -17,7 +19,6 @@ package_handler: &PACKAGE_HANDLER
         rules:
           page: "(.*)"
 
-workloads: &WORKLOADS
   - &SHOW_VERSION
     table_id: switch
     command: show sys-info | no-more

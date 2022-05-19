@@ -104,12 +104,12 @@ workloads: &WORKLOADS
           - vlan
           - status
           - macAddress
-          - Interface
+          - switchPort
           - smltRemote
     select_columns:
       macAddress: macAddress
       vlan: vlan
-      switchPort: interface
+      switchPort: switchPort
 
   - &ROUTER_INTERFACES
     table_id: router-interfaces

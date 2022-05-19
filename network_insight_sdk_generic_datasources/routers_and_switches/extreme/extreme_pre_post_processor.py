@@ -158,7 +158,7 @@ class ExtremeMacAddressTablePrePostProcessor(PrePostProcessor):
                 portMatch = re.match('Port-(.*)', d['switchPort'])
                 if portMatch:
                     port = portMatch.group(0)
-                    macDetails.update({"port": port})
+                    macDetails.update({"switchPort": port})
             result.append(macDetails.copy())
         return result
 

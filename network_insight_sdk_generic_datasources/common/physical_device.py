@@ -199,14 +199,11 @@ class PhysicalDevice(object):
         if ARGUMENTS_KEY in cmd[PARSER_KEY]:
             result_dict = import_utilities.load_class(cmd[PARSER_KEY][NAME_KEY])().parse(block, **cmd[PARSER_KEY][
                 ARGUMENTS_KEY])
-            py_logger.info("args dict %s" % result_dict)
         else:
             result_dict = import_utilities.load_class(cmd[PARSER_KEY][NAME_KEY])().parse(block)
-            py_logger.info("block %s" % result_dict)
         # Calling post processor
         if has_pre_post_processor:
             result_dict = self.call_post_function(pre_post_processor, result_dict)
-            py_logger.info("prepost %s" % result_dict)
         message = 'Expecting result dictionary to be list of dictionaries'
         # Verify parsed objects
         if type(result_dict) != list:

@@ -95,7 +95,6 @@ class PhysicalDevice(object):
                     workload[COMMAND_KEY] = workload[REUSE_COMMAND_KEY]
                     py_logger.info('Command %s Result %s' % (workload[REUSE_COMMAND_KEY], command_result))
                     table = self.parse_command_output(workload, command_result)
-
                 elif REUSE_TABLES_FOR_COMMAND_KEY in workload:
                     source_table = self.result_map[workload[REUSE_TABLES_FOR_COMMAND_KEY]]
                     if ARGUMENTS_KEY in workload:
@@ -112,30 +111,12 @@ class PhysicalDevice(object):
                         for command in command_list:
                             command_result = ssh_connect_handler.execute_command(command)
                             command_output_dict[command] = command_result
-                            py_logger.info('Command %s Result %s' % (command, command_result))
+                            # py_logger.info('Command %s Result %s' % (command, command_result))
                             table = table + self.parse_command_output(workload, command_result)
-
-                    # table_key_list = import_utilities.get_list_of_table_key(source_table, )
-                    #
-                    # process_table = import_utilities.load_class_for_process_table(self.device, workload[REUSE_TABLES_FOR_COMMAND_KEY])
-                    # tables = {}
-                    # for table in workload[REUSE_TABLES_FOR_COMMAND_KEY].split(','):
-                    #     tables[table] = self.result_map[table]
-                    # result_dict = self.call_process_table_function(process_table, tables)
-                    #
-                    # command_result = command_output_dict[workload[REUSE_COMMAND_KEY]]  ## this will be list of VRFs
-                    # input_to_cmd = convertToList(command_result)  ## write convertToList
-                    # command_result = ''
-                    # for input in input_to_cmd:
-                    #     output = ssh_connect_handler.execute_command(
-                    #         prepareCommand(input, command_format))  # command_format will be in your yaml definition
-                    #     command_result = command_result + '\n\n' + output
-                    # table = self.parse_command_output(workload, command_result)  # We already have this.
-
                 else:
                     command_result = ssh_connect_handler.execute_command(workload[COMMAND_KEY])
                     command_output_dict[workload[COMMAND_KEY]] = command_result
-                    py_logger.info('Command %s Result %s' % (workload[COMMAND_KEY], command_result))
+                    # py_logger.info('Command %s Result %s' % (workload[COMMAND_KEY], command_result))
                     table = self.parse_command_output(workload, command_result)
                 if 'switch' == command_id:
                     table[0]['ipAddress/fqdn'] = self.credentials.ip_or_fqdn

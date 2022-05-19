@@ -40,7 +40,7 @@ workloads: &WORKLOADS
       arguments:
         skip_head: 12
         header_keys:
-          - port
+          - name
           - index
           - description
           - linkTrap
@@ -50,7 +50,7 @@ workloads: &WORKLOADS
           - administrativeStatus
           - operationalStatus
     select_columns:
-      name: port
+      name: name
       mtu: mtu
       administrativeStatus: administrativeStatus
       operationalStatus: operationalStatus

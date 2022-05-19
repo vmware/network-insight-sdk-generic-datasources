@@ -19,7 +19,7 @@ result_writer:
   table_id:
     - switch
     - mac-address-table
-    - neighbors
+#    - neighbors
     - vrfs
     - routes
     - router-interfaces

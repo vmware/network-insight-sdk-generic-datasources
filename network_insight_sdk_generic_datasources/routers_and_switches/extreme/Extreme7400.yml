@@ -23,5 +23,5 @@ result_writer:
     - vrfs
     - routes
     - router-interfaces
-#    - switch-ports
+    - switch-ports
     - port-channels

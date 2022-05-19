@@ -463,11 +463,11 @@ result_writer: &RESULT_WRITER
   table_id:
     - switch
     - mac-address-table
-#    - neighbors
-#    - vrfs
-#    - routes
-#    - router-interfaces
-#    - switch-ports
+    - neighbors
+    - vrfs
+    - routes
+    - router-interfaces
+    - switch-ports
     - port-channels
 
 Extreme7400: !include Extreme7400.yml

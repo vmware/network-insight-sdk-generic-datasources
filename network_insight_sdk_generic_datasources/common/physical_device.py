@@ -195,6 +195,7 @@ class PhysicalDevice(object):
             pre_post_processor = import_utilities.load_class_for_pre_post_parser(self.device,
                                                                                  cmd[PARSER_KEY][PRE_POST_PROCESSOR_KEY])()
             block = self.call_pre_function(pre_post_processor, block)
+            py_logger.info("block %s" % block)
         # Calling main parse function
         if ARGUMENTS_KEY in cmd[PARSER_KEY]:
             result_dict = import_utilities.load_class(cmd[PARSER_KEY][NAME_KEY])().parse(block, **cmd[PARSER_KEY][

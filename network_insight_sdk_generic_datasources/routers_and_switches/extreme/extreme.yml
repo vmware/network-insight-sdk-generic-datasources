@@ -152,7 +152,7 @@ workloads: &WORKLOADS
 
   - &NEIGHBORS_TABLE
     table_id: neighbors
-    command: show lldp neighbors | no-more
+    command: show lldp neighbor | no-more
     block_parser:
       name: GenericBlockParser
       arguments:

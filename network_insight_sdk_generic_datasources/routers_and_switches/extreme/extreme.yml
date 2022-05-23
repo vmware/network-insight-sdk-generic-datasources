@@ -159,12 +159,15 @@ workloads: &WORKLOADS
         start_pattern: "Port:\\s\\d\\/\\d{1,2}"
         end_pattern: "IPv6\\sAddress\\s+:\\s"
     parser:
-      name: *GENERIC_TEXT_PARSER
-      arguments:
-        rules:
-          localInterface: "Port:\\s\\d\\/\\d{1,2}"
-          remoteDevice: "SysName\\s+:\\s(.*)"
-          remoteInterface: "ChassisId:\\sIfName\\s+(.*)"
+      pre_post_processor: ExtremeNeighborsPrePostProcessor
+
+#    parser:
+#      name: *GENERIC_TEXT_PARSER
+#      arguments:
+#        rules:
+#          localInterface: "Port:\\s\\d\\/\\d{1,2}"
+#          remoteDevice: "SysName\\s+:\\s(.*)"
+#          remoteInterface: "ChassisId:\\sIfName\\s+(.*)"
 
 table_joiners: &TABLE_JOINERS
   - &SWITCH_PORTS_7400

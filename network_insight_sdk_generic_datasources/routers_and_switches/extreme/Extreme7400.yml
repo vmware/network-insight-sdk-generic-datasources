@@ -3,26 +3,27 @@ package_handler:
 
 workloads:
   - <<: *ENABLE
-  - <<: *SHOW_VERSION
-  - <<: *SWITCH_PORTS_1
-  - <<: *SWITCH_PORTS_2
-  - <<: *PORT_CHANNEL
-  - <<: *SHOW_IP_VRF
-  - <<: *MAC_ADDRESS_TABLE
-  - <<: *ROUTER_INTERFACES
-  - <<: *ROUTES
+  - <<: *NEIGHBORS_TABLE
+#  - <<: *SHOW_VERSION
+#  - <<: *SWITCH_PORTS_1
+#  - <<: *SWITCH_PORTS_2
+#  - <<: *PORT_CHANNEL
+#  - <<: *SHOW_IP_VRF
+#  - <<: *MAC_ADDRESS_TABLE
+#  - <<: *ROUTER_INTERFACES
+#  - <<: *ROUTES
 
 table_joiners:
-  - <<: *SWITCH_PORTS_7400
+#  - <<: *SWITCH_PORTS_7400
 
 result_writer:
   name: CsvWriter
   table_id:
-    - switch
-    - mac-address-table
-#    - neighbors
-    - vrfs
-    - routes
-    - router-interfaces
-    - switch-ports
-    - port-channels
+#    - switch
+#    - mac-address-table
+    - neighbors
+#    - vrfs
+#    - routes
+#    - router-interfaces
+#    - switch-ports
+#    - port-channels

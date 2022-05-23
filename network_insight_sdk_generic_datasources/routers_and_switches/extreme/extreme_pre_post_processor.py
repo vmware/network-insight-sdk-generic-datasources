@@ -269,15 +269,18 @@ class ExtremeNeighborsPrePostProcessor(PrePostProcessor):
         result = []
         neighbors = dict()
         for d in data:
-            local_interface_match = re.match("(Port:\\s\\d\\/\\d{1,2})", d)
-            remote_device_match = re.match("SysName\\s+:\\s(.*)", d)
-            remote_interface_match = re.match("ChassisId:\\sIfName\\s+(.*)", d)
-            if local_interface_match:
-                neighbors.update({"localInterface": local_interface_match.group[0]})
-            if remote_device_match:
-                neighbors.update({"remoteDevice": remote_device_match.group[0]})
-            if remote_interface_match:
-                neighbors.update({"remoteInterface": remote_interface_match.group[0]})
+            if 'localInterface' in d:
+                neighbors.update({"localInterface": d['localInterface']})
+            else:
+                continue
+            if 'remoteDevice' in d:
+                neighbors.update({"remoteDevice": d['remoteDevice']})
+            else:
+                continue
+            if 'remoteInterface1' in d:
+                neighbors.update({"remoteInterface": d['remoteInterface1']})
+            if 'remoteInterface2' in d:
+                neighbors.update({"remoteInterface": d['remoteInterface2']})
             result.append(neighbors.copy())
         return result
 

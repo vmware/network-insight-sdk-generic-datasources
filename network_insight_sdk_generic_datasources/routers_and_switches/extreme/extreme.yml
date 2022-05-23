@@ -164,7 +164,8 @@ workloads: &WORKLOADS
         rules:
           localInterface: "(Port:\\s\\d\\/\\d{1,2})"
           remoteDevice: "SysName\\s+:\\s(.*)"
-          remoteInterface: "ChassisId:\\sIfName\\s+(.*)"
+          remoteInterface1: "ChassisId:\\sIfName\\s+(.*)"
+          remoteInterface2: "PortId\\s+:\\sIfName\\s+(\\d\\/\\d{1,2})"
 
 table_joiners: &TABLE_JOINERS
   - &SWITCH_PORTS_7400

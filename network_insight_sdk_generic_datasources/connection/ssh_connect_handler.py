@@ -50,9 +50,9 @@ class SSHConnectHandler(object):
 if __name__ == '__main__':
     cisco_881 = {
         'device_type': 'CISCO_IOS',
-        'ip_or_fqdn': '10.40.13.36',
+        'ip_or_fqdn': '1.1.1.1',
         'username': 'admin',
-        'password': 'Vnera655'
+        'password': 'admin'
     }
 
     sshConnectHandler = SSHConnectHandler(**cisco_881)

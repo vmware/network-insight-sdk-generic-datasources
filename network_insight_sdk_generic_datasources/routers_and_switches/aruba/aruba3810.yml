@@ -1,0 +1,24 @@
+# device_type: ARUBA_OS
+
+package_handler:
+  <<: *PACKAGE_HANDLER
+
+workloads:
+  - <<: *NO_PAGE
+  - <<: *SHOW_VERSION_3810
+  - <<: *VRFS_3810
+  - <<: *MAC_ADDRESS_TABLE_3810
+  - <<: *LLDP_TABLE_3810
+  - <<: *SHOW_IP_ROUTE_VRF_ALL_3810
+  - <<: *SHOW_ROUTER_INTERFACES_3810
+  - <<: *SHOW_INTERFACE1_3810
+  - <<: *SHOW_INTERFACE2_3810
+  - <<: *SHOW_LACP_3810
+  - <<: *SHOW_PORT_CHANNELS_3810
+  - <<: *SHOW_IP_ROUTE_3810
+
+table_joiners:
+  - <<: *SHOW_INTERFACE_TABLE_3810
+
+result_writer:
+  <<: *RESULT_WRITER

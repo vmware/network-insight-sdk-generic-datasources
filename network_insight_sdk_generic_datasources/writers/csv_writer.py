@@ -2,12 +2,12 @@
 # SPDX-License-Identifier: BSD-2-Clause
 
 import csv
-from network_insight_sdk_generic_datasources.common.log import py_logger
 import os
+from network_insight_sdk_generic_datasources.common.log import py_logger
+from network_insight_sdk_generic_datasources.common.constants import CSV_EXTENSION
 
 
 class CsvWriter(object):
-    CSV_EXTENSION = '.csv'
 
     @staticmethod
     def write(path, filename, table):
@@ -28,7 +28,7 @@ class CsvWriter(object):
         if not os.path.exists(path):
             py_logger.error("Couldn't create directory {}. Please check permissions.".format(path))
             return
-        with open(path + '/' + filename + CsvWriter.CSV_EXTENSION, 'w') as write_file:
+        with open(path + '/' + filename + CSV_EXTENSION, 'w') as write_file:
             writer = csv.writer(write_file, dialect='dialect')
             if len(table) > 0:
                 row = table[0]

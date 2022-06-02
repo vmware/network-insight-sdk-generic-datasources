@@ -11,6 +11,7 @@ from network_insight_sdk_generic_datasources.common.constants import WORKLOADS_K
 from network_insight_sdk_generic_datasources.common.constants import PACKAGE_HANDLER_KEY
 from network_insight_sdk_generic_datasources.common.constants import RESULT_WRITER_KEY
 from network_insight_sdk_generic_datasources.common.constants import GENERATION_DIRECTORY_KEY
+from network_insight_sdk_generic_datasources.common.constants import TABLE_ID_KEY
 
 
 def parse_arguments():
@@ -43,15 +44,17 @@ def main():
         table_joiner = configuration[args.model][TABLE_JOINERS_KEY] if TABLE_JOINERS_KEY in configuration[
             args.model] else None
         generation_directory = configuration[GENERATION_DIRECTORY_KEY] + '/' + args.ip_or_fqdn
-        physical_device = physical_device.PhysicalDevice(args.device, args.model,
+        result_writer = configuration[args.model][RESULT_WRITER_KEY]
+        physical_device = physical_device.PhysicalDevice(args.device,
+                                                         args.model,
                                                          configuration[args.model][WORKLOADS_KEY],
                                                          args,
                                                          table_joiner,
-                                                         configuration[args.model][RESULT_WRITER_KEY],
+                                                         result_writer,
                                                          generation_directory)
         physical_device.process()
         if PACKAGE_HANDLER_KEY in configuration:
-            zipper = ZipArchiver(self_zip, args.output_zip, generation_directory)
+            zipper = ZipArchiver(self_zip, args.output_zip, generation_directory, result_writer[TABLE_ID_KEY])
             zipper.zipdir()
 
 

@@ -239,7 +239,7 @@ class ExtremeRoutesPrePostProcessor(PrePostProcessor):
     def post_process(self, data):
         result = []
         routes = dict()
-        vrfname = 'no-name'
+        vrfname = 'no-vrf-name'
         for d in data:
             if 'name' in d:
                 routes.update({"name": d['name']})

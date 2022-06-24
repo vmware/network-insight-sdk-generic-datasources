@@ -239,6 +239,7 @@ class ExtremeRoutesPrePostProcessor(PrePostProcessor):
     def post_process(self, data):
         result = []
         routes = dict()
+        vrfname = 'no-name'
         for d in data:
             if 'name' in d:
                 routes.update({"name": d['name']})
@@ -258,10 +259,12 @@ class ExtremeRoutesPrePostProcessor(PrePostProcessor):
                 routes.update({'interfaceName': d['interfaceName']})
             if 'vrf' in d:
                 if d['vrf'] == '-':
-                    routes.update({'vrf': 'DEFAULT'})
+                    routes.update({'vrf': vrfname})
                 else:
-                    routes.update({'vrf': d['vrf']})
+                    vrfname = d['vrf']
+                    routes.update({'vrf': vrfname})
             result.append(routes.copy())
+
         return result
 
 class ExtremeNeighborsPrePostProcessor(PrePostProcessor):

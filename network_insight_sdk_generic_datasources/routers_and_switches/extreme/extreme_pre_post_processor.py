@@ -145,7 +145,7 @@ class ExtremeRouterInterfacePrePostProcessor(PrePostProcessor):
                 interface_details = dict()
                 if break_regex_count == 0:
                     ipaddress_cidr= tokens[2] + '/' + str(IPAddress(tokens[3]).netmask_bits())
-                    interface_details.update({'name': tokens[2], 'vlan': tokens[0], 'ipAddress': ipaddress_cidr, 'mtu': tokens[5], 'administrativeStatus': 'UP', 'operationalStatus': 'UP', 'connected': 'UP'})
+                    interface_details.update({'name': tokens[2], 'vlan': tokens[0], 'ipAddress': ipaddress_cidr, 'mtu': tokens[5], 'administrativeStatus': 'UP', 'operationalStatus': 'UP', 'connected': 'TRUE'})
                     router_interface1.append(interface_details.copy())
                 if break_regex_count == 1:
                     interface_details.update({'vlan': tokens[0], 'vrf': tokens[1]})

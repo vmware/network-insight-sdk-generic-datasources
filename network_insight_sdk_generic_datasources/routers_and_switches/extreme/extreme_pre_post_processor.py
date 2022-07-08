@@ -26,11 +26,10 @@ class ExtremeSwitchPort1Parser(PrePostProcessor):
                 switchports1.update({"mtu": d['mtu']})
             if 'administrativeStatus' in d:
                 adminstatus = d['administrativeStatus']
-                py_logger.info('AdminStatus %s' % (adminstatus))
-                switchports1.update({"administrativeStatus": adminstatus.upper})
+                switchports1.update({"administrativeStatus": (adminstatus).upper})
             if 'operationalStatus' in d:
                 operationalstatus = d['operationalStatus']
-                switchports1.update({"operationalStatus": operationalstatus.upper})
+                switchports1.update({"operationalStatus": (operationalstatus).upper})
             result.append(switchports1.copy())
         return result
 

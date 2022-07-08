@@ -15,6 +15,21 @@ from network_insight_sdk_generic_datasources.parsers.common.line_parser import L
 from network_insight_sdk_generic_datasources.parsers.text.pre_post_processor import PrePostProcessor
 from network_insight_sdk_generic_datasources.parsers.text.table_processor import TableProcessor
 
+class ExtremeSwitchPort1Parser(PrePostProcessor):
+    def post_process(self, data):
+        result = []
+        switchports1 = dict()
+        for d in data:
+            if 'name' in d:
+                switchports1.update({"name": d['name']})
+            if 'mtu' in d:
+                switchports1.update({"mtu": d['mtu']})
+            if 'administrativeStatus' in d:
+                switchports1.update({"administrativeStatus": d['administrativeStatus'].upper})
+            if 'operationalStatus' in d:
+                switchports1.update({"operationalStatus": d['operationalStatus'].upper})
+            result.append(switchports1.copy())
+        return result
 
 class ExtremeSwitchPort2Parser(PrePostProcessor):
     """

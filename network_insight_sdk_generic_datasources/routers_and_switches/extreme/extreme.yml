@@ -36,6 +36,7 @@ workloads: &WORKLOADS
     table_id: switch_ports_1
     command: show interfaces gigabitEthernet interface | no-more
     parser:
+      pre_post_processor: ExtremeSwitchPort1Parser
       name: *HORIZONTAL_TABLE_PARSER
       arguments:
         skip_head: 10

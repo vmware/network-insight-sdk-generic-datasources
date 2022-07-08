@@ -25,9 +25,11 @@ class ExtremeSwitchPort1Parser(PrePostProcessor):
             if 'mtu' in d:
                 switchports1.update({"mtu": d['mtu']})
             if 'administrativeStatus' in d:
-                switchports1.update({"administrativeStatus": d['administrativeStatus'].upper})
+                adminstatus = d['administrativeStatus']
+                switchports1.update({"administrativeStatus": adminstatus.upper})
             if 'operationalStatus' in d:
-                switchports1.update({"operationalStatus": d['operationalStatus'].upper})
+                operationalstatus = d['operationalStatus']
+                switchports1.update({"operationalStatus": operationalstatus.upper})
             result.append(switchports1.copy())
         return result
 

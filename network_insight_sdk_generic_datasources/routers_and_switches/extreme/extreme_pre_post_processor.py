@@ -62,8 +62,10 @@ class ExtremeSwitchPort2Parser(PrePostProcessor):
                     if operational_speed_match:
                         if token == 0:
                             switch_ports.update({'operationalSpeed': 0})
+                            switch_ports.update({'connected': 'FALSE'})
                         else:
                             operational_speed = int(token) * 8 * 1000000
+                            switch_ports.update({'connected': 'TRUE'})
                             switch_ports.update({'operationalSpeed': operational_speed})
                     if duplex_match:
                         switch_ports.update({'duplex': token.upper()})

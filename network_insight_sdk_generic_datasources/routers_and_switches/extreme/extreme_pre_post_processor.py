@@ -26,6 +26,7 @@ class ExtremeSwitchPort1Parser(PrePostProcessor):
                 switchports1.update({"mtu": d['mtu']})
             if 'administrativeStatus' in d:
                 adminstatus = d['administrativeStatus']
+                py_logger.info('AdminStatus %s' % (adminstatus))
                 switchports1.update({"administrativeStatus": adminstatus.upper})
             if 'operationalStatus' in d:
                 operationalstatus = d['operationalStatus']

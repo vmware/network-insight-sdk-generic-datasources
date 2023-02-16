@@ -43,7 +43,7 @@ pip install --src . -r requirements.txt
 
 After cloning this project and add project folder to PYTHONPATH. Then run following command to run SDK.
 ```shell
-$ python ./network_insight_sdk_generic_datasources/main.py -d <device> -m <model> -s <device_type> -i <ip-address> -u <username> -p <password> -o <output.zip>
+$ python ./network_insight_sdk_generic_datasources/main.py -d <device> -m <model> -s <device_type> -i <ip-address> -u <username> -p <password> -e <enablemodepwd> -o <output.zip>
 ```
 
 > Command parameter explanation
@@ -53,6 +53,7 @@ $ python ./network_insight_sdk_generic_datasources/main.py -d <device> -m <model
 - -i = ip address or fqdn
 - -u = username
 - -p = password
+- -e = password enable mode (not required if you haven't that password set on your switch) 
 - -o = Output zip file, for upload to vRNI
 
 Example
@@ -61,7 +62,7 @@ $ git clone https://github.com/vmware/network-insight-sdk-generic-datasources.gi
 $ cd network-insight-sdk-generic-datasources
 $ pip install --src . -r requirements.txt
 $ export PYTHONPATH="$PYTHONPATH:../network-insight-sdk-generic-datasources"
-$ python ./network_insight_sdk_generic_datasources/main.py -d cisco -m n5k -s CISCO_IOS -i 10.1.1.1 -u test -p test -o cisco-n5k-10.1.1.1.zip
+$ python ./network_insight_sdk_generic_datasources/main.py -d cisco -m n5k -s CISCO_IOS -i 10.1.1.1 -u test -p test -e test -o cisco-n5k-10.1.1.1.zip
 
 ```
 

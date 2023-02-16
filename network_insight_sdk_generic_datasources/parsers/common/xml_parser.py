@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: BSD-2-Clause
 import re
 from xml.etree import ElementTree
-from network_insight_sdk_generic_datasources.parsers.common.block_parser import PatternBasedBlockParser
+from parsers.common.block_parser import PatternBasedBlockParser
 
 
 class XmlParser(object):

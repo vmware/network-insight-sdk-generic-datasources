@@ -21,6 +21,7 @@ def parse_arguments():
     parser.add_argument('-i', '--ip_or_fqdn', action='store', help='IP or FQDN')
     parser.add_argument('-u', '--username', action='store', help='Username for login')
     parser.add_argument('-p', '--password', action='store', help='Password for login')
+    parser.add_argument('-e', '--enablemodepwd', action='store', help='Password for enable mode',default=None)
     parser.add_argument('-z', '--self_zip', action='store', help='Self Zip the Project', default='false')
     parser.add_argument('-P', '--port', action='store', help='Specific port to connect', default='22')
     parser.add_argument('-o', '--output_zip', action='store', help='Output zip file to create with CSVs')

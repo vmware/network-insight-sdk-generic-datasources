@@ -77,6 +77,7 @@ class PhysicalDevice(object):
             ssh_connect_handler = SSHConnectHandler(ip=self.credentials.ip_or_fqdn,
                                                     username=self.credentials.username,
                                                     password=self.credentials.password,
+                                                    enablemodepwd=self.credentials.enablemodepwd,
                                                     device_type=self.credentials.device_type,
                                                     port=self.credentials.port)
             command_output_dict = {}

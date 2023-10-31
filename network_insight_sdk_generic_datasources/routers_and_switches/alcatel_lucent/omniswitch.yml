@@ -1,0 +1,30 @@
+package_handler:
+  <<: *PACKAGE_HANDLER
+
+workloads:
+  - <<: *SHOW_SYSTEM
+  - <<: *SHOW_VLAN_MEMBERS
+  - <<: *SHOW_INTERFACE
+  - <<: *SHOW_SWITCH_PORTS
+  - <<: *SHOW_PORT_CHANNEL_MEMBERS
+  - <<: *SHOW_PORT_CHANNEL
+  - <<: *PROCESS_PORT_CHANNEL
+  - <<: *SHOW_VRF
+  - <<: *SHOW_LLDP_NEIGHBORS
+  - <<: *SHOW_MAC_LEARNING
+  - <<: *SHOW_IP_INTERFACE
+  - <<: *SHOW_IP_ROUTE
+  - <<: *ROUTES_PROCESS
+
+
+result_writer:
+  name: CsvWriter
+  table_id:
+    - switch
+    - switch-ports
+    - port-channels
+    - vrfs
+    - neighbors
+    - mac-address-table
+    - router-interfaces
+    - routes

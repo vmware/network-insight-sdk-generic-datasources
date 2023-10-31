@@ -1,0 +1,154 @@
+
+vertical_table_parser: &VERTICAL_TABLE_PARSER network_insight_sdk_generic_datasources.parsers.common.vertical_table_parser.VerticalTableParser
+horizontal_table_parser: &HORIZONTAL_TABLE_PARSER network_insight_sdk_generic_datasources.parsers.common.horizontal_table_parser.HorizontalTableParser
+generic_text_parser: &GENERIC_TEXT_PARSER network_insight_sdk_generic_datasources.parsers.common.text_parser.GenericTextParser
+generation_directory: &GENERATION_DIRECTORY /tmp/uani
+
+package_handler: &PACKAGE_HANDLER
+  name: ZipPackageHandler
+
+# workloads added will be executed in sequence
+workloads: &WORKLOADS
+  - &SHOW_SYSTEM
+    table_id: switch
+    command: show system
+    parser:
+      name: routers_and_switches.alcatel_lucent.alcatel_lucent_pre_post_processor.AOSSwitchInfoPrePostProcessor
+
+  - &SHOW_VLAN_MEMBERS
+    table_id: vlanMembers
+    command: show vlan members
+    parser:
+      name: routers_and_switches.alcatel_lucent.alcatel_lucent_pre_post_processor.AOSVlanMembersPrePostProcessor
+
+  - &SHOW_INTERFACE
+    table_id: switchPorts
+    command: show interfaces
+    block_parser:
+      name: LineBasedBlockParser
+      arguments:
+        line_pattern: 'Chassis\/Slot\/Port'
+    parser:
+      pre_post_processor: AOSSwitchPortPrePostProcessor
+      name: *GENERIC_TEXT_PARSER
+      arguments:
+        rules:
+          name: "Chassis\/Slot\/Port.*\\s+:\\s+(.*)"
+          operationalStatus: "Operational Status\\s+:\\s+(\\w+),"
+          hardwareAddress: "MAC\\s+address\\s+:\\s+(.*),"
+          interfaceSpeed: "BandWidth.*:\\s+(\\d+),"
+          operationalSpeed: "BandWidth.*:\\s+(\\d+),"
+          duplex: "Duplex\\s+:\\s+(\\w+),"
+
+  - &SHOW_SWITCH_PORTS
+    table_id: switch-ports
+    reuse_tables: switchPorts,vlanMembers
+    reuse_table_processor: AOSSwitchPortTableProcessor
+
+  - &SHOW_PORT_CHANNEL_MEMBERS
+    table_id: showPCMembers
+    command: show linkagg port
+    parser:
+      name: *HORIZONTAL_TABLE_PARSER
+      arguments:
+        skip_head: 2
+        header_keys:
+          - Chassis/Slot/Port
+          - Aggregate
+          - SNMP Id
+          - Status
+          - Agg
+          - Oper
+          - Link
+          - Prim
+    select_columns:
+      Chassis/Slot/Port: member_port
+      Agg: port_channel
+      Prim: primary_port
+
+  - &SHOW_PORT_CHANNEL
+    table_id: showPC
+    command: show linkagg
+    parser:
+      name: *HORIZONTAL_TABLE_PARSER
+      arguments:
+        skip_head: 2
+        header_keys:
+          - Number
+          - Aggregate
+          - SNMP Id
+          - Size
+          - Admin State
+          - Oper State
+          - Att/Sel
+          - Ports
+    select_columns:
+      Number: port_channel
+      Admin State: admin_state
+      Oper State: oper_state
+
+  - &PROCESS_PORT_CHANNEL
+    table_id: port-channels
+    reuse_tables: showPCMembers,showPC,vlanMembers
+    reuse_table_processor: AOSPortChannelsTableProcessor
+
+  - &SHOW_VRF
+    table_id: vrfs
+    command: show vrf
+    parser:
+      name: *HORIZONTAL_TABLE_PARSER
+      arguments:
+        skip_head: 2
+        skip_tail: 1
+        header_keys:
+          - Virtual Routers
+    select_columns:
+      Virtual Routers: name
+
+
+  - &SHOW_LLDP_NEIGHBORS
+    table_id: neighbors
+    command: show lldp remote-system
+    parser:
+      name: routers_and_switches.alcatel_lucent.alcatel_lucent_pre_post_processor.AOSNeighborsParser
+
+  - &SHOW_MAC_LEARNING
+    table_id: mac-address-table
+    command: show mac-learning
+    parser:
+      name: routers_and_switches.alcatel_lucent.alcatel_lucent_pre_post_processor.AOSMacAddressTableParser
+
+
+  - &SHOW_IP_INTERFACE
+    table_id: router-interfaces
+    command: show ip interface
+    parser:
+      name: routers_and_switches.alcatel_lucent.alcatel_lucent_pre_post_processor.AOSIpInterfaceParser
+
+  - &SHOW_IP_ROUTE
+    table_id: showIPRoute
+    command: show ip routes
+    parser:
+      name: routers_and_switches.alcatel_lucent.alcatel_lucent_pre_post_processor.AOSIpRouteParser
+
+  - &ROUTES_PROCESS
+    table_id: routes
+    reuse_tables: showIPRoute,router-interfaces
+    reuse_table_processor: AOSRoutesTableProcessor
+
+
+result_writer: &RESULT_WRITER
+  name: CsvWriter
+  table_id:
+    - switch
+    - switch-ports
+    - port-channels
+    - vrfs
+    - neighbors
+    - mac-address-table
+    - router-interfaces
+    - routes
+
+
+omniswitch: !include omniswitch.yml
+
